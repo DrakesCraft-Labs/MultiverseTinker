@@ -22,4 +22,40 @@ public class ForgeStructureTest {
         assertEquals(243, structure.getBlocks(180).size(), "180 degree rotation should have 243 blocks");
         assertEquals(243, structure.getBlocks(270).size(), "270 degree rotation should have 243 blocks");
     }
+
+    @Test
+    public void testParticleDataTypes() {
+        org.bukkit.Particle[] particles = {
+                org.bukkit.Particle.SMALL_FLAME,
+                org.bukkit.Particle.WAX_OFF,
+                org.bukkit.Particle.SMOKE,
+                org.bukkit.Particle.LARGE_SMOKE,
+                org.bukkit.Particle.LAVA,
+                org.bukkit.Particle.SOUL_FIRE_FLAME,
+                org.bukkit.Particle.ENCHANT,
+                org.bukkit.Particle.WAX_ON,
+                org.bukkit.Particle.FLASH,
+                org.bukkit.Particle.TOTEM_OF_UNDYING,
+                org.bukkit.Particle.TRIAL_SPAWNER_DETECTION_OMINOUS,
+                org.bukkit.Particle.HAPPY_VILLAGER,
+                org.bukkit.Particle.GLOW,
+                org.bukkit.Particle.CAMPFIRE_COSY_SMOKE,
+                org.bukkit.Particle.SPLASH,
+                org.bukkit.Particle.FLAME,
+                org.bukkit.Particle.EXPLOSION,
+                org.bukkit.Particle.CRIT,
+                org.bukkit.Particle.SWEEP_ATTACK,
+                org.bukkit.Particle.SNOWFLAKE,
+                org.bukkit.Particle.HEART
+        };
+
+        for (org.bukkit.Particle p : particles) {
+            System.out.println("PARTICLE: " + p.name() + " -> " + p.getDataType());
+            if (p == org.bukkit.Particle.FLASH) {
+                assertEquals(org.bukkit.Color.class, p.getDataType());
+            } else {
+                assertEquals(Void.class, p.getDataType(), "Particle " + p.name() + " should not require data");
+            }
+        }
+    }
 }

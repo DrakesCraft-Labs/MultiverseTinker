@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -187,7 +188,7 @@ public class ForgeManager {
                 } else if (step == 3) {
                     // Phase 3: Converge into anvil with burst
                     Location aCenter = anvilLoc.clone().add(0.5, 0.8, 0.5);
-                    world.spawnParticle(Particle.FLASH, aCenter, 1, 0, 0, 0, 0);
+                    world.spawnParticle(Particle.FLASH, aCenter, 1, 0, 0, 0, 0, Color.WHITE);
                     world.spawnParticle(Particle.TOTEM_OF_UNDYING, aCenter, 30, 0.4, 0.4, 0.4, 0.15);
                     world.spawnParticle(Particle.TRIAL_SPAWNER_DETECTION_OMINOUS, aCenter, 20, 0.5, 0.5, 0.5, 0.05);
                     world.playSound(anvilLoc, Sound.ITEM_TOTEM_USE, 0.8f, 1.6f);
