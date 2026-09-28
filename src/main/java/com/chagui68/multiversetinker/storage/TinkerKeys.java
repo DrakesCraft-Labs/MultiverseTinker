@@ -34,6 +34,21 @@ public final class TinkerKeys {
     public static NamespacedKey TOOL_MINING_SPEED;
     public static NamespacedKey TOOL_ATTACK_DAMAGE;
 
+    // Evolution & Weapons
+    public static NamespacedKey IS_MODULAR_WEAPON;
+    public static NamespacedKey WEAPON_TYPE;
+    public static NamespacedKey EVOLUTION_TIER;
+    public static NamespacedKey KILL_COUNT;
+    public static NamespacedKey BLOCKS_BROKEN_COUNT;
+    public static NamespacedKey PART_COMPOSITION_DATA;
+    public static NamespacedKey TOOL_HEAD_COMP;
+    public static NamespacedKey TOOL_ROD_COMP;
+    public static NamespacedKey TOOL_BINDING_COMP;
+    public static NamespacedKey BOW_LIMBS_COMP;
+    public static NamespacedKey BOWSTRING_COMP;
+    public static NamespacedKey SHIELD_PLATE_COMP;
+    public static NamespacedKey SHIELD_BOSS_COMP;
+
     private TinkerKeys() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -64,6 +79,20 @@ public final class TinkerKeys {
         TOOL_CURRENT_DURABILITY = new NamespacedKey(plugin, "mvtink_cur_durability");
         TOOL_MINING_SPEED = new NamespacedKey(plugin, "mvtink_mining_speed");
         TOOL_ATTACK_DAMAGE = new NamespacedKey(plugin, "mvtink_attack_damage");
+
+        IS_MODULAR_WEAPON = new NamespacedKey(plugin, "mvtink_is_modular_weapon");
+        WEAPON_TYPE = new NamespacedKey(plugin, "mvtink_modular_weapon_type");
+        EVOLUTION_TIER = new NamespacedKey(plugin, "mvtink_evolution_tier");
+        KILL_COUNT = new NamespacedKey(plugin, "mvtink_kill_count");
+        BLOCKS_BROKEN_COUNT = new NamespacedKey(plugin, "mvtink_blocks_broken");
+        PART_COMPOSITION_DATA = new NamespacedKey(plugin, "mvtink_part_comp_data");
+        TOOL_HEAD_COMP = new NamespacedKey(plugin, "mvtink_head_comp");
+        TOOL_ROD_COMP = new NamespacedKey(plugin, "mvtink_rod_comp");
+        TOOL_BINDING_COMP = new NamespacedKey(plugin, "mvtink_binding_comp");
+        BOW_LIMBS_COMP = new NamespacedKey(plugin, "mvtink_bow_limbs_comp");
+        BOWSTRING_COMP = new NamespacedKey(plugin, "mvtink_bowstring_comp");
+        SHIELD_PLATE_COMP = new NamespacedKey(plugin, "mvtink_shield_plate_comp");
+        SHIELD_BOSS_COMP = new NamespacedKey(plugin, "mvtink_shield_boss_comp");
     }
 
     @Nonnull

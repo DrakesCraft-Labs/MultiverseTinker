@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.casting;
 
 import com.chagui68.multiversetinker.api.CastType;
+import com.chagui68.multiversetinker.api.ToolPartType;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -93,6 +94,10 @@ public class CastingListener implements Listener {
             case HEAD -> itemRegistry.getToolHeadItem(materialId);
             case ROD -> itemRegistry.getToolRodItem(materialId);
             case BINDING -> itemRegistry.getToolBindingItem(materialId);
+            case BOW_LIMBS -> itemRegistry.getPartItem(ToolPartType.BOW_LIMBS, materialId);
+            case BOWSTRING -> itemRegistry.getPartItem(ToolPartType.BOWSTRING, materialId);
+            case SHIELD_PLATE -> itemRegistry.getPartItem(ToolPartType.SHIELD_PLATE, materialId);
+            case SHIELD_BOSS -> itemRegistry.getPartItem(ToolPartType.SHIELD_BOSS, materialId);
         };
 
         if (resultItem == null) {

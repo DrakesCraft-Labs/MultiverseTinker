@@ -75,18 +75,28 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 
 ---
 
-### 4. 🏛️ Estructura Multibloque de la Forja (`forge.nbt`)
+### 4. 🏛️ Estructura Multibloque de la Forja y GUI de 5 Secciones
 * **Construcción Monumental ($11 \times 7 \times 11$)**:
-  * Centrada en torno a un Yunque central, construida con Ladrillos de Toba Cincelados, Baldosas y Ladrillos de Pizarra Profunda, Losas/Escaleras de Ladrillos de Toba y 4 pilares esquineros de Lava térmica (243 bloques en total).
-  * Admite las 4 rotaciones cardinales ($0^\circ, 90^\circ, 180^\circ, 270^\circ$).
-* **Simulación y Barrido de Partículas**:
-  * Al completar la estructura, hacer click derecho al yunque detona una animación de validación con llamaradas por los pilares de lava, barrido de glifos por el suelo y destello con sonido de faro.
-* **Aura Ambiental en el Yunque**:
-  * Los yunques de forjas activas irradian una pequeña aura continua de brasas giratorias, llamas suaves y humo cálido.
-* **GUI Personalizada de la Forja**:
-  * Sustituye la interfaz de yunque de Minecraft por un panel exclusivo de 54 ranuras:
-    * **Forja de Partes**: Combina Balde Fundido + Molde (Cabeza, Palo, Mango) -> ¡Piezas forjadas del material!
-    * **Ensamblado Modular**: Une [Cabeza] + [Palo] + [Mango] -> Herramienta modular terminada (Pico, Espada, Hacha, Pala, Azada) que hereda los rasgos físicos de los 3 minerales.
+  * Centrada en torno a un Yunque central, construida con Ladrillos de Toba Cincelados, Baldosas y Ladrillos de Pizarra Profunda, Losas/Escaleras de Ladrillos de Toba y 4 pilares esquineros de Lava térmica (243 bloques en total). Admite rotaciones a $0^\circ, 90^\circ, 180^\circ, 270^\circ$.
+* **Simulación de Partículas y Aura Ambiental**:
+  * La estructura completada cuenta con barrido de validación térmica y un aura continua de brasas volcánicas sobre el yunque central.
+* **Nueva GUI de 5 Secciones**:
+  * **[1. Codex & Guide]**: Códices interactivos con información de la estructura, forja, recetas de aleaciones, progresión de rarezas y habilidades especiales.
+  * **[2. Molds & Parts]**: Tallado rápido de moldes (1 Ladrillo de Arcilla = 1 molde reutilizable) y forja multimaterial (coloca de 1 a 3 materiales para dividir los rasgos al 100%, 50/50 o 33/33/33 en proporción a su concentración).
+  * **[3. Alloy Crucible]**: Crisol de fundición para mezclar 2 materiales y obtener 16 aleaciones legendarias (Bronce, Electro, Manyullyn, Netherita Cósmica, etc.).
+  * **[4. Weapon Assembly]**: Ensamblado de 7 tipos de armas (Espada, Arco, Ballesta, Tridente, Lanza, Mazo, Escudo) que comienzan en **Rareza de Madera** y evolucionan mediante **Bajas en Combate**.
+  * **[5. Tool Assembly]**: Ensamblado de 5 tipos de herramientas (Pico, Hacha, Pala, Azada, Caña de pescar) que comienzan en **Rareza de Madera** y evolucionan mediante **Bloques Rotos**.
+* **Habilidades Especiales en Armas y Herramientas**:
+  * **Mazo de Guerra**: Golpes en caída desatan una onda sísmica en el suelo con daño en área.
+  * **Arco**: Las flechas heredan los rasgos elementales de los brazos y de la cuerda.
+  * **Ballesta Pesada**: Disparos con penetración de armadura (30%) e impacto explosivo.
+  * **Tridente**: Rayos y oleadas hidráulicas bajo el agua o lluvia (+5.0 daño).
+  * **Lanza Cinética**: Alcance de ataque extendido y +30% de daño en embestida al esprintar.
+  * **Escudo Torre**: Refleja el 35% del daño bloqueado de vuelta al atacante.
+  * **Pico**: Resonancia de Vetas otorga minerales adicionales y Prisa minera I.
+  * **Pala Excavadora**: Minar agachado rompe un área de 3x3 de tierra, arena o grava.
+  * **Azada**: Cosecha cultivos maduros en 3x3 y replanta automáticamente las semillas de tu inventario.
+  * **Caña de Pescar**: Dragado abisal permite pescar minerales raros de las profundidades acuáticas.
 
 ---
 

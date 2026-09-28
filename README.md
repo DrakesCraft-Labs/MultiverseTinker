@@ -75,18 +75,28 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 
 ---
 
-### 4. 🏛️ The Multiverse Forge Multiblock (`forge.nbt`)
+### 4. 🏛️ The Multiverse Forge Multiblock & 5-Tab GUI
 * **Monumental Structure ($11 \times 7 \times 11$)**:
-  * Centered on a central Anvil, constructed with Chiseled Tuff Bricks, Deepslate Tiles, Deepslate Bricks, Tuff Brick Slabs/Stairs, and 4 corner thermal Lava columns (243 blocks total).
-  * Supports all 4 cardinal rotations ($0^\circ, 90^\circ, 180^\circ, 270^\circ$).
-* **Validation Particle Sweep**:
-  * When completed, right-clicking the anvil triggers a dramatic multi-phase particle simulation across the lava pillars, floor, and anvil with beacon activation audio.
-* **Ambient Anvil Aura**:
-  * Active forge anvils radiate continuous orbiting embers, flame particles, and warm smoke.
-* **Custom Forge GUI**:
-  * Replaces the vanilla anvil GUI with a dedicated 54-slot interface:
-    * **Part Forging**: Combine Molten Bucket + Cast (Head, Rod, Binding) -> Forged Tool Parts!
-    * **Modular Tool Assembly**: Combine [Head] + [Rod] + [Binding] -> Assembled Modular Tool inheriting all 3 minerals' traits, mining speeds, attack damage, and durabilities!
+  * Centered on an Anvil, constructed with Chiseled Tuff Bricks, Deepslate Tiles, Deepslate Bricks, Tuff Brick Slabs/Stairs, and 4 corner thermal Lava columns (243 blocks total). Supports all rotations ($0^\circ, 90^\circ, 180^\circ, 270^\circ$).
+* **Validation Particle Sweep & Ambient Aura**:
+  * Completed forges feature a multi-phase validation particle sweep and continuous volcanic embers/smoke orbiting the anvil.
+* **Redesigned 5-Section GUI**:
+  * **[1. Codex & Guide]**: In-game encyclopedias covering multiblock structure, casting, alloy recipes, tier progression, and specialized perks.
+  * **[2. Molds & Parts]**: Quick mold carving (1 Clay Brick = 1 reusable cast) and multi-material forging (place 1 to 3 materials for 100%, 50/50, or 33/33/33 concentration-based trait splitting!).
+  * **[3. Alloy Crucible]**: Smelt 2 distinct materials to forge 16 legendary alloys (Bronze, Electrum, Manyullyn, Cosmic Netherite, etc.) with custom abilities.
+  * **[4. Weapon Assembly]**: Assemble 7 weapon types (Broadsword, Longbow, Heavy Crossbow, Elder Trident, Kinetic Spear, War Mace, Tower Shield) starting at **Wood Tier** and leveling up through **Combat Kills**!
+  * **[5. Tool Assembly]**: Assemble 5 tool types (Pickaxe, Battleaxe, Excavator/Shovel, Scythe/Hoe, Fishing Rod) starting at **Wood Tier** and leveling up through **Blocks Broken**!
+* **Specialized Weapon & Tool Perks**:
+  * **War Mace**: Downward fall strikes trigger seismic ground shockwaves dealing AOE damage.
+  * **Longbow**: Arrows inherit limb and string elemental traits.
+  * **Heavy Crossbow**: Bolts bypass 30% of target armor with explosive sparks.
+  * **Elder Trident**: Water/rain strikes summon hydraulic lightning (+5.0 damage).
+  * **Kinetic Spear**: Extended attack reach and +30% charge damage while sprinting.
+  * **Tower Shield**: Reflects 35% blocked damage back to attackers.
+  * **Pickaxe**: Vein Resonance grants bonus ores and Haste I.
+  * **Excavator (Shovel)**: Sneak-digging excavates a 3x3 area of soil/sand/gravel.
+  * **Scythe (Hoe)**: Harvests 3x3 mature crops and auto-replants seeds from your inventory.
+  * **Fishing Rod**: Abyssal Dredge has a 15% chance to hook rare raw Multiverse minerals.
 
 ---
 

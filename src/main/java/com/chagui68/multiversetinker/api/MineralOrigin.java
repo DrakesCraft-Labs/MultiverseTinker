@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum MineralOrigin {
     OVERWORLD("Overworld", "Stone / Cobblestone"),
     NETHER("The Nether", "Netherrack / Blackstone"),
-    THE_END("The End", "End Stone");
+    THE_END("The End", "End Stone"),
+    VANILLA("Vanilla Ores", "Vanilla Minecraft Deposits");
 
     private final String description;
     private final String sourceBlockName;

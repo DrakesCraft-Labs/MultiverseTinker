@@ -597,5 +597,74 @@ public class MaterialRegistry {
                 .baseVanillaMaterial(Material.ECHO_SHARD).processedVanillaMaterial(Material.NETHER_STAR).nuggetVanillaMaterial(Material.AMETHYST_SHARD).blockVanillaMaterial(Material.ICE)
                 .colorHex("#D4EFDF").description("Antimatter crystal extracting energy from the quantum vacuum.").meltingDurationTicks(240)
                 .durabilityBonus(3000).miningSpeed(14.5f).attackDamageBonus(6.4).traitName("Absolute Zero").traitDescription("Completely freezes and immobilizes targets on impact.").build());
+
+        // ==========================================
+        // 4. VANILLA MINECRAFT MINERALS (11 Materials)
+        // ==========================================
+        register(TinkerMaterial.builder()
+                .id("mvtink_coal").name("Coal").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.COMMON).type(MaterialType.MINERAL)
+                .baseVanillaMaterial(Material.COAL_ORE).processedVanillaMaterial(Material.COAL).nuggetVanillaMaterial(Material.GUNPOWDER).blockVanillaMaterial(Material.COAL_BLOCK)
+                .colorHex("#2C3E50").description("Combustible carbon mineral.").meltingDurationTicks(40)
+                .durabilityBonus(150).miningSpeed(5.5f).attackDamageBonus(1.0).traitName("Kindling").traitDescription("Ignites struck enemies with high thermal friction.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_iron").name("Iron").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.COMMON).type(MaterialType.METAL)
+                .baseVanillaMaterial(Material.RAW_IRON).processedVanillaMaterial(Material.IRON_INGOT).nuggetVanillaMaterial(Material.IRON_NUGGET).blockVanillaMaterial(Material.IRON_BLOCK)
+                .colorHex("#D8D8D8").description("Classic foundational metal.").meltingDurationTicks(60)
+                .durabilityBonus(250).miningSpeed(6.0f).attackDamageBonus(2.0).traitName("Reinforced").traitDescription("Solid baseline durability and reliable strike defense.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_copper").name("Copper").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.COMMON).type(MaterialType.METAL)
+                .baseVanillaMaterial(Material.RAW_COPPER).processedVanillaMaterial(Material.COPPER_INGOT).nuggetVanillaMaterial(Material.COPPER_INGOT).blockVanillaMaterial(Material.COPPER_BLOCK)
+                .colorHex("#C06C46").description("Highly conductive ductile metal.").meltingDurationTicks(50)
+                .durabilityBonus(200).miningSpeed(5.8f).attackDamageBonus(1.8).traitName("Conductive").traitDescription("Channels kinetic electricity upon striking enemies.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_gold").name("Gold").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.METAL)
+                .baseVanillaMaterial(Material.RAW_GOLD).processedVanillaMaterial(Material.GOLD_INGOT).nuggetVanillaMaterial(Material.GOLD_NUGGET).blockVanillaMaterial(Material.GOLD_BLOCK)
+                .colorHex("#F1C40F").description("Precious lustrous noble metal.").meltingDurationTicks(45)
+                .durabilityBonus(100).miningSpeed(12.0f).attackDamageBonus(1.5).traitName("Midas Touch").traitDescription("Enormous mining speed, pacifies piglins, and boosts bonus mob drops.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_redstone").name("Redstone").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.ELEMENTAL)
+                .baseVanillaMaterial(Material.REDSTONE_ORE).processedVanillaMaterial(Material.REDSTONE).nuggetVanillaMaterial(Material.REDSTONE).blockVanillaMaterial(Material.REDSTONE_BLOCK)
+                .colorHex("#E74C3C").description("Energy-pulsing resonant mineral.").meltingDurationTicks(50)
+                .durabilityBonus(180).miningSpeed(8.0f).attackDamageBonus(2.2).traitName("Energized").traitDescription("Grants high attack swing speed and bursts of haste.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_lapis").name("Lapis Lazuli").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.GEM)
+                .baseVanillaMaterial(Material.LAPIS_ORE).processedVanillaMaterial(Material.LAPIS_LAZULI).nuggetVanillaMaterial(Material.LAPIS_LAZULI).blockVanillaMaterial(Material.LAPIS_BLOCK)
+                .colorHex("#2980B9").description("Metamorphic deep blue gemstone.").meltingDurationTicks(55)
+                .durabilityBonus(220).miningSpeed(6.5f).attackDamageBonus(1.9).traitName("Fortune Affinity").traitDescription("Amplifies dropped experience orbs and extra mineral drops.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_diamond").name("Diamond").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.RARE).type(MaterialType.GEM)
+                .baseVanillaMaterial(Material.DIAMOND_ORE).processedVanillaMaterial(Material.DIAMOND).nuggetVanillaMaterial(Material.DIAMOND).blockVanillaMaterial(Material.DIAMOND_BLOCK)
+                .colorHex("#5DADE2").description("Supreme crystalline carbon structure.").meltingDurationTicks(120)
+                .durabilityBonus(1560).miningSpeed(8.0f).attackDamageBonus(4.0).traitName("Adamant Edge").traitDescription("Unmatched natural toughness and armor cleavage.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_emerald").name("Emerald").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.RARE).type(MaterialType.GEM)
+                .baseVanillaMaterial(Material.EMERALD_ORE).processedVanillaMaterial(Material.EMERALD).nuggetVanillaMaterial(Material.EMERALD).blockVanillaMaterial(Material.EMERALD_BLOCK)
+                .colorHex("#2ECC71").description("Vibrant beryl gemstone prized by villagers.").meltingDurationTicks(110)
+                .durabilityBonus(600).miningSpeed(7.5f).attackDamageBonus(3.2).traitName("Merchant's Eye").traitDescription("Deals bonus damage against Illagers and yields extra emerald drops.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_netherite").name("Netherite").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.LEGENDARY).type(MaterialType.ALLOY)
+                .baseVanillaMaterial(Material.ANCIENT_DEBRIS).processedVanillaMaterial(Material.NETHERITE_INGOT).nuggetVanillaMaterial(Material.NETHERITE_SCRAP).blockVanillaMaterial(Material.NETHERITE_BLOCK)
+                .colorHex("#4A3B32").description("Indestructible ancient Nether alloy.").meltingDurationTicks(200)
+                .durabilityBonus(2031).miningSpeed(9.0f).attackDamageBonus(5.0).traitName("Netherborn Core").traitDescription("Complete fire/lava immunity and heavy knockback resistance.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_quartz").name("Nether Quartz").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.COMMON).type(MaterialType.CRYSTAL)
+                .baseVanillaMaterial(Material.NETHER_QUARTZ_ORE).processedVanillaMaterial(Material.QUARTZ).nuggetVanillaMaterial(Material.QUARTZ).blockVanillaMaterial(Material.QUARTZ_BLOCK)
+                .colorHex("#F4F6F6").description("Jagged thermal silica crystal.").meltingDurationTicks(50)
+                .durabilityBonus(280).miningSpeed(7.0f).attackDamageBonus(3.0).traitName("Serrated Shard").traitDescription("Sharp edges inflict painful bleed wounds over time.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_amethyst").name("Amethyst").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.CRYSTAL)
+                .baseVanillaMaterial(Material.AMETHYST_CLUSTER).processedVanillaMaterial(Material.AMETHYST_SHARD).nuggetVanillaMaterial(Material.AMETHYST_SHARD).blockVanillaMaterial(Material.AMETHYST_BLOCK)
+                .colorHex("#AF7AC5").description("Resonant crystalline quartz geode.").meltingDurationTicks(65)
+                .durabilityBonus(400).miningSpeed(7.2f).attackDamageBonus(2.5).traitName("Resonant Pulse").traitDescription("Emits kinetic chime waves upon connecting critical hits.").build());
     }
 }

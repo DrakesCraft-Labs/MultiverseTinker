@@ -128,6 +128,7 @@ public class ArchaeologyManager {
             case OVERWORLD -> plugin.getConfig().getDouble("archaeology.success-chance.overworld", 0.45);
             case NETHER -> plugin.getConfig().getDouble("archaeology.success-chance.nether", 0.40);
             case THE_END -> plugin.getConfig().getDouble("archaeology.success-chance.the_end", 0.35);
+            default -> 0.45;
         };
 
         double finalChance = isProspector ? Math.min(0.95, baseChance + 0.15) : baseChance;
@@ -199,6 +200,7 @@ public class ArchaeologyManager {
                     case OVERWORLD -> Material.GRAVEL;
                     case NETHER -> Material.BASALT;
                     case THE_END -> Material.COBBLESTONE;
+                    default -> Material.GRAVEL;
                 };
                 block.getWorld().dropItem(dropLoc, new ItemStack(rubbleMat, 1));
             }

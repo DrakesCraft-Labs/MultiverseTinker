@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker;
 
+import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.archaeology.ArchaeologyListener;
 import com.chagui68.multiversetinker.archaeology.ArchaeologyLootTable;
@@ -34,6 +35,8 @@ public class MultiverseTinker extends JavaPlugin {
     @Getter
     private MaterialRegistry materialRegistry;
     @Getter
+    private AlloyRegistry alloyRegistry;
+    @Getter
     private TinkerItemRegistry itemRegistry;
     @Getter
     private ArchaeologyManager archaeologyManager;
@@ -60,7 +63,9 @@ public class MultiverseTinker extends JavaPlugin {
 
         // Register Materials & Items
         this.materialRegistry = new MaterialRegistry();
-        getLogger().info("Registered " + materialRegistry.getAll().size() + " geological materials.");
+        this.alloyRegistry = new AlloyRegistry();
+        this.alloyRegistry.registerAlloysIntoMaterialRegistry(materialRegistry);
+        getLogger().info("Registered " + materialRegistry.getAll().size() + " geological and alloy materials.");
 
         this.itemRegistry = new TinkerItemRegistry(materialRegistry);
 

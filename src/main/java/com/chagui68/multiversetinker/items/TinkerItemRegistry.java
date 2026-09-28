@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.items;
 
 import com.chagui68.multiversetinker.api.CastType;
+import com.chagui68.multiversetinker.api.ToolPartType;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import org.bukkit.inventory.ItemStack;
@@ -22,6 +23,10 @@ public class TinkerItemRegistry {
     private final Map<String, ItemStack> toolHeadItems = new ConcurrentHashMap<>();
     private final Map<String, ItemStack> toolRodItems = new ConcurrentHashMap<>();
     private final Map<String, ItemStack> toolBindingItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> bowLimbsItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> bowstringItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> shieldPlateItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> shieldBossItems = new ConcurrentHashMap<>();
     private final Map<CastType, ItemStack> castItems = new EnumMap<>(CastType.class);
 
     private final Map<String, ItemStack> allItemsById = new ConcurrentHashMap<>();
@@ -43,6 +48,10 @@ public class TinkerItemRegistry {
         toolHeadItems.clear();
         toolRodItems.clear();
         toolBindingItems.clear();
+        bowLimbsItems.clear();
+        bowstringItems.clear();
+        shieldPlateItems.clear();
+        shieldBossItems.clear();
         castItems.clear();
         allItemsById.clear();
 
@@ -60,15 +69,20 @@ public class TinkerItemRegistry {
 
         for (TinkerMaterial material : materialRegistry.getAll()) {
             String baseId = material.getId().toLowerCase(Locale.ROOT);
+            PartComposition comp = PartComposition.fromMaterials(List.of(material));
 
             ItemStack raw = TinkerItemBuilder.createRawMineral(material);
             ItemStack ingot = TinkerItemBuilder.createIngot(material);
             ItemStack nugget = TinkerItemBuilder.createNugget(material);
             ItemStack block = TinkerItemBuilder.createBlock(material);
             ItemStack moltenBucket = TinkerItemBuilder.createMoltenBucket(material);
-            ItemStack head = TinkerItemBuilder.createToolHead(material);
-            ItemStack rod = TinkerItemBuilder.createToolRod(material);
-            ItemStack binding = TinkerItemBuilder.createToolBinding(material);
+            ItemStack head = TinkerItemBuilder.createModularPart(ToolPartType.HEAD, comp);
+            ItemStack rod = TinkerItemBuilder.createModularPart(ToolPartType.ROD, comp);
+            ItemStack binding = TinkerItemBuilder.createModularPart(ToolPartType.BINDING, comp);
+            ItemStack bowLimbs = TinkerItemBuilder.createModularPart(ToolPartType.BOW_LIMBS, comp);
+            ItemStack bowstring = TinkerItemBuilder.createModularPart(ToolPartType.BOWSTRING, comp);
+            ItemStack shieldPlate = TinkerItemBuilder.createModularPart(ToolPartType.SHIELD_PLATE, comp);
+            ItemStack shieldBoss = TinkerItemBuilder.createModularPart(ToolPartType.SHIELD_BOSS, comp);
 
             rawItems.put(baseId, raw);
             ingotItems.put(baseId, ingot);
@@ -78,6 +92,10 @@ public class TinkerItemRegistry {
             toolHeadItems.put(baseId, head);
             toolRodItems.put(baseId, rod);
             toolBindingItems.put(baseId, binding);
+            bowLimbsItems.put(baseId, bowLimbs);
+            bowstringItems.put(baseId, bowstring);
+            shieldPlateItems.put(baseId, shieldPlate);
+            shieldBossItems.put(baseId, shieldBoss);
 
             allItemsById.put(baseId + "_raw", raw);
             allItemsById.put(baseId + "_ingot", ingot);
@@ -87,8 +105,14 @@ public class TinkerItemRegistry {
             allItemsById.put(baseId + "_molten_bucket", moltenBucket);
             allItemsById.put(baseId + "_head", head);
             allItemsById.put(baseId + "_rod", rod);
+            allItemsById.put(baseId + "_handle", rod);
             allItemsById.put(baseId + "_binding", binding);
-            allItemsById.put(baseId, raw); // Default to raw if only base ID provided
+            allItemsById.put(baseId + "_pommel", binding);
+            allItemsById.put(baseId + "_bow_limbs", bowLimbs);
+            allItemsById.put(baseId + "_bowstring", bowstring);
+            allItemsById.put(baseId + "_shield_plate", shieldPlate);
+            allItemsById.put(baseId + "_shield_boss", shieldBoss);
+            allItemsById.put(baseId, raw);
         }
     }
 
@@ -107,6 +131,21 @@ public class TinkerItemRegistry {
     @Nullable
     public ItemStack getToolBindingItem(@Nonnull String materialId) {
         ItemStack item = toolBindingItems.get(materialId.toLowerCase(Locale.ROOT));
+        return item != null ? item.clone() : null;
+    }
+
+    @Nullable
+    public ItemStack getPartItem(@Nonnull ToolPartType partType, @Nonnull String materialId) {
+        String id = materialId.toLowerCase(Locale.ROOT);
+        ItemStack item = switch (partType) {
+            case HEAD -> toolHeadItems.get(id);
+            case ROD -> toolRodItems.get(id);
+            case BINDING -> toolBindingItems.get(id);
+            case BOW_LIMBS -> bowLimbsItems.get(id);
+            case BOWSTRING -> bowstringItems.get(id);
+            case SHIELD_PLATE -> shieldPlateItems.get(id);
+            case SHIELD_BOSS -> shieldBossItems.get(id);
+        };
         return item != null ? item.clone() : null;
     }
 

@@ -7,10 +7,12 @@ Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a soverei
 ## 📑 Wiki Navigation
 
 * **[Geological Archaeology](Archaeology.md)**: Prospector brush, brushing mechanics, drop tables, and dimension targets.
-* **[Smeltery & Cauldron Casting](Smeltery-and-Casting.md)**: Operating the Smeltery Crucible over lava, diagnostic GUI, and cooling molten metals in water cauldrons with reusable molds.
-* **[The Multiverse Forge Multiblock](Forge-Structure.md)**: $11 \times 7 \times 11$ structure, validation particle simulation, central anvil aura, tool part forging, and modular equipment assembly.
-* **[Complete Mineral Catalog](Minerals.md)**: Exhaustive breakdown of all **90 materials** (30 Overworld, 30 Nether, 30 The End) with traits, smelting durations, and colors.
-* **[Forge Traits & Mineral Effects](Traits-and-Effects.md)**: Full reference guide for all **90 mineral traits**, combat effects, stat bonuses, and unique physical perks.
+* **[Smeltery & Cauldron Casting](Smeltery-and-Casting.md)**: Operating the Smeltery Crucible over lava/magma, diagnostic GUI, and cooling molten metals in water cauldrons with reusable molds.
+* **[The Multiverse Forge Multiblock](Forge-Structure.md)**: Multiblock structure, validation particle simulation, and central anvil aura.
+* **[Forge GUI & Modular Equipment Guide](Forge-GUI-Guide.md)**: Detailed breakdown of the 5 GUI tabs, multi-material casting, tier evolution (Wood to Netherite), and specialized weapon & tool perks.
+* **[Alloy Mixing & Metallurgy Guide](Alloy-Mixing.md)**: The Alloy Crucible, fusion mechanics, and exhaustive guide to all 16 custom alloys.
+* **[Complete Mineral Catalog](Minerals.md)**: Exhaustive breakdown of all 101 geological & vanilla materials plus 16 alloys.
+* **[Forge Traits & Mineral Effects](Traits-and-Effects.md)**: Full reference guide for mineral traits, combat effects, stat bonuses, and unique physical perks.
 
 ---
 

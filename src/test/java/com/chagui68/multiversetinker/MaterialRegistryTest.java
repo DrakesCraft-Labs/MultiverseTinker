@@ -22,10 +22,11 @@ class MaterialRegistryTest {
     }
 
     @Test
-    @DisplayName("Debe registrar exactamente 90 materiales geologicos (30 por dimension)")
+    @DisplayName("Debe registrar 101 materiales (90 geologicos distribuidos 30 por dimension + 11 vanilla)")
     void testTotalMaterialsCount() {
         Collection<TinkerMaterial> all = registry.getAll();
-        assertEquals(90, all.size(), "Deben haber exactamente 90 materiales registrados (30 por dimension)");
+        assertEquals(101, all.size(), "Deben haber 101 materiales registrados (90 geologicos + 11 vanilla)");
+        assertEquals(11, registry.getByOrigin(MineralOrigin.VANILLA).size(), "Deben haber 11 materiales vanilla");
     }
 
     @Test
