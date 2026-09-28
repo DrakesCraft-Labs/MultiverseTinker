@@ -11,7 +11,7 @@ commands:
     description: Main management command for MultiverseTinker.
     aliases: [mvtink, mvt]
     permission: multiversetinker.admin
-    usage: /mvtink <give|list|reload>
+    usage: /mvtink <give|forge|list|reload>
 
 permissions:
   multiversetinker.admin:
