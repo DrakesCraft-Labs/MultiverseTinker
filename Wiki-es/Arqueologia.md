@@ -34,12 +34,19 @@ MultiverseTinker sustituye la generación tradicional de menas en chunks por un 
 
 ---
 
-## 4. Brocha de Prospector (`mvtink_brush_prospector`)
+## 4. Comparativa: Brocha Estándar vs. Brocha de Prospector
 
-Una herramienta arqueológica especializada de supervivencia fabricada con oro, cobre, un fragmento de amatista y una brocha vanilla:
+MultiverseTinker distingue dos niveles de excavación con distribuciones de recompensa claramente diferenciadas:
 
-* **+40% Velocidad de Excavación**: Completa la prospección en solo 3 pulsos (<1 segundo).
-* **+15% Bono a Probabilidad de Éxito**: Overworld 60%, Nether 55%, The End 50%.
-* **Suerte Geológica**: **Duplica la probabilidad (2x)** de obtener minerales Raros, Épicos y Legendarios.
-* **Cerdas Reforzadas**: **50% de probabilidad** de anular el consumo de durabilidad tras cada extracción completada.
-* **Efectos Visuales**: Destellos dorados y partículas mágicas de encantamiento durante el proceso.
+| Característica / Recompensa | Brocha Normal Vanilla (`BRUSH`) | Brocha de Prospector (`mvtink_brush_prospector`) |
+|---|---|---|
+| **Velocidad de Excavación** | Estándar (6 progreso / pulso) | **+40% más rápida** (10 progreso / pulso) |
+| **Probabilidad Base de Éxito** | 45% Overworld / 40% Nether / 35% End | **+15% de bono** (60% / 55% / 50%) |
+| **Suerte Rara / Épica / Legendaria** | Peso estándar ($1\times$) | **Multiplicador de peso $2\times$** |
+| **Conservación de Cerdas** | Ninguna (1 durabilidad por ciclo) | **50% de probabilidad** de no gastar uso |
+| **Mineral en Bruto (`mvtink_*_raw`)** | **70%** (se funde para hacer 1 Lingote) | **55%** |
+| **Pepitas (`mvtink_*_nugget`)** | **30%** (1 Pepita) | **25%** (1 a 3 Pepitas) |
+| **Bloque Compacto (`mvtink_*_block`)** | ❌ **0% (Nunca extrae bloques)** | ⭐ **20% (Jackpot: ¡Bloque completo de 9x!)** |
+
+### Sinergia con el Molde de Bloques (`mvtink_cast_block`)
+Mientras que la brocha normal solo permite recolectar material crudo para lingotes individuales o pequeñas pepitas, la Brocha de Prospector da la oportunidad de descubrir vetas densas y obtener directamente bloques del material. Esto da una utilidad real al **Molde de Bloques** en el sistema de caldero de fundición, permitiendo templar bloques masivos para almacenar y manipular metales de alta gama sin necesidad del crafteo manual $9\times$.

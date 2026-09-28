@@ -45,7 +45,7 @@ public class ArchaeologyLootTable {
             if (isProspector && (mat.getRarity().name().equals("RARE") ||
                                  mat.getRarity().name().equals("EPIC") ||
                                  mat.getRarity().name().equals("LEGENDARY"))) {
-                weight *= 2; // Duplica la probabilidad de minerales raros y legendarios con la brocha de prospector
+                weight *= 2; // Doubles weight for Rare, Epic, and Legendary minerals when using prospector brush
             }
             totalWeight += weight;
         }

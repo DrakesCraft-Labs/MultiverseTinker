@@ -9,6 +9,7 @@
 * **[Arqueología Geológica](Arqueologia.md)**: Brocha de prospector, cepillado de roca, tablas de botín y degradación geológica.
 * **[Crisol de Fundición y Templado en Caldero](Fundicion-y-Caldero.md)**: Operación del crisol sobre lava, diagnósticos visuales y enfriamiento de metales en caldero con moldes.
 * **[Catálogo Completo de Minerales](Minerales.md)**: Listado exhaustivo de los **90 materiales** (30 Overworld, 30 Nether, 30 The End) con sus rasgos, tiempos de fundición y colores.
+* **[Rasgos de Forja y Efectos de Minerales](Rasgos-y-Efectos.md)**: Guía de referencia de los **90 rasgos de forja**, efectos pasivos, modificadores de combate y estadísticas.
 
 ---
 

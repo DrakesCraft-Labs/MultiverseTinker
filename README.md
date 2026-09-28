@@ -14,7 +14,7 @@
 
 Part of **Chagui68's Sovereign Multiverse Suite** alongside [MultiverseNets](https://github.com/DrakesCraft-Labs/MultiverseNets), [MultiverseCreatures](https://github.com/DrakesCraft-Labs/MultiverseCreatures), and [MultiverseProgramming](https://github.com/DrakesCraft-Labs/MultiverseProgramming).
 
-[📖 English Wiki](Wiki-en/Home.md) · [📖 Wiki en Español](Wiki-es/Home.md) · [Español (README)](README_ES.md)
+[📖 English Wiki](Wiki-en/Home.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [📖 Wiki en Español](Wiki-es/Home.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [Español (README)](README_ES.md)
 
 </div>
 
@@ -46,7 +46,8 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 * **The Nether (Netherrack, Blackstone, Basalt)**: Yields infernal minerals (Cobalt, Ardite, Sulfur, Sanguinite, Nether Tungsten, Witherite, etc.).
 * **The End (End Stone)**: Yields cosmic void minerals (Enderite, Adamantium, Adamite, Celestine, Voidstone, Cosmium, Singularite, etc.).
 * **Geological Degradation**: Blocks naturally weather down over sustained excavation (`Stone -> Cobblestone -> Gravel -> Air`) with anti-macro cooldowns.
-* **Archaeological Prospector Brush (`mvtink_brush_prospector`)**: Special survival craftable brush with **+40% faster brushing speed**, **+15% higher extraction success rate**, **2x luck for Rare/Epic/Legendary materials**, and a **50% chance to conserve bristle durability**.
+* **Normal Brush Yield**: Extracts Raw Ores (70%) or single Nuggets (30%). Cannot excavate storage blocks directly.
+* **Archaeological Prospector Brush (`mvtink_brush_prospector`)**: Special survival craftable brush with **+40% faster brushing speed**, **+15% higher extraction success rate**, **2x luck for Rare/Epic/Legendary materials**, a **50% chance to conserve bristle durability**, and the ability to excavate **full mineral Storage Blocks** (20% jackpot chance), Raw Ores (55%), or 1–3 Nuggets (25%).
 
 ---
 

@@ -53,56 +53,56 @@ public class ArchaeologyManager {
 
         if (!player.hasPermission("multiversetinker.archaeology")) {
             player.sendActionBar(miniMessage.deserialize(plugin.getConfig().getString(
-                    "messages.no-permission", "<red>No tienes permisos de arqueologia.</red>")));
+                    "messages.no-permission", "<red>You do not have permission to perform geological archaeology.</red>")));
             return;
         }
 
         MineralOrigin origin = ArchaeologyBlockType.getOrigin(block.getType());
         if (origin == null) {
-            return; // No es un bloque geológico válido
+            return; // Not a valid geological target
         }
 
         Location blockLoc = block.getLocation();
 
-        // Control de Cooldown por bloque para prevenir macro/autoclick
+        // Anti-macro coordinate cooldown check
         long now = System.currentTimeMillis();
         long cooldownDuration = plugin.getConfig().getLong("archaeology.block-cooldown-seconds", 15) * 1000L;
         if (blockCooldowns.containsKey(blockLoc)) {
             long lastBrushed = blockCooldowns.get(blockLoc);
             if (now - lastBrushed < cooldownDuration) {
                 player.sendActionBar(miniMessage.deserialize(plugin.getConfig().getString(
-                        "messages.block-in-cooldown", "<red>Superficie geológica investigada recientemente.</red>")));
+                        "messages.block-in-cooldown", "<red>This geological surface was investigated recently.</red>")));
                 return;
             }
         }
 
         boolean isProspector = isProspectorBrush(brush);
 
-        // Obtener o crear sesión de cepillado
+        // Retrieve or initiate archaeological brushing session
         ArchaeologySession session = activeSessions.get(player.getUniqueId());
         if (session == null || !session.getBlockLocation().equals(blockLoc) || session.isExpired(2000L)) {
             session = new ArchaeologySession(player.getUniqueId(), blockLoc, face);
             activeSessions.put(player.getUniqueId(), session);
             String startMsg = isProspector
-                    ? "<gradient:#ffaa00:#ffff55>🔍 Prospectando con cerdas de alta precisión...</gradient>"
-                    : plugin.getConfig().getString("messages.brushing-started", "<gray>Cepillando la roca con cuidado...</gray>");
+                    ? "<gradient:#ffaa00:#ffff55>🔍 Prospecting with high-precision bristles...</gradient>"
+                    : plugin.getConfig().getString("messages.brushing-started", "<gray>Brushing the stone carefully...</gray>");
             player.sendActionBar(miniMessage.deserialize(startMsg));
         }
 
-        // Avanzar progreso: la brocha de prospector avanza mucho más rápido (+10 vs +6)
+        // Advance excavation progress: prospector brush progresses faster (+10 vs +6 ticks)
         int progressIncrement = isProspector ? 10 : 6;
         session.incrementProgress(progressIncrement);
         int maxTicks = plugin.getConfig().getInt("archaeology.brushing-duration-ticks", 30);
 
-        // Efectos de cepillado
+        // Brushing sound and acoustic feedback
         float pitch = (isProspector ? 1.0f : 0.8f) + ((float) session.getTicksProgress() / (float) maxTicks) * 0.4f;
         block.getWorld().playSound(blockLoc.clone().add(0.5, 0.5, 0.5),
                 Sound.ITEM_BRUSH_BRUSHING_GENERIC, 1.0f, pitch);
 
-        // Partículas en la cara del bloque
+        // Dust and excavation particles on the target block face
         spawnBrushingParticles(block, face, isProspector);
 
-        // ¿Alcanzó la duración total de cepillado?
+        // Completed excavation cycle
         if (session.getTicksProgress() >= maxTicks) {
             finishArchaeology(player, block, face, brush, origin, session, isProspector);
         }
@@ -114,16 +114,16 @@ public class ArchaeologyManager {
         activeSessions.remove(player.getUniqueId());
         blockCooldowns.put(blockLoc, System.currentTimeMillis());
 
-        // Sonidos finales de extracción
+        // Final extraction audio chimes
         block.getWorld().playSound(blockLoc.clone().add(0.5, 0.5, 0.5),
                 Sound.ITEM_BRUSH_BRUSHING_GRAVEL_COMPLETE, 1.0f, 1.0f);
         block.getWorld().playSound(blockLoc.clone().add(0.5, 0.5, 0.5),
                 Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.0f, isProspector ? 1.5f : 1.2f);
 
-        // Desgaste de la brocha
+        // Tool wear
         damageBrush(player, brush, isProspector);
 
-        // Probabilidad de éxito según la dimensión (+15% bono si es prospector)
+        // Success probability evaluation (+15% bonus for prospector brush)
         double baseChance = switch (origin) {
             case OVERWORLD -> plugin.getConfig().getDouble("archaeology.success-chance.overworld", 0.45);
             case NETHER -> plugin.getConfig().getDouble("archaeology.success-chance.nether", 0.40);
@@ -136,30 +136,64 @@ public class ArchaeologyManager {
         if (success) {
             TinkerMaterial mineral = lootTable.rollMineral(origin, isProspector);
             if (mineral != null) {
-                ItemStack rawDrop = itemRegistry.getRawItem(mineral.getId());
-                if (rawDrop != null) {
+                ItemStack dropItem;
+                String dropMessage;
+
+                if (isProspector) {
+                    // Prospector Brush: can extract full Storage Blocks, Raw Ores, or Nuggets
+                    double blockChance = plugin.getConfig().getDouble("archaeology.prospector-brush-yield.block-chance", 0.20);
+                    double nuggetChance = plugin.getConfig().getDouble("archaeology.prospector-brush-yield.nugget-chance", 0.25);
+                    double roll = ThreadLocalRandom.current().nextDouble();
+
+                    if (roll < blockChance) {
+                        dropItem = itemRegistry.getBlockItem(mineral.getId());
+                        dropMessage = "<gradient:#ff55ff:#ffff55>✦ JACKPOT! Extracted a complete Block of " + mineral.getName() + "!</gradient>";
+                    } else if (roll < blockChance + nuggetChance) {
+                        int count = ThreadLocalRandom.current().nextInt(1, 4);
+                        dropItem = itemRegistry.getNuggetItem(mineral.getId());
+                        if (dropItem != null) {
+                            dropItem = dropItem.clone();
+                            dropItem.setAmount(count);
+                        }
+                        dropMessage = "<gradient:#ffd700:#ffaa00>Extracted " + count + "x " + mineral.getName() + " Nuggets!</gradient>";
+                    } else {
+                        dropItem = itemRegistry.getRawItem(mineral.getId());
+                        dropMessage = "<gradient:#00ffaa:#00aaff>Extracted Raw " + mineral.getName() + "!</gradient>";
+                    }
+                } else {
+                    // Normal Brush: only yields Raw Ore (for 1 Ingot) or a single Nugget (never Blocks)
+                    double nuggetChance = plugin.getConfig().getDouble("archaeology.normal-brush-yield.nugget-chance", 0.30);
+                    if (ThreadLocalRandom.current().nextDouble() < nuggetChance) {
+                        dropItem = itemRegistry.getNuggetItem(mineral.getId());
+                        dropMessage = "<gradient:#ffd700:#ffaa00>Extracted a " + mineral.getName() + " Nugget!</gradient>";
+                    } else {
+                        dropItem = itemRegistry.getRawItem(mineral.getId());
+                        dropMessage = "<gradient:#00ffaa:#00aaff>Extracted Raw " + mineral.getName() + "!</gradient>";
+                    }
+                }
+
+                if (dropItem != null) {
                     Location dropLoc = blockLoc.clone().add(0.5, 1.0, 0.5);
-                    Item dropped = block.getWorld().dropItem(dropLoc, rawDrop);
+                    Item dropped = block.getWorld().dropItem(dropLoc, dropItem);
                     dropped.setVelocity(new Vector(0, 0.15, 0));
 
-                    // Partículas de éxito
+                    // Success visual FX
                     block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, dropLoc, isProspector ? 16 : 10, 0.3, 0.3, 0.3, 0.05);
                     if (isProspector) {
                         block.getWorld().spawnParticle(Particle.ENCHANT, dropLoc, 15, 0.4, 0.4, 0.4, 0.5);
                     }
 
-                    String msg = "<gradient:#00ffaa:#00aaff>¡Has extraído: " + mineral.getName() + "!</gradient>";
-                    player.sendActionBar(miniMessage.deserialize(msg));
+                    player.sendActionBar(miniMessage.deserialize(dropMessage));
                 }
             }
         } else {
-            // Extracción fallida: Escombros menores
+            // Failed extraction: loose rubble and stone dust
             Location dropLoc = blockLoc.clone().add(0.5, 0.8, 0.5);
             block.getWorld().spawnParticle(Particle.SMOKE, dropLoc, 8, 0.2, 0.2, 0.2, 0.02);
             player.sendActionBar(miniMessage.deserialize(plugin.getConfig().getString(
-                    "messages.brushing-completed-fail", "<gray>Solo has encontrado escombros y polvo.</gray>")));
+                    "messages.brushing-completed-fail", "<gray>You found only loose rubble and stone dust.</gray>")));
 
-            // Probabilidad de soltar escombros base
+            // Minor chance to yield dimension rubble
             if (ThreadLocalRandom.current().nextBoolean()) {
                 Material rubbleMat = switch (origin) {
                     case OVERWORLD -> Material.GRAVEL;
@@ -170,7 +204,7 @@ public class ArchaeologyManager {
             }
         }
 
-        // Degradación geológica del bloque si está configurado
+        // Realistic stone degradation after sustained excavation
         String behavior = plugin.getConfig().getString("archaeology.block-behavior", "DEGRADE");
         if ("DEGRADE".equalsIgnoreCase(behavior)) {
             Material degraded = ArchaeologyBlockType.getDegradedMaterial(block.getType());
@@ -194,14 +228,14 @@ public class ArchaeologyManager {
             return;
         }
 
-        // Brocha de Prospector: 50% de probabilidad de no gastar durabilidad
+        // Prospector Brush: 50% chance to conserve bristle durability
         if (isProspector && ThreadLocalRandom.current().nextBoolean()) {
             return;
         }
 
         int unbreakingLevel = brush.getEnchantmentLevel(Enchantment.UNBREAKING);
         if (unbreakingLevel > 0) {
-            // Probabilidad vanilla de Unbreaking
+            // Vanilla unbreaking calculation
             if (ThreadLocalRandom.current().nextInt(unbreakingLevel + 1) != 0) {
                 return;
             }

@@ -128,5 +128,21 @@ class MultiverseTinkerPluginTest {
 
         boolean giveCast = player.performCommand("mvtink give Chagui68 mvtink_cast_ingot 1");
         assertTrue(giveCast);
+
+        boolean giveBlockCast = player.performCommand("mvtink give Chagui68 mvtink_cast_block 1");
+        assertTrue(giveBlockCast);
+    }
+
+    @Test
+    @DisplayName("Every material must have raw, nugget, ingot, molten bucket, and block variants")
+    void testAllItemStatesExist() {
+        for (com.chagui68.multiversetinker.materials.TinkerMaterial material : plugin.getMaterialRegistry().getAll()) {
+            String id = material.getId();
+            assertNotNull(plugin.getItemRegistry().getRawItem(id), "Raw missing for " + id);
+            assertNotNull(plugin.getItemRegistry().getNuggetItem(id), "Nugget missing for " + id);
+            assertNotNull(plugin.getItemRegistry().getIngotItem(id), "Ingot missing for " + id);
+            assertNotNull(plugin.getItemRegistry().getMoltenBucketItem(id), "Molten bucket missing for " + id);
+            assertNotNull(plugin.getItemRegistry().getBlockItem(id), "Block missing for " + id);
+        }
     }
 }

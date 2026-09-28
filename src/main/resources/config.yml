@@ -30,6 +30,15 @@ archaeology:
   # Anti-macro cooldown per block in seconds
   block-cooldown-seconds: 15
 
+  # Yield distribution for normal brush (only raw ores or nuggets, no blocks)
+  normal-brush-yield:
+    nugget-chance: 0.30
+
+  # Yield distribution for prospector brush (can discover entire storage blocks!)
+  prospector-brush-yield:
+    block-chance: 0.20
+    nugget-chance: 0.25
+
   # Sound and visual effects
   effects:
     sound-volume: 1.0

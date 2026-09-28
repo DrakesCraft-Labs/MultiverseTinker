@@ -9,6 +9,7 @@ Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a soverei
 * **[Geological Archaeology](Archaeology.md)**: Prospector brush, brushing mechanics, drop tables, and dimension targets.
 * **[Smeltery & Cauldron Casting](Smeltery-and-Casting.md)**: Operating the Smeltery Crucible over lava, diagnostic GUI, and cooling molten metals in water cauldrons with reusable molds.
 * **[Complete Mineral Catalog](Minerals.md)**: Exhaustive breakdown of all **90 materials** (30 Overworld, 30 Nether, 30 The End) with traits, smelting durations, and colors.
+* **[Forge Traits & Mineral Effects](Traits-and-Effects.md)**: Full reference guide for all **90 mineral traits**, combat effects, stat bonuses, and unique physical perks.
 
 ---
 

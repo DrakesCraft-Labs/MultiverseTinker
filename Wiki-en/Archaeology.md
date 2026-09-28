@@ -34,12 +34,19 @@ MultiverseTinker replaces traditional chunk-based ore worldgen with an interacti
 
 ---
 
-## 4. Archaeological Prospector Brush (`mvtink_brush_prospector`)
+## 4. Brush Comparison: Standard vs. Prospector Brush
 
-A specialized survival excavation tool crafted with gold, copper, an amethyst shard, and a vanilla brush:
+MultiverseTinker features two excavation tiers with fundamentally distinct yield distributions:
 
-* **+40% Brushing Speed**: Completes excavation in just 3 interaction pulses (<1 second).
-* **+15% Success Chance Bonus**: Overworld 60%, Nether 55%, The End 50%.
-* **Geological Luck**: **2x chance** to roll Rare, Epic, and Legendary minerals.
-* **Reinforced Bristles**: **50% chance** to negate durability loss per completed extraction.
-* **Visual FX**: Golden shimmer and mystical enchantment particles during excavation.
+| Feature / Yield | Standard Vanilla Brush (`BRUSH`) | Archaeological Prospector Brush (`mvtink_brush_prospector`) |
+|---|---|---|
+| **Excavation Speed** | Standard (6 progress / pulse) | **+40% Faster** (10 progress / pulse) |
+| **Base Success Rate** | 45% Overworld / 40% Nether / 35% End | **+15% Higher** (60% / 55% / 50%) |
+| **Rare / Epic / Legendary Luck** | $1\times$ Standard Weights | **$2\times$ Weight Multiplier** |
+| **Durability Preservation** | None (1 dmg per completed cycle) | **50% Chance** to negate durability loss |
+| **Raw Ore Yield (`mvtink_*_raw`)** | **70%** (used in Smeltery to cast 1 Ingot) | **55%** |
+| **Nugget Yield (`mvtink_*_nugget`)** | **30%** (1 Nugget) | **25%** (1 to 3 Nuggets) |
+| **Storage Block Yield (`mvtink_*_block`)** | ❌ **0% (Cannot drop blocks)** | ⭐ **20% (Jackpot drop: full 9x block!)** |
+
+### Synergy with the Block Cast (`mvtink_cast_block`)
+While the Standard Brush strictly limits discoveries to single Raw Ores and loose Nuggets, the Prospector Brush enables players to unearth full mineral blocks. Combined with the **Block Cast** in the Smeltery Casting basin, players can compact and manage high-tier metallurgical production without manual $9\times$ crafting.

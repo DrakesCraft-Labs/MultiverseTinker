@@ -14,7 +14,7 @@
 
 Parte del **Ecosistema Soberano Multiverse de Chagui68** junto a [MultiverseNets](https://github.com/DrakesCraft-Labs/MultiverseNets), [MultiverseCreatures](https://github.com/DrakesCraft-Labs/MultiverseCreatures) y [MultiverseProgramming](https://github.com/DrakesCraft-Labs/MultiverseProgramming).
 
-[📖 Wiki en Español](Wiki-es/Home.md) · [📖 English Wiki](Wiki-en/Home.md) · [English (README)](README.md)
+[📖 Wiki en Español](Wiki-es/Home.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [📖 English Wiki](Wiki-en/Home.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [English (README)](README.md)
 
 </div>
 
@@ -46,7 +46,8 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 * **The Nether**: Netherrack, Piedra Negra, Basalto (Cobalto, Ardita, Azufre, Sangrita, Tungsteno, Witherita, etc.).
 * **The End**: Piedra del End (Enderita, Adamantium, Adamita, Celestina, Vacuita, Cosmium, Singularita, etc.).
 * **Degradación Geológica**: El bloque se desgasta de forma natural con el uso sostenido (`Piedra -> Adoquín -> Grava -> Aire`) con enfriamiento anti-macros.
-* **Brocha de Prospector (`mvtink_brush_prospector`)**: Herramienta especializada con **+40% de velocidad**, **+15% de probabilidad de éxito**, **doble suerte para minerales Raros/Épicos/Legendarios** y **50% de probabilidad de no gastar durabilidad**.
+* **Rendimiento de Brocha Normal**: Extrae Minerales en Bruto (70%) o Pepitas individuales (30%). No puede extraer bloques completos de almacenamiento.
+* **Brocha de Prospector (`mvtink_brush_prospector`)**: Herramienta especializada con **+40% de velocidad**, **+15% de probabilidad de éxito**, **doble suerte para minerales Raros/Épicos/Legendarios**, **50% de probabilidad de no gastar durabilidad**, y la capacidad única de desenterrar **Bloques de Almacenamiento completos** (20% de probabilidad jackpot), Minerales en Bruto (55%) o 1–3 Pepitas (25%).
 
 ---
 
