@@ -116,6 +116,59 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
 
+            case "forge" -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(miniMessage.deserialize("<red>This command can only be executed by in-game players.</red>"));
+                    return true;
+                }
+
+                if (args.length < 2) {
+                    player.sendMessage(miniMessage.deserialize("<red>Usage: /" + label + " forge <build|check|gui> [rotation]</red>"));
+                    return true;
+                }
+
+                String forgeSub = args[1].toLowerCase(Locale.ROOT);
+                switch (forgeSub) {
+                    case "build" -> {
+                        int rot = 0;
+                        if (args.length >= 3) {
+                            try {
+                                rot = Integer.parseInt(args[2]);
+                            } catch (NumberFormatException ignored) {}
+                        }
+                        org.bukkit.Location loc = player.getLocation().getBlock().getLocation();
+                        plugin.getForgeManager().buildStructure(loc, rot);
+                        player.sendMessage(miniMessage.deserialize("<green>✔ Successfully constructed Multiverse Forge structure at your location (Rotation " + rot + "°)!</green>"));
+                        return true;
+                    }
+                    case "check" -> {
+                        org.bukkit.block.Block target = player.getTargetBlockExact(6);
+                        if (target == null || (target.getType() != org.bukkit.Material.ANVIL
+                                && target.getType() != org.bukkit.Material.CHIPPED_ANVIL
+                                && target.getType() != org.bukkit.Material.DAMAGED_ANVIL)) {
+                            player.sendMessage(miniMessage.deserialize("<red>⚠ Look at a central Anvil to check its multiblock structure.</red>"));
+                            return true;
+                        }
+                        com.chagui68.multiversetinker.forge.structure.ForgeStructure.ValidationResult res = plugin.getForgeManager().checkForge(target.getLocation());
+                        if (res.isValid()) {
+                            player.sendMessage(miniMessage.deserialize("<green>✔ Multiverse Forge is VALID! (" + res.matchedBlocks() + "/" + res.totalBlocks() + " blocks matched, " + String.format(java.util.Locale.US, "%.1f", res.percentage()) + "%, rotation " + res.rotation() + "°).</green>"));
+                        } else {
+                            player.sendMessage(miniMessage.deserialize("<yellow>⚠ Multiverse Forge is INCOMPLETE: (" + res.matchedBlocks() + "/" + res.totalBlocks() + " blocks matched, " + String.format(java.util.Locale.US, "%.1f", res.percentage()) + "%). Missing blocks or lava columns.</yellow>"));
+                        }
+                        return true;
+                    }
+                    case "gui" -> {
+                        com.chagui68.multiversetinker.forge.gui.ForgeGUI gui = new com.chagui68.multiversetinker.forge.gui.ForgeGUI(plugin, itemRegistry, materialRegistry);
+                        player.openInventory(gui.getInventory());
+                        return true;
+                    }
+                    default -> {
+                        player.sendMessage(miniMessage.deserialize("<red>Unknown forge subcommand: " + forgeSub + ". Use: build, check, gui.</red>"));
+                        return true;
+                    }
+                }
+            }
+
             default -> {
                 sendHelp(sender, label);
                 return true;
@@ -125,8 +178,9 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
     private void sendHelp(CommandSender sender, String label) {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give items, tools, raw ores, ingots, casts, or the prospector brush.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " list [OVERWORLD|NETHER|THE_END]</yellow> <gray>- List all 45 geological materials.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give items, parts, tools, raw ores, ingots, casts, or prospector brush.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " list [OVERWORLD|NETHER|THE_END]</yellow> <gray>- List all 90 geological materials.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " reload</yellow> <gray>- Reload configuration and caches.</gray>"));
     }
 
@@ -137,7 +191,15 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return filter(List.of("give", "list", "reload"), args[0]);
+            return filter(List.of("give", "forge", "list", "reload"), args[0]);
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("forge")) {
+            return filter(List.of("build", "check", "gui"), args[1]);
+        }
+
+        if (args.length == 3 && args[0].equalsIgnoreCase("forge") && args[1].equalsIgnoreCase("build")) {
+            return filter(List.of("0", "90", "180", "270"), args[2]);
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("give")) {

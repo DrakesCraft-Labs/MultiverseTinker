@@ -19,6 +19,9 @@ public class TinkerItemRegistry {
     private final Map<String, ItemStack> nuggetItems = new ConcurrentHashMap<>();
     private final Map<String, ItemStack> blockItems = new ConcurrentHashMap<>();
     private final Map<String, ItemStack> moltenBucketItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> toolHeadItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> toolRodItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> toolBindingItems = new ConcurrentHashMap<>();
     private final Map<CastType, ItemStack> castItems = new EnumMap<>(CastType.class);
 
     private final Map<String, ItemStack> allItemsById = new ConcurrentHashMap<>();
@@ -37,6 +40,9 @@ public class TinkerItemRegistry {
         nuggetItems.clear();
         blockItems.clear();
         moltenBucketItems.clear();
+        toolHeadItems.clear();
+        toolRodItems.clear();
+        toolBindingItems.clear();
         castItems.clear();
         allItemsById.clear();
 
@@ -60,12 +66,18 @@ public class TinkerItemRegistry {
             ItemStack nugget = TinkerItemBuilder.createNugget(material);
             ItemStack block = TinkerItemBuilder.createBlock(material);
             ItemStack moltenBucket = TinkerItemBuilder.createMoltenBucket(material);
+            ItemStack head = TinkerItemBuilder.createToolHead(material);
+            ItemStack rod = TinkerItemBuilder.createToolRod(material);
+            ItemStack binding = TinkerItemBuilder.createToolBinding(material);
 
             rawItems.put(baseId, raw);
             ingotItems.put(baseId, ingot);
             nuggetItems.put(baseId, nugget);
             blockItems.put(baseId, block);
             moltenBucketItems.put(baseId, moltenBucket);
+            toolHeadItems.put(baseId, head);
+            toolRodItems.put(baseId, rod);
+            toolBindingItems.put(baseId, binding);
 
             allItemsById.put(baseId + "_raw", raw);
             allItemsById.put(baseId + "_ingot", ingot);
@@ -73,8 +85,29 @@ public class TinkerItemRegistry {
             allItemsById.put(baseId + "_nugget", nugget);
             allItemsById.put(baseId + "_block", block);
             allItemsById.put(baseId + "_molten_bucket", moltenBucket);
+            allItemsById.put(baseId + "_head", head);
+            allItemsById.put(baseId + "_rod", rod);
+            allItemsById.put(baseId + "_binding", binding);
             allItemsById.put(baseId, raw); // Default to raw if only base ID provided
         }
+    }
+
+    @Nullable
+    public ItemStack getToolHeadItem(@Nonnull String materialId) {
+        ItemStack item = toolHeadItems.get(materialId.toLowerCase(Locale.ROOT));
+        return item != null ? item.clone() : null;
+    }
+
+    @Nullable
+    public ItemStack getToolRodItem(@Nonnull String materialId) {
+        ItemStack item = toolRodItems.get(materialId.toLowerCase(Locale.ROOT));
+        return item != null ? item.clone() : null;
+    }
+
+    @Nullable
+    public ItemStack getToolBindingItem(@Nonnull String materialId) {
+        ItemStack item = toolBindingItems.get(materialId.toLowerCase(Locale.ROOT));
+        return item != null ? item.clone() : null;
     }
 
     @Nullable

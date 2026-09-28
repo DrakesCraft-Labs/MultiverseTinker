@@ -1,6 +1,8 @@
 package com.chagui68.multiversetinker.items;
 
 import com.chagui68.multiversetinker.api.CastType;
+import com.chagui68.multiversetinker.api.ModularToolType;
+import com.chagui68.multiversetinker.api.ToolPartType;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import net.kyori.adventure.text.Component;
@@ -361,6 +363,243 @@ public class TinkerItemBuilder {
         pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, "mvtink_brush_prospector");
         pdc.set(TinkerKeys.IS_TINKER_ITEM, PersistentDataType.BYTE, (byte) 1);
         pdc.set(TinkerKeys.PROSPECTOR_BRUSH, PersistentDataType.BYTE, (byte) 1);
+
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    @Nonnull
+    public static ItemStack createToolHead(@Nonnull TinkerMaterial material) {
+        ItemStack item = new ItemStack(material.getProcessedVanillaMaterial());
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return item;
+        }
+
+        String displayNameMini = "<gradient:#ffffff:" + material.getColorHex() + ">"
+                + material.getName() + " Tool Head</gradient>";
+        meta.displayName(MINI_MESSAGE.deserialize(displayNameMini).decoration(TextDecoration.ITALIC, false));
+
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("Part: ", NamedTextColor.GRAY)
+                .append(Component.text("Modular Tool Head (Cabeza)", NamedTextColor.GOLD))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("Material: ", NamedTextColor.GRAY)
+                .append(Component.text(material.getName(), NamedTextColor.WHITE))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Head Properties:", NamedTextColor.YELLOW)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Mining Speed: " + material.getMiningSpeed() + "x", NamedTextColor.WHITE)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Attack Damage: +" + material.getAttackDamage(), NamedTextColor.WHITE)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Primary Trait: " + material.getTraitName(), NamedTextColor.AQUA)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("    " + material.getTraitDescription(), NamedTextColor.DARK_AQUA)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        lore.add(Component.text("Combine in the Multiverse Forge Anvil to assemble.", NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_head</dark_gray>")
+                .decoration(TextDecoration.ITALIC, false));
+
+        meta.lore(lore);
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, material.getId() + "_head");
+        pdc.set(TinkerKeys.MATERIAL_ID, PersistentDataType.STRING, material.getId());
+        pdc.set(TinkerKeys.IS_TINKER_ITEM, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.IS_TOOL_PART, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.TOOL_PART_TYPE, PersistentDataType.STRING, ToolPartType.HEAD.name());
+
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    @Nonnull
+    public static ItemStack createToolRod(@Nonnull TinkerMaterial material) {
+        Material rodMat = switch (material.getOrigin()) {
+            case NETHER -> Material.BLAZE_ROD;
+            case THE_END -> Material.BREEZE_ROD;
+            default -> Material.STICK;
+        };
+
+        ItemStack item = new ItemStack(rodMat);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return item;
+        }
+
+        String displayNameMini = "<gradient:#ffffff:" + material.getColorHex() + ">"
+                + material.getName() + " Tool Rod</gradient>";
+        meta.displayName(MINI_MESSAGE.deserialize(displayNameMini).decoration(TextDecoration.ITALIC, false));
+
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("Part: ", NamedTextColor.GRAY)
+                .append(Component.text("Modular Tool Handle/Rod (Palo)", NamedTextColor.GOLD))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("Material: ", NamedTextColor.GRAY)
+                .append(Component.text(material.getName(), NamedTextColor.WHITE))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Rod Properties:", NamedTextColor.YELLOW)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Base Durability: +" + material.getDurability(), NamedTextColor.WHITE)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Handle Trait: " + material.getTraitName(), NamedTextColor.AQUA)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("    " + material.getTraitDescription(), NamedTextColor.DARK_AQUA)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        lore.add(Component.text("Combine in the Multiverse Forge Anvil to assemble.", NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_rod</dark_gray>")
+                .decoration(TextDecoration.ITALIC, false));
+
+        meta.lore(lore);
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, material.getId() + "_rod");
+        pdc.set(TinkerKeys.MATERIAL_ID, PersistentDataType.STRING, material.getId());
+        pdc.set(TinkerKeys.IS_TINKER_ITEM, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.IS_TOOL_PART, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.TOOL_PART_TYPE, PersistentDataType.STRING, ToolPartType.ROD.name());
+
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    @Nonnull
+    public static ItemStack createToolBinding(@Nonnull TinkerMaterial material) {
+        Material bindingMat = switch (material.getOrigin()) {
+            case NETHER -> Material.MAGMA_CREAM;
+            case THE_END -> Material.PHANTOM_MEMBRANE;
+            default -> Material.LEATHER;
+        };
+
+        ItemStack item = new ItemStack(bindingMat);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return item;
+        }
+
+        String displayNameMini = "<gradient:#ffffff:" + material.getColorHex() + ">"
+                + material.getName() + " Tool Binding</gradient>";
+        meta.displayName(MINI_MESSAGE.deserialize(displayNameMini).decoration(TextDecoration.ITALIC, false));
+
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("Part: ", NamedTextColor.GRAY)
+                .append(Component.text("Modular Tool Binding (Mango/Unión)", NamedTextColor.GOLD))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("Material: ", NamedTextColor.GRAY)
+                .append(Component.text(material.getName(), NamedTextColor.WHITE))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Binding Properties:", NamedTextColor.YELLOW)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Auxiliary Durability: +" + (material.getDurability() / 2), NamedTextColor.WHITE)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Secondary Trait: " + material.getTraitName(), NamedTextColor.AQUA)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("    " + material.getTraitDescription(), NamedTextColor.DARK_AQUA)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        lore.add(Component.text("Combine in the Multiverse Forge Anvil to assemble.", NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_binding</dark_gray>")
+                .decoration(TextDecoration.ITALIC, false));
+
+        meta.lore(lore);
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, material.getId() + "_binding");
+        pdc.set(TinkerKeys.MATERIAL_ID, PersistentDataType.STRING, material.getId());
+        pdc.set(TinkerKeys.IS_TINKER_ITEM, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.IS_TOOL_PART, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.TOOL_PART_TYPE, PersistentDataType.STRING, ToolPartType.BINDING.name());
+
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    @Nonnull
+    public static ItemStack createModularTool(@Nonnull ModularToolType toolType,
+                                              @Nonnull TinkerMaterial head,
+                                              @Nonnull TinkerMaterial rod,
+                                              @Nonnull TinkerMaterial binding) {
+        ItemStack item = new ItemStack(toolType.getBaseMaterial());
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return item;
+        }
+
+        int totalDurability = head.getDurability() + rod.getDurability() + (binding.getDurability() / 2);
+        double miningSpeed = head.getMiningSpeed();
+        double attackDamage = 4.0 + head.getAttackDamage() + (rod.getAttackDamage() / 3.0);
+
+        String displayNameMini = "<gradient:" + head.getColorHex() + ":" + rod.getColorHex() + ">"
+                + head.getName() + " " + toolType.getDisplayName() + "</gradient>";
+        meta.displayName(MINI_MESSAGE.deserialize(displayNameMini).decoration(TextDecoration.ITALIC, false));
+
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("Modular Forged Equipment", NamedTextColor.GOLD)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("• Head: ", NamedTextColor.GRAY)
+                .append(Component.text(head.getName(), NamedTextColor.WHITE))
+                .append(Component.text(" (" + head.getTraitName() + ")", NamedTextColor.AQUA))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("• Handle: ", NamedTextColor.GRAY)
+                .append(Component.text(rod.getName(), NamedTextColor.WHITE))
+                .append(Component.text(" (" + rod.getTraitName() + ")", NamedTextColor.AQUA))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("• Binding: ", NamedTextColor.GRAY)
+                .append(Component.text(binding.getName(), NamedTextColor.WHITE))
+                .append(Component.text(" (" + binding.getTraitName() + ")", NamedTextColor.AQUA))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Modular Attributes:", NamedTextColor.YELLOW)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Durability: " + totalDurability + " / " + totalDurability, NamedTextColor.WHITE)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Mining Speed: " + String.format(java.util.Locale.US, "%.1f", miningSpeed) + "x", NamedTextColor.WHITE)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Attack Damage: +" + String.format(java.util.Locale.US, "%.1f", attackDamage), NamedTextColor.WHITE)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Active Traits:", NamedTextColor.GOLD)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • " + head.getTraitName() + ": " + head.getTraitDescription(), NamedTextColor.DARK_AQUA)
+                .decoration(TextDecoration.ITALIC, false));
+        if (!rod.getId().equals(head.getId())) {
+            lore.add(Component.text("  • " + rod.getTraitName() + ": " + rod.getTraitDescription(), NamedTextColor.DARK_AQUA)
+                    .decoration(TextDecoration.ITALIC, false));
+        }
+        if (!binding.getId().equals(head.getId()) && !binding.getId().equals(rod.getId())) {
+            lore.add(Component.text("  • " + binding.getTraitName() + ": " + binding.getTraitDescription(), NamedTextColor.DARK_AQUA)
+                    .decoration(TextDecoration.ITALIC, false));
+        }
+        lore.add(Component.empty());
+        lore.add(Component.text("⚒ Forged in the Multiverse Forge Anvil", NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+
+        meta.lore(lore);
+        meta.setUnbreakable(false);
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(TinkerKeys.IS_TINKER_ITEM, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.IS_MODULAR_TOOL, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.TOOL_TYPE, PersistentDataType.STRING, toolType.name());
+        pdc.set(TinkerKeys.TOOL_HEAD_MAT, PersistentDataType.STRING, head.getId());
+        pdc.set(TinkerKeys.TOOL_ROD_MAT, PersistentDataType.STRING, rod.getId());
+        pdc.set(TinkerKeys.TOOL_BINDING_MAT, PersistentDataType.STRING, binding.getId());
+        pdc.set(TinkerKeys.TOOL_MAX_DURABILITY, PersistentDataType.INTEGER, totalDurability);
+        pdc.set(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, totalDurability);
+        pdc.set(TinkerKeys.TOOL_MINING_SPEED, PersistentDataType.FLOAT, (float) miningSpeed);
+        pdc.set(TinkerKeys.TOOL_ATTACK_DAMAGE, PersistentDataType.FLOAT, (float) attackDamage);
 
         item.setItemMeta(meta);
         return item;

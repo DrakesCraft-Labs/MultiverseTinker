@@ -14,7 +14,7 @@
 
 Parte del **Ecosistema Soberano Multiverse de Chagui68** junto a [MultiverseNets](https://github.com/DrakesCraft-Labs/MultiverseNets), [MultiverseCreatures](https://github.com/DrakesCraft-Labs/MultiverseCreatures) y [MultiverseProgramming](https://github.com/DrakesCraft-Labs/MultiverseProgramming).
 
-[📖 Wiki en Español](Wiki-es/Home.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [📖 English Wiki](Wiki-en/Home.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [English (README)](README.md)
+[📖 Wiki en Español](Wiki-es/Home.md) · [🏛️ Estructura Forja](Wiki-es/Estructura-Forja.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [📖 English Wiki](Wiki-en/Home.md) · [🏛️ Forge Multiblock](Wiki-en/Forge-Structure.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [English (README)](README.md)
 
 </div>
 
@@ -75,6 +75,21 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 
 ---
 
+### 4. 🏛️ Estructura Multibloque de la Forja (`forge.nbt`)
+* **Construcción Monumental ($11 \times 7 \times 11$)**:
+  * Centrada en torno a un Yunque central, construida con Ladrillos de Toba Cincelados, Baldosas y Ladrillos de Pizarra Profunda, Losas/Escaleras de Ladrillos de Toba y 4 pilares esquineros de Lava térmica (243 bloques en total).
+  * Admite las 4 rotaciones cardinales ($0^\circ, 90^\circ, 180^\circ, 270^\circ$).
+* **Simulación y Barrido de Partículas**:
+  * Al completar la estructura, hacer click derecho al yunque detona una animación de validación con llamaradas por los pilares de lava, barrido de glifos por el suelo y destello con sonido de faro.
+* **Aura Ambiental en el Yunque**:
+  * Los yunques de forjas activas irradian una pequeña aura continua de brasas giratorias, llamas suaves y humo cálido.
+* **GUI Personalizada de la Forja**:
+  * Sustituye la interfaz de yunque de Minecraft por un panel exclusivo de 54 ranuras:
+    * **Forja de Partes**: Combina Balde Fundido + Molde (Cabeza, Palo, Mango) -> ¡Piezas forjadas del material!
+    * **Ensamblado Modular**: Une [Cabeza] + [Palo] + [Mango] -> Herramienta modular terminada (Pico, Espada, Hacha, Pala, Azada) que hereda los rasgos físicos de los 3 minerales.
+
+---
+
 ## 🍳 Recetas de Supervivencia
 
 | Objeto | Cuadrícula (3×3) | Ingredientes |
@@ -84,12 +99,18 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 | **Molde de Lingotes** | <pre>B B B<br/>B · B<br/>B B B</pre> | B = Ladrillo de arcilla (centro vacío) |
 | **Molde de Pepitas** | <pre>B · B<br/>· C ·<br/>B · B</pre> | B = Ladrillo de arcilla · C = Bola de arcilla |
 | **Molde de Bloques** | <pre>B B B<br/>B I B<br/>B B B</pre> | B = Ladrillo de arcilla · I = Bloque de hierro |
+| **Molde de Cabeza** | <pre>B G B<br/>B · B<br/>B B B</pre> | B = Ladrillo de arcilla · G = Lingote de oro |
+| **Molde de Palo / Varilla** | <pre>B C B<br/>B · B<br/>B · B</pre> | B = Ladrillo de arcilla · C = Lingote de cobre |
+| **Molde de Mango / Unión** | <pre>B I B<br/>· C ·<br/>B B B</pre> | B = Ladrillo de arcilla · I = Lingote de hierro · C = Bola de arcilla |
 
 ---
 
 ## 💻 Comandos y Permisos
 
-* `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier mineral (raw, ingot, nugget, block, molten bucket), molde, crisol o brocha.
+* `/mvtink forge build [0|90|180|270]` — Construye la estructura completa de la forja en la ubicación del jugador.
+* `/mvtink forge check` — Valida el yunque al que estás apuntando y muestra el porcentaje de coincidencia.
+* `/mvtink forge gui` — Abre directamente la interfaz gráfica de la Forja Multiverse.
+* `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha).
 * `/mvtink list [OVERWORLD|NETHER|THE_END]` — Lista los 90 minerales con sus rasgos, rarezas y colores.
 * `/mvtink reload` — Recarga la configuración y las tablas de arqueología.
 

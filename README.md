@@ -14,7 +14,7 @@
 
 Part of **Chagui68's Sovereign Multiverse Suite** alongside [MultiverseNets](https://github.com/DrakesCraft-Labs/MultiverseNets), [MultiverseCreatures](https://github.com/DrakesCraft-Labs/MultiverseCreatures), and [MultiverseProgramming](https://github.com/DrakesCraft-Labs/MultiverseProgramming).
 
-[📖 English Wiki](Wiki-en/Home.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [📖 Wiki en Español](Wiki-es/Home.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [Español (README)](README_ES.md)
+[📖 English Wiki](Wiki-en/Home.md) · [🏛️ Forge Multiblock](Wiki-en/Forge-Structure.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [📖 Wiki en Español](Wiki-es/Home.md) · [🏛️ Estructura Forja](Wiki-es/Estructura-Forja.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [Español (README)](README_ES.md)
 
 </div>
 
@@ -75,6 +75,21 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 
 ---
 
+### 4. 🏛️ The Multiverse Forge Multiblock (`forge.nbt`)
+* **Monumental Structure ($11 \times 7 \times 11$)**:
+  * Centered on a central Anvil, constructed with Chiseled Tuff Bricks, Deepslate Tiles, Deepslate Bricks, Tuff Brick Slabs/Stairs, and 4 corner thermal Lava columns (243 blocks total).
+  * Supports all 4 cardinal rotations ($0^\circ, 90^\circ, 180^\circ, 270^\circ$).
+* **Validation Particle Sweep**:
+  * When completed, right-clicking the anvil triggers a dramatic multi-phase particle simulation across the lava pillars, floor, and anvil with beacon activation audio.
+* **Ambient Anvil Aura**:
+  * Active forge anvils radiate continuous orbiting embers, flame particles, and warm smoke.
+* **Custom Forge GUI**:
+  * Replaces the vanilla anvil GUI with a dedicated 54-slot interface:
+    * **Part Forging**: Combine Molten Bucket + Cast (Head, Rod, Binding) -> Forged Tool Parts!
+    * **Modular Tool Assembly**: Combine [Head] + [Rod] + [Binding] -> Assembled Modular Tool inheriting all 3 minerals' traits, mining speeds, attack damage, and durabilities!
+
+---
+
 ## 🍳 Survival Crafting Recipes
 
 | Item | Grid (3×3) | Ingredients |
@@ -84,13 +99,19 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 | **Ingot Cast** | <pre>B B B<br/>B · B<br/>B B B</pre> | B = Clay Brick (hollow center) |
 | **Nugget Cast** | <pre>B · B<br/>· C ·<br/>B · B</pre> | B = Clay Brick · C = Clay Ball |
 | **Block Cast** | <pre>B B B<br/>B I B<br/>B B B</pre> | B = Clay Brick · I = Iron Block |
+| **Tool Head Cast** | <pre>B G B<br/>B · B<br/>B B B</pre> | B = Clay Brick · G = Gold Ingot |
+| **Tool Rod Cast** | <pre>B C B<br/>B · B<br/>B · B</pre> | B = Clay Brick · C = Copper Ingot |
+| **Tool Binding Cast** | <pre>B I B<br/>· C ·<br/>B B B</pre> | B = Clay Brick · I = Iron Ingot · C = Clay Ball |
 
 ---
 
 ## 💻 Commands & Permissions
 
-* `/mvtink give <player> <mvtink_id> [amount]` — Give any mineral (raw, ingot, nugget, block, molten bucket), cast, smeltery, or prospector brush.
-* `/mvtink list [OVERWORLD|NETHER|THE_END]` — Inspect all registered materials, colors, origins, and traits.
+* `/mvtink forge build [0|90|180|270]` — Construct the complete multiblock Forge structure at your location.
+* `/mvtink forge check` — Validate the targeted anvil and display structure match percentage and diagnostics.
+* `/mvtink forge gui` — Open the custom Multiverse Forge GUI directly.
+* `/mvtink give <player> <mvtink_id> [amount]` — Give any item (raw, ingot, nugget, block, molten bucket, tool parts, casts, smeltery, prospector brush).
+* `/mvtink list [OVERWORLD|NETHER|THE_END]` — Inspect all 90 registered materials, colors, origins, and traits.
 * `/mvtink reload` — Reload configuration, items, and loot tables.
 
 **Permissions:**

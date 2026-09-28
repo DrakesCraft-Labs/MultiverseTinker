@@ -50,6 +50,14 @@ public class TinkerMaterial {
     @Nonnull
     private final String traitDescription;
 
+    public int getDurability() {
+        return durabilityBonus;
+    }
+
+    public double getAttackDamage() {
+        return attackDamageBonus;
+    }
+
     /**
      * Validates that the ID starts with 'mvtink_'.
      */

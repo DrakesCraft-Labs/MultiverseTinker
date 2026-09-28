@@ -6,12 +6,15 @@ import com.chagui68.multiversetinker.archaeology.ArchaeologyLootTable;
 import com.chagui68.multiversetinker.archaeology.ArchaeologyManager;
 import com.chagui68.multiversetinker.casting.CastingListener;
 import com.chagui68.multiversetinker.commands.MultiverseTinkerCommand;
+import com.chagui68.multiversetinker.forge.ForgeListener;
+import com.chagui68.multiversetinker.forge.ForgeManager;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.smeltery.SmelteryListener;
 import com.chagui68.multiversetinker.smeltery.SmelteryManager;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.ModularToolListener;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -36,6 +39,8 @@ public class MultiverseTinker extends JavaPlugin {
     private ArchaeologyManager archaeologyManager;
     @Getter
     private SmelteryManager smelteryManager;
+    @Getter
+    private ForgeManager forgeManager;
 
     @Override
     public void onEnable() {
@@ -66,10 +71,16 @@ public class MultiverseTinker extends JavaPlugin {
         // Smeltery System
         this.smelteryManager = new SmelteryManager(this, materialRegistry, itemRegistry);
 
+        // Forge Multiblock System
+        this.forgeManager = new ForgeManager(this);
+        forgeManager.startAuraTask();
+
         // Register Listeners
         getServer().getPluginManager().registerEvents(new ArchaeologyListener(archaeologyManager), this);
         getServer().getPluginManager().registerEvents(new SmelteryListener(smelteryManager, itemRegistry), this);
         getServer().getPluginManager().registerEvents(new CastingListener(itemRegistry), this);
+        getServer().getPluginManager().registerEvents(new ForgeListener(this, forgeManager, itemRegistry, materialRegistry), this);
+        getServer().getPluginManager().registerEvents(new ModularToolListener(this, materialRegistry), this);
 
         // Register Commands
         PluginCommand cmd = getCommand("multiversetinker");
@@ -96,7 +107,7 @@ public class MultiverseTinker extends JavaPlugin {
         // Register Survival Crafting Recipes
         registerRecipes();
 
-        getLogger().info("MultiverseTinker successfully enabled. Smeltery, Archaeology & Casting online.");
+        getLogger().info("MultiverseTinker successfully enabled. Smeltery, Archaeology, Forge & Modular Tools online.");
     }
 
     private void registerRecipes() {
@@ -150,6 +161,38 @@ public class MultiverseTinker extends JavaPlugin {
             getServer().addRecipe(recipe);
         }
 
+        // Head, Rod, and Binding Cast recipes
+        ItemStack headCast = itemRegistry.getCastItem(CastType.HEAD);
+        if (headCast != null) {
+            NamespacedKey key = new NamespacedKey(this, "mvtink_recipe_cast_head");
+            ShapedRecipe recipe = new ShapedRecipe(key, headCast);
+            recipe.shape("BGB", "B B", "BBB");
+            recipe.setIngredient('B', Material.BRICK);
+            recipe.setIngredient('G', Material.GOLD_INGOT);
+            getServer().addRecipe(recipe);
+        }
+
+        ItemStack rodCast = itemRegistry.getCastItem(CastType.ROD);
+        if (rodCast != null) {
+            NamespacedKey key = new NamespacedKey(this, "mvtink_recipe_cast_rod");
+            ShapedRecipe recipe = new ShapedRecipe(key, rodCast);
+            recipe.shape("BCB", "B B", "B B");
+            recipe.setIngredient('B', Material.BRICK);
+            recipe.setIngredient('C', Material.COPPER_INGOT);
+            getServer().addRecipe(recipe);
+        }
+
+        ItemStack bindingCast = itemRegistry.getCastItem(CastType.BINDING);
+        if (bindingCast != null) {
+            NamespacedKey key = new NamespacedKey(this, "mvtink_recipe_cast_binding");
+            ShapedRecipe recipe = new ShapedRecipe(key, bindingCast);
+            recipe.shape("BIB", " C ", "BBB");
+            recipe.setIngredient('B', Material.BRICK);
+            recipe.setIngredient('I', Material.IRON_INGOT);
+            recipe.setIngredient('C', Material.CLAY_BALL);
+            getServer().addRecipe(recipe);
+        }
+
         // 4. Register 9 Nuggets <-> 1 Ingot & 9 Ingots <-> 1 Block for each material
         for (TinkerMaterial material : materialRegistry.getAll()) {
             String matId = material.getId();
@@ -195,6 +238,9 @@ public class MultiverseTinker extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (forgeManager != null) {
+            forgeManager.stopAuraTask();
+        }
         getLogger().info("MultiverseTinker disabled.");
         instance = null;
     }

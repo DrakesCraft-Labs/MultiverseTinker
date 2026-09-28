@@ -90,6 +90,9 @@ public class CastingListener implements Listener {
                 yield nugget;
             }
             case BLOCK -> itemRegistry.getBlockItem(materialId);
+            case HEAD -> itemRegistry.getToolHeadItem(materialId);
+            case ROD -> itemRegistry.getToolRodItem(materialId);
+            case BINDING -> itemRegistry.getToolBindingItem(materialId);
         };
 
         if (resultItem == null) {

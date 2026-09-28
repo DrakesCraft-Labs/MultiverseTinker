@@ -134,7 +134,7 @@ class MultiverseTinkerPluginTest {
     }
 
     @Test
-    @DisplayName("Every material must have raw, nugget, ingot, molten bucket, and block variants")
+    @DisplayName("Every material must have raw, nugget, ingot, molten bucket, block, head, rod, and binding variants")
     void testAllItemStatesExist() {
         for (com.chagui68.multiversetinker.materials.TinkerMaterial material : plugin.getMaterialRegistry().getAll()) {
             String id = material.getId();
@@ -143,6 +143,31 @@ class MultiverseTinkerPluginTest {
             assertNotNull(plugin.getItemRegistry().getIngotItem(id), "Ingot missing for " + id);
             assertNotNull(plugin.getItemRegistry().getMoltenBucketItem(id), "Molten bucket missing for " + id);
             assertNotNull(plugin.getItemRegistry().getBlockItem(id), "Block missing for " + id);
+            assertNotNull(plugin.getItemRegistry().getToolHeadItem(id), "Tool Head missing for " + id);
+            assertNotNull(plugin.getItemRegistry().getToolRodItem(id), "Tool Rod missing for " + id);
+            assertNotNull(plugin.getItemRegistry().getToolBindingItem(id), "Tool Binding missing for " + id);
         }
+
+        // Verify all 6 casts
+        for (CastType castType : CastType.values()) {
+            assertNotNull(plugin.getItemRegistry().getCastItem(castType), "Cast missing for " + castType);
+        }
+    }
+
+    @Test
+    @DisplayName("ForgeManager can build structure and validate it successfully")
+    void testForgeValidationAndBuild() {
+        assertNotNull(plugin.getForgeManager());
+        org.bukkit.World world = server.addSimpleWorld("forge_world");
+        org.bukkit.Location anvilLoc = new org.bukkit.Location(world, 10, 65, 10);
+
+        plugin.getForgeManager().buildStructure(anvilLoc, 0);
+
+        com.chagui68.multiversetinker.forge.structure.ForgeStructure.ValidationResult res =
+                plugin.getForgeManager().checkForge(anvilLoc);
+
+        assertTrue(res.isValid(), "Constructed Forge multiblock must be valid");
+        assertTrue(res.percentage() >= 90.0, "Constructed Forge must match at least 90%");
+        assertTrue(plugin.getForgeManager().isForge(anvilLoc), "Anvil must be recognized as active forge");
     }
 }
