@@ -780,8 +780,21 @@ public class ForgeGUI implements InventoryHolder {
         if (cast != null) {
             player.getInventory().addItem(cast);
             player.playSound(player.getLocation(), Sound.BLOCK_GRAVEL_PLACE, 1.0f, 1.4f);
-            player.sendMessage(miniMessage.deserialize("<green>✔ Successfully carved " + castType.getDisplayName() + "!</green>"));
+            sendSuccessMessage(player, "Successfully carved", cast);
         }
+    }
+
+    private void sendSuccessMessage(Player player, String actionVerb, @Nullable ItemStack item) {
+        Component itemName = Component.text("Equipment", NamedTextColor.WHITE);
+        if (item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+            Component dn = item.getItemMeta().displayName();
+            if (dn != null) {
+                itemName = dn;
+            }
+        }
+        player.sendMessage(Component.text("✔ " + actionVerb + " ", NamedTextColor.GREEN)
+                .append(itemName)
+                .append(Component.text("!", NamedTextColor.GREEN)));
     }
 
     private void strikeForgePart(Player player) {
@@ -847,7 +860,7 @@ public class ForgeGUI implements InventoryHolder {
 
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
         player.spawnParticle(Particle.LAVA, player.getLocation().add(0, 1, 0), 10, 0.3, 0.3, 0.3, 0.0);
-        player.sendMessage(miniMessage.deserialize("<green>✔ Successfully forged " + forgedPart.getItemMeta().getDisplayName() + "<green>!</green>"));
+        sendSuccessMessage(player, "Successfully forged", forgedPart);
     }
 
     private void handleAlloyClicks(InventoryClickEvent event, Player player, int rawSlot) {
@@ -1010,7 +1023,7 @@ public class ForgeGUI implements InventoryHolder {
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
         player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1.0f, 1.0f);
         player.spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1.2, 0), 30, 0.4, 0.4, 0.4, 0.1);
-        player.sendMessage(miniMessage.deserialize("<green>✔ Masterfully assembled " + weapon.getItemMeta().getDisplayName() + "<green>!</green>"));
+        sendSuccessMessage(player, "Masterfully assembled", weapon);
     }
 
     private void handleToolsClicks(InventoryClickEvent event, Player player, int rawSlot) {
@@ -1083,7 +1096,7 @@ public class ForgeGUI implements InventoryHolder {
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
         player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1.0f, 1.0f);
         player.spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1.2, 0), 30, 0.4, 0.4, 0.4, 0.1);
-        player.sendMessage(miniMessage.deserialize("<green>✔ Masterfully assembled " + tool.getItemMeta().getDisplayName() + "<green>!</green>"));
+        sendSuccessMessage(player, "Masterfully assembled", tool);
     }
 
     private void handleArmorClicks(InventoryClickEvent event, Player player, int rawSlot) {
@@ -1151,7 +1164,7 @@ public class ForgeGUI implements InventoryHolder {
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
         player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1.0f, 1.0f);
         player.spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1.2, 0), 30, 0.4, 0.4, 0.4, 0.1);
-        player.sendMessage(miniMessage.deserialize("<green>✔ Masterfully assembled " + armor.getItemMeta().getDisplayName() + "<green>!</green>"));
+        sendSuccessMessage(player, "Masterfully assembled", armor);
     }
 
     @Nullable
