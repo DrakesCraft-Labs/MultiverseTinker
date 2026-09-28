@@ -31,11 +31,12 @@ Muestra guías interactivas que explican:
 
 ## 🔨 Sección 2: Moldes y Forjado de Partes Multimaterial
 
-### Selector Único de Moldes
-En lugar de filas saturadas, la fila 1 cuenta con un selector central interactivo:
+### Selector Simétrico de Moldes
+La fila 1 cuenta con controles limpios e intuitivos idénticos a los selectores de armas, herramientas y armaduras:
 - **Ranura 12**: Molde Anterior (`◀`)
-- **Ranura 13**: **Selector de Molde** (Clic izquierdo para avanzar, clic derecho para retroceder).
-- **Ranura 14**: **Botón Tallar Molde** (Consume **1 Ladrillo de Arcilla** del inventario).
+- **Ranura 13**: **Selector de Molde** (Muestra el molde activo; clic izquierdo para avanzar, clic derecho para retroceder).
+- **Ranura 14**: Siguiente Molde (`▶`)
+- **Ranura 16**: **⚒ Tallar Molde** (Consume **1 Ladrillo de Arcilla** del inventario para obtener el molde seleccionado).
 
 #### Moldes Disponibles:
 - **Head Cast** (`mvtink_cast_head`): Cabezas de herramientas y hojas de armas.
@@ -50,14 +51,16 @@ En lugar de filas saturadas, la fila 1 cuenta con un selector central interactiv
 - **Armor Trim Cast** (`mvtink_cast_armor_trim`): Ribetes, remaches y cierres.
 - **Moldes de Lingote / Pepita / Bloque**: Conversión de metales fundidos.
 
-### Forjado Multimaterial (1 a 3 Materiales)
-- Coloca **1 Molde** en la **Ranura 29**.
-- Coloca hasta 3 Materiales (Lingotes, Gemas, Minerales o Cubos de Metal Fundido) en las **Ranuras 30, 31 y 32**:
-  - **1 Material**: 100% de concentración (estadísticas completas y 100% activación de rasgo).
-  - **2 Materiales**: Reparto 50% / 50% (ambos rasgos activos con 50% de probabilidad o potencia).
-  - **3 Materiales**: Reparto 33.3% / 33.3% / 33.4% equilibrado entre los 3 rasgos.
-- Haz clic en **⚒ Golpear Yunque y Forjar Parte** (Ranura 40) para obtener la parte en la **Ranura 33**.
-- ¡Los moldes son **reutilizables** y nunca se consumen!
+### Forjado Multimaterial con Separación Física y 3 Materiales Obligatorios
+La zona de forja en la fila 3 está visualmente y físicamente dividida mediante barrotes de hierro reforzados para evitar confusiones:
+- **Ranura 28**: **Molde / Cast** Requerido (¡Reutilizable, nunca se destruye!).
+- **Ranura 29**: ▌ Barrotes de Hierro (Separador físico).
+- **Ranuras 30, 31 y 32**: **Los 3 Materiales OBLIGATORIOS** (Lingotes, Gemas, Minerales o Cubos de Metal Fundido).
+  - Los 3 materiales son estrictamente necesarios para fundir y templar la pieza.
+  - La concentración se divide de manera proporcional (33.3% / 33.3% / 33.4%), permitiendo combinar hasta 3 rasgos de minerales diferentes en una sola pieza.
+- **Ranura 33**: ▌ Barrotes de Hierro (Separador físico).
+- **Ranura 34**: **Ranura de Salida** (Muestra la parte forjada lista para recoger).
+- Haz clic en el botón central **⚒ Golpear Yunque y Forjar Parte** (Ranura 40) para completar el forjado.
 
 ---
 
@@ -136,12 +139,28 @@ Haz clic en el **Selector de Armaduras** (Ranura 13) para alternar entre las 4 p
 - **Ribete de Armadura (Armor Trim)**: Refuerzos, remaches y hebillas. Determina la resistencia al empuje (knockback resistance) y rasgos de utilidad pasiva.
 
 ### Evolución de Tiers de Armaduras
-- Cada pieza inicia en **Tier Madera** (`0` daño absorbido).
-- Al absorber daño en combate, la armadura acumula progreso:
-  `Madera → Piedra (50 daño) → Cobre (150) → Hierro (350) → Oro (750) → Diamante (1500) → Netherite (3000)`.
-- Conforme evoluciona, el material base de Minecraft se transforma automáticamente (Cuero → Malla → Hierro → Oro → Diamante → Netherite), aumentando drásticamente la protección, durabilidad y dureza.
+- Cada pieza inicia en **Tier Cuero (Leather Tier)** (`0` daño absorbido).
+- Al absorber daño en combate, la armadura acumula progreso y evoluciona en este orden exacto:
+  `Cuero (0 daño) → Cobre (50 daño) → Malla (150 daño) → Hierro (350 daño) → Oro (750 daño) → Diamante (1500 daño) → Netherite (3000 daño)`.
+- Conforme evoluciona, el material base de Minecraft se transforma automáticamente, aumentando drásticamente los puntos de armadura, durabilidad y dureza.
 - **Ventajas Especiales de Armadura**:
   - **Casco (Cranium Ward)**: Reduce el daño crítico a la cabeza e inmunidad a peligros ambientales.
   - **Pechera (Kinetic Dampener)**: Absorbe el 25% de impactos fuertes y libera energía defensiva.
   - **Pantalones (Stride Momentum)**: Reduce el agotamiento al correr y acelera la recuperación de movimiento.
   - **Botas (Feathered Grounding)**: Anula hasta el 50% del daño por caída y previene resbalones.
+
+---
+
+## ⚡ Comando de Creación Directa (Admin)
+
+Para administradores o pruebas rápidas sin necesidad de armar la estructura física de la Forja:
+```bash
+/mvtink craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]
+```
+- **Categorías**:
+  - `weapon`: `SWORD`, `BOW`, `TRIDENT`, `SPEAR`, `MACE`, `CROSSBOW`, `SHIELD`.
+  - `tool`: `PICKAXE`, `AXE`, `HOE`, `SHOVEL`, `FISHING_ROD`.
+  - `armor`: `HELMET`, `CHESTPLATE`, `LEGGINGS`, `BOOTS`.
+- **Materiales**: Cualquier mineral o aleación del plugin (por ejemplo: `gold`, `diamond`, `ruby`, `borax`, `titanium`, `manyullyn`, etc.).
+- **Tier Opcional**: `WOOD`, `STONE`, `COPPER`, `IRON`, `GOLD`, `DIAMOND`, `NETHERITE` (por defecto `WOOD`).
+- *Ejemplo*: `/mvtink craft weapon SWORD gold ruby sapphire NETHERITE` genera una Espada Ancha de Netherite con 30% daño de oro, filo ígneo de rubí y congelación de zafiro.

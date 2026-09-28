@@ -62,13 +62,14 @@ public class ForgeGUI implements InventoryHolder {
     // Tab 1: Molds & Parts slots
     public static final int SLOT_MOLD_PREV = 12;
     public static final int SLOT_MOLD_SELECTOR = 13;
-    public static final int SLOT_MOLD_CARVE = 14;
+    public static final int SLOT_MOLD_NEXT = 14;
+    public static final int SLOT_MOLD_CARVE = 16;
 
-    public static final int SLOT_PART_CAST = 29;
+    public static final int SLOT_PART_CAST = 28;
     public static final int SLOT_PART_MAT1 = 30;
     public static final int SLOT_PART_MAT2 = 31;
     public static final int SLOT_PART_MAT3 = 32;
-    public static final int SLOT_PART_OUTPUT = 33;
+    public static final int SLOT_PART_OUTPUT = 34;
     public static final int SLOT_PART_STRIKE = 40;
 
     // Tab 2: Alloy Crucible slots
@@ -368,7 +369,7 @@ public class ForgeGUI implements InventoryHolder {
     private void renderTabParts() {
         CastType selectedCast = getSelectedCastType();
 
-        // Row 1: Single Mold Selector & Carve Button
+        // Row 1: Symmetrical Mold Selector (with ◀ and ▶ arrows) and Carve Button
         inventory.setItem(SLOT_MOLD_PREV, createSystemButton(Material.ARROW,
                 "<gold>◀ Previous Mold</gold>",
                 List.of("Click to cycle to the previous mold type.")));
@@ -383,11 +384,12 @@ public class ForgeGUI implements InventoryHolder {
                         selectedCast.getDescription(),
                         "",
                         "Cost: 1 Clay Brick in your inventory.",
-                        "",
-                        "▶ Left-Click to cycle next mold",
-                        "◀ Right-Click to cycle previous mold",
-                        "✔ Click the button to the right to carve"
+                        "Click to cycle next mold"
                 )));
+
+        inventory.setItem(SLOT_MOLD_NEXT, createSystemButton(Material.ARROW,
+                "<gold>Next Mold ▶</gold>",
+                List.of("Click to cycle to the next mold type.")));
 
         inventory.setItem(SLOT_MOLD_CARVE, createSystemButton(Material.BRICK,
                 "<gradient:#e67e22:#d35400><b>⚒ Carve " + selectedCast.getDisplayName() + "</b></gradient>",
@@ -397,28 +399,32 @@ public class ForgeGUI implements InventoryHolder {
                         "Click to carve into your inventory"
                 )));
 
-        // Row 2: Clear, Symmetrical Labels
-        inventory.setItem(20, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold><b>[ Mold / Cast Slot ]</b></gold>"));
-        inventory.setItem(21, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Material 1 (Primary) ]</b></yellow>"));
-        inventory.setItem(22, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Material 2 (Optional) ]</b></yellow>"));
-        inventory.setItem(23, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Material 3 (Optional) ]</b></yellow>"));
-        inventory.setItem(24, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>[ Forged Part Output ]</b></green>"));
+        // Row 2: Symmetrical Labels (Mold clearly separated from the 3 materials)
+        inventory.setItem(19, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold><b>[ Mold / Cast Slot ]</b></gold>"));
+        inventory.setItem(20, createSystemDecor(Material.GRAY_STAINED_GLASS_PANE, "<dark_gray>┃ Divider ┃</dark_gray>"));
+        inventory.setItem(21, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Material 1 (Mandatory) ]</b></yellow>"));
+        inventory.setItem(22, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Material 2 (Mandatory) ]</b></yellow>"));
+        inventory.setItem(23, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Material 3 (Mandatory) ]</b></yellow>"));
+        inventory.setItem(24, createSystemDecor(Material.GRAY_STAINED_GLASS_PANE, "<dark_gray>┃ Divider ┃</dark_gray>"));
+        inventory.setItem(25, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>[ Forged Part Output ]</b></green>"));
 
-        // Row 3: Interactive Slots (Clear to empty)
+        // Row 3: Interactive Slots & Physical Chamber Dividers
         inventory.setItem(SLOT_PART_CAST, null);
+        inventory.setItem(29, createSystemDecor(Material.IRON_BARS, "<dark_gray>┃ Mold Chamber Divider ┃</dark_gray>"));
         inventory.setItem(SLOT_PART_MAT1, null);
         inventory.setItem(SLOT_PART_MAT2, null);
         inventory.setItem(SLOT_PART_MAT3, null);
+        inventory.setItem(33, createSystemDecor(Material.IRON_BARS, "<dark_gray>┃ Output Chamber Divider ┃</dark_gray>"));
         inventory.setItem(SLOT_PART_OUTPUT, null);
 
         // Row 4: Centered Strike Anvil Button
         inventory.setItem(SLOT_PART_STRIKE, createSystemButton(Material.ANVIL,
                 "<gradient:#ffaa00:#ff5500><b>⚒ Strike Anvil & Forge Part</b></gradient>",
                 List.of(
-                        "Place 1 Cast in Slot 29 and 1-3 Materials in Slots 30-32.",
+                        "Place 1 Cast in Slot 28 and all 3 required Materials in Slots 30-32.",
                         "",
-                        "Supports Molten Buckets and Solid Ingots / Minerals.",
-                        "Multi-material parts split traits and stats proportionally!"
+                        "All 3 material slots are strictly mandatory.",
+                        "Multi-material parts combine all 3 traits & stats (33% / 33% / 33%)!"
                 )));
     }
 
@@ -731,16 +737,11 @@ public class ForgeGUI implements InventoryHolder {
             renderTabParts();
             return;
         }
-        if (rawSlot == SLOT_MOLD_SELECTOR) {
+        if (rawSlot == SLOT_MOLD_NEXT || rawSlot == SLOT_MOLD_SELECTOR) {
             event.setCancelled(true);
-            boolean reverse = event.getClick() == ClickType.RIGHT;
-            if (event.isShiftClick()) {
-                carveMold(player, getSelectedCastType());
-            } else {
-                cycleMold(!reverse);
-                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
-                renderTabParts();
-            }
+            cycleMold(true);
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
+            renderTabParts();
             return;
         }
         if (rawSlot == SLOT_MOLD_CARVE) {
@@ -803,8 +804,8 @@ public class ForgeGUI implements InventoryHolder {
         ItemStack mat2 = inventory.getItem(SLOT_PART_MAT2);
         ItemStack mat3 = inventory.getItem(SLOT_PART_MAT3);
 
-        if (castItem == null || mat1 == null) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ Missing components! Place a Cast in slot 29 and at least 1 Material in slot 30.</red>"));
+        if (castItem == null || mat1 == null || mat2 == null || mat3 == null) {
+            player.sendMessage(miniMessage.deserialize("<red>⚠ Missing components! Place a Cast in slot 28 and all 3 required Materials in slots 30, 31, and 32.</red>"));
             player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;
         }
@@ -831,30 +832,22 @@ public class ForgeGUI implements InventoryHolder {
             return;
         }
 
-        List<TinkerMaterial> materials = new ArrayList<>();
         TinkerMaterial m1 = getMaterialFromItem(mat1);
-        if (m1 == null) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ Slot 30 must contain a recognized Tinker Material or Molten Bucket!</red>"));
+        TinkerMaterial m2 = getMaterialFromItem(mat2);
+        TinkerMaterial m3 = getMaterialFromItem(mat3);
+        if (m1 == null || m2 == null || m3 == null) {
+            player.sendMessage(miniMessage.deserialize("<red>⚠ Slots 30, 31, and 32 must all contain recognized Tinker Materials or Molten Buckets!</red>"));
+            player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;
         }
-        materials.add(m1);
 
-        if (mat2 != null && mat2.getType() != Material.AIR) {
-            TinkerMaterial m2 = getMaterialFromItem(mat2);
-            if (m2 != null) materials.add(m2);
-        }
-
-        if (mat3 != null && mat3.getType() != Material.AIR) {
-            TinkerMaterial m3 = getMaterialFromItem(mat3);
-            if (m3 != null) materials.add(m3);
-        }
-
+        List<TinkerMaterial> materials = List.of(m1, m2, m3);
         PartComposition composition = PartComposition.fromMaterials(materials);
         ItemStack forgedPart = TinkerItemBuilder.createModularPart(partType, composition);
 
         decrementSlot(SLOT_PART_MAT1);
-        if (mat2 != null && mat2.getType() != Material.AIR) decrementSlot(SLOT_PART_MAT2);
-        if (mat3 != null && mat3.getType() != Material.AIR) decrementSlot(SLOT_PART_MAT3);
+        decrementSlot(SLOT_PART_MAT2);
+        decrementSlot(SLOT_PART_MAT3);
 
         inventory.setItem(SLOT_PART_OUTPUT, forgedPart);
 

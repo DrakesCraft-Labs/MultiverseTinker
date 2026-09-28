@@ -14,12 +14,12 @@ MultiverseTinker cuenta con **90 minerales geológicos únicos**, cada uno forja
 | **Rubí (Ruby)**<br>`mvtink_ruby` | Raro<br>Gema | **Filo Ígneo** | Inflige quemaduras de alta intensidad al golpear a los enemigos.<br>• *Atributos*: +550 Durabilidad \| 8.5x Velocidad de Minado \| +3.5 Daño |
 | **Zafiro (Sapphire)**<br>`mvtink_sapphire` | Raro<br>Gema | **Glacial** | Enfría y ralentiza el movimiento y la velocidad de ataque del objetivo impactado.<br>• *Atributos*: +580 Durabilidad \| 8.2x Velocidad de Minado \| +3.0 Daño |
 | **Talco (Talc)**<br>`mvtink_talc` | Común<br>Mineral | **Resbaladizo** | Brinda gran velocidad de movimiento y ataque a costa de una menor durabilidad base.<br>• *Atributos*: +80 Durabilidad \| 5.0x Velocidad de Minado \| +0.5 Daño |
-| **Yeso (Gypsum)**<br>`mvtink_gypsum` | Común<br>Mineral | **Moldeable** | Aumenta la eficiencia de los moldes de fundición y acelera el templado en calderos.<br>• *Atributos*: +90 Durabilidad \| 5.2x Velocidad de Minado \| +0.6 Daño |
+| **Yeso (Gypsum)**<br>`mvtink_gypsum` | Común<br>Mineral | **Ligereza Ágil** | Estructura ultraligera que confiere **Velocidad (Speed I)** y **Prisa Minera (Haste I)** al jugador tanto al golpear enemigos con armas/herramientas como al absorber daño con armadura.<br>• *Atributos*: +90 Durabilidad \| 5.2x Velocidad de Minado \| +0.6 Daño |
 | **Pirita (Pyrite)**<br>`mvtink_pyrite` | No Común<br>Mineral | **Chispazo** | Desprende chispas cinéticas abrasivas al impactar, cegando brevemente al rival.<br>• *Atributos*: +160 Durabilidad \| 9.0x Velocidad de Minado \| +1.8 Daño |
 | **Fluorita (Fluorite)**<br>`mvtink_fluorite` | No Común<br>Cristal | **Luminiscente** | Concede Visión Nocturna momentánea al picar minerales en cavernas oscuras.<br>• *Atributos*: +320 Durabilidad \| 7.8x Velocidad de Minado \| +2.0 Daño |
 | **Galena**<br>`mvtink_galena` | Común<br>Metal | **Peso Pesado** | Masa densa que incrementa el empuje físico contra los objetivos golpeados.<br>• *Atributos*: +390 Durabilidad \| 5.5x Velocidad de Minado \| +2.5 Daño |
 | **Magnetita (Magnetite)**<br>`mvtink_magnetite` | No Común<br>Mineral | **Atracción Magnética** | Crea un aura magnética que atrae los bloques y botines excavados al inventario.<br>• *Atributos*: +400 Durabilidad \| 7.0x Velocidad de Minado \| +2.4 Daño |
-| **Bórax (Borax)**<br>`mvtink_borax` | Común<br>Mineral | **Fundente** | Agente que acelera las tasas de fusión en el crisol y la mezcla de aleaciones.<br>• *Atributos*: +120 Durabilidad \| 5.0x Velocidad de Minado \| +1.0 Daño |
+| **Bórax (Borax)**<br>`mvtink_borax` | Común<br>Mineral | **Fundente Ígneo** | Aislamiento térmico: prende en llamas al rival durante 3 a 5 segundos y otorga **Resistencia al Fuego (Fire Resistance)** temporal al portador al atacar o al recibir golpes con armadura.<br>• *Atributos*: +120 Durabilidad \| 5.0x Velocidad de Minado \| +1.0 Daño |
 | **Berilio (Beryllium)**<br>`mvtink_beryllium` | Raro<br>Metal | **Peso Pluma** | Elasticidad ultraligera que confiere **+25% de velocidad de ataque** adicional.<br>• *Atributos*: +620 Durabilidad \| 9.5x Velocidad de Minado \| +2.6 Daño |
 | **Calcita Pura (Pure Calcite)**<br>`mvtink_calcite_gem` | Común<br>Cristal | **Prisma** | Refracta la luz óptica; probabilidad de duplicar orbes de experiencia al minar o derrotar criaturas.<br>• *Atributos*: +200 Durabilidad \| 6.8x Velocidad de Minado \| +1.6 Daño |
 | **Grafito (Graphite)**<br>`mvtink_graphite` | Común<br>Mineral | **Lubricante** | Matriz de carbono estratificado que disminuye el desgaste al minar roca dura.<br>• *Atributos*: +280 Durabilidad \| 6.5x Velocidad de Minado \| +1.7 Daño |
@@ -112,3 +112,77 @@ MultiverseTinker cuenta con **90 minerales geológicos únicos**, cada uno forja
 | **Platino Espacial (Spatial Platinum)**<br>`mvtink_spatial_platinum` | Épico<br>Metal | **Transdimensional** | Mina simultáneamente bloques minerales contiguos conectados en una misma vena.<br>• *Atributos*: +1450 Durabilidad \| 11.0x Velocidad de Minado \| +4.5 Daño |
 | **Pirita del Vacío (Void Pyrite)**<br>`mvtink_void_pyrite` | No Común<br>Mineral | **Chispas del Vacío** | Provoca detonaciones de plasma púrpura al acertar estocadas críticas.<br>• *Atributos*: +450 Durabilidad \| 8.5x Velocidad de Minado \| +2.6 Daño |
 | **Fragmento del Punto Cero (Zero-Point Shard)**<br>`mvtink_zero_point` | Legendario<br>Elemental | **Cero Absoluto** | El frío del vacío cuántico congela e inmoviliza completamente al blanco al impactar.<br>• *Atributos*: +3000 Durabilidad \| 14.5x Velocidad de Minado \| +6.4 Daño |
+
+---
+
+## 🛡 Mecánicas de Rasgos en Armaduras y Ejemplos de Equipamiento
+
+En MultiverseTinker, cada pieza de armadura (Casco, Pechera, Pantalones y Botas) se ensambla a partir de 3 componentes modulares:
+1. **Placa de Armadura (Armor Plate)**: Blindaje primario. Determina los puntos de protección base y activa rasgos defensivos al recibir impactos.
+2. **Malla Interior (Armor Lining)**: Dureza de armadura (Armor Toughness). Concede mitigación pasiva y rasgos de reacción.
+3. **Ribete de Armadura (Armor Trim)**: Resistencia al empuje (Knockback Resistance). Aporta utilidad, agilidad y efectos de soporte al usuario.
+
+Cada componente se forja utilizando **3 materiales obligatorios**, lo que permite combinar hasta **9 concentraciones de minerales en un solo set de armadura**.
+
+---
+
+### ⚡ Activación de Rasgos: Armas vs. Armaduras
+
+| Mineral / Material | Efecto en Armas (Al Golpear) | Efecto en Armaduras (Al Recibir Daño) | Porcentaje / Duración Concreta |
+|---|---|---|---|
+| **Oro (Gold)** | **+30% de Daño de Ataque** adicional proporcional a la concentración. | Emite partículas doradas de prosperidad y aumenta la suerte del usuario al absorber daño. | `+30% Attack Damage` |
+| **Plata (Silver)** | **+30% de Daño Sagrado** contra no-muertos (Zombis, Esqueletos, Withers, Phantoms). | Refleja un contraataque sagrado contra criaturas no-muertas que te golpeen. | `+30% Daño Sagrado` |
+| **Titanio (Titanium)** | Otorga **Resistencia I (Resistance)** al usuario al golpear enemigos. | Otorga **Resistencia I (Resistance)** al usuario al recibir daño, reduciendo un 20% de daño extra entrante. | 4 segundos (`Resistance I`) |
+| **Antimonita (Stibnite)** | Aplica daño perforante al objetivo impactado. | **Espinas Sulfúricas**: Inflige daño punzante directo de vuelta al atacante (`2.0` de daño por golpe). | `2.0 Daño Reflejado` |
+| **Yeso (Gypsum)** | Concede **Velocidad (Speed I)** y **Prisa (Haste I)** al jugador tras golpear. | Concede ráfagas de **Velocidad (Speed I)** y **Prisa (Haste I)** al usuario al ser golpeado, facilitando el contraataque y escape. | 4 segundos (`Speed I + Haste I`) |
+| **Bórax (Borax)** | Prende en llamas al objetivo e imbuye al usuario con **Resistencia al Fuego**. | Prende fuego al atacante (3 a 5 seg) y confiere **Resistencia al Fuego (Fire Resistance)** temporal al portador. | Inmunidad al Fuego + 4s de llamas |
+| **Rubí (Ruby)** | **Filo Ígneo**: Quema al enemigo durante 4 segundos (80 ticks). | **Coraza Ardiente**: Prende fuego al atacante que golpee tu armadura. | 4 segundos de llamas continuas |
+| **Zafiro (Sapphire)** | **Toque Glacial**: Aplica **Lentitud II (Slowness)** al rival por 3 segundos. | **Armadura de Hielo**: Ralentiza drásticamente al atacante que te golpee. | 3 segundos (`Slowness II`) |
+| **Malaquita (Malachite)** | **Pátina Tóxica**: Envenena al rival con **Veneno I (Poison)** por 4 segundos. | Envenena inmediatamente a cualquier agresor cuerpo a cuerpo. | 4 segundos (`Poison I`) |
+| **Witherita (Witherite)** | Aplica **Wither II** al objetivo drenando su salud. | Castiga al agresor con **Wither II** durante 4 segundos. | 4 segundos (`Wither II`) |
+| **Sanguinita (Sanguinite)** | **Festín de Sangre**: Restaura **1.5 corazones** de vida al portador al asestar golpes críticos. | **Drenaje Vampírico**: Restaura vida al portador cuando un enemigo golpea la armadura. | `+1.5 HP` restaurados |
+| **Gravitita (Gravitite)** | Eleva al rival por los aires con **Levitación II** durante 1.5 segundos. | Hace flotar al agresor en el aire cuando impacta contra tu armadura. | 1.5 seg (`Levitation II`) |
+| **Pirita (Pyrite)** | **Chispazo**: Aplica **Ceguera I (Blindness)** al objetivo por 2 segundos. | Ciega y desorienta al agresor cuando este conecta un impacto. | 2 segundos (`Blindness I`) |
+| **Aleación Manyullyn** | Otorga **+3.0 de daño adicional plano** en cada impacto. | Aumenta la firmeza y dureza de la armadura frente a impactos pesados. | `+3.0 Daño Plano` |
+| **Aleación Netherita Cósmica** | Crea un microvórtice de gravedad que atrae a todos los monstruos en un radio de 6 bloques. | Libera un pulso gravitatorio que desestabiliza a los enemigos alrededor del portador. | Radio de 6 bloques |
+
+---
+
+### 🛡 Progresión de Tiers de Equipamiento
+
+- **Armaduras**: Escalan acumulando **daño absorbido** en combate:
+  `Cuero (0 daño) → Cobre (50 daño) → Malla (150 daño) → Hierro (350 daño) → Oro (750 daño) → Diamante (1500 daño) → Netherite (3000 daño)`.
+  *Al subir de nivel, la pieza transmuta físicamente su material vanilla de Minecraft, aumentando drásticamente sus estadísticas base de defensa y durabilidad, manteniendo intactos todos los rasgos y composiciones forjadas.*
+- **Armas**: Escalan derrotando enemigos (`Kills`):
+  `Madera (0 bajas) → Piedra (15) → Cobre (40) → Hierro (80) → Oro (150) → Diamante (300) → Netherite (600)`.
+- **Herramientas**: Escalan minando bloques (`Blocks Mined`):
+  `Madera (0 bloques) → Piedra (50) → Cobre (150) → Hierro (350) → Oro (750) → Diamante (1500) → Netherite (3000)`.
+
+---
+
+### 💡 Ejemplos Prácticos de Construcción de Equipamiento
+
+#### 1. Espada del Conquistador Dorado (DPS Máximo & Control)
+- **Cabeza (Hoja)**: Lingote de Oro (`mvtink_gold`). *(+30% de daño de ataque en cada estocada)*.
+- **Mango (Empuñadura)**: Gema de Rubí (`mvtink_ruby`). *(Quema al enemigo durante 4 segundos)*.
+- **Pomo (Guarda)**: Gema de Zafiro (`mvtink_sapphire`). *(Aplica Lentitud II para evitar que el rival huya)*.
+- *Resultado*: Un arma letal que incinera, ralentiza y castiga con un 30% más de poder en cada golpe.
+
+#### 2. Pico del Minero Profundo (Velocidad & Preservación)
+- **Cabeza (Pico)**: Titanio (`mvtink_titanium`). *(+1400 Durabilidad base insuperable y Resistencia)*.
+- **Mango (Asta)**: Yeso (`mvtink_gypsum`). *(Otorga Prisa y Velocidad al romper bloques)*.
+- **Pomo (Unión)**: Magnetita (`mvtink_magnetite`). *(Atrae automáticamente los minerales picados a tu inventario)*.
+- *Resultado*: Minería fluida a máxima velocidad sin pérdida de minerales en la lava ni desgaste prematuro.
+
+#### 3. Pechera del Baluarte Titánico (Tanque Absoluto)
+- **Placa de Armadura**: Titanio (`mvtink_titanium`) + Netherita + Adamantium. *(Otorga Resistencia I al portador y 75% de probabilidad de anular desgaste de durabilidad)*.
+- **Malla Interior**: Antimonita (`mvtink_stibnite`) + Hierro Infernal. *(Espinas Sulfúricas que devuelven daño directo a los atacantes y resistencia al empuje)*.
+- **Ribete de Armadura**: Bórax (`mvtink_borax`) + Oro Carmesí. *(Inmunidad y Resistencia al Fuego al recibir daño; respeto absoluto de Piglins en el Nether)*.
+- *Resultado*: Al recibir daño de un jefe o monstruo, el atacante se quema y recibe daño de espinas, mientras el jugador obtiene Resistencia I y no sufre retroceso.
+
+#### 4. Botas del Trotamundos Etéreo (Movilidad & Seguridad)
+- **Placa de Armadura**: Yeso (`mvtink_gypsum`). *(Velocidad I continua en combate)*.
+- **Malla Interior**: Celestina (`mvtink_celestine`) o Perla Etérea (`mvtink_aether_pearl`). *(Inmunidad total o reducción masiva del daño por caída)*.
+- **Ribete de Armadura**: Berilio (`mvtink_beryllium`). *(Peso pluma y aceleración de sprint)*.
+- *Resultado*: Movilidad ágil y saltos seguros desde cualquier altura sin peligro de muerte.
+

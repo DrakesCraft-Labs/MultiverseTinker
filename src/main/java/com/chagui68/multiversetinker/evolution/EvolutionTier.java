@@ -118,8 +118,8 @@ public enum EvolutionTier {
     @Nonnull
     public Material getMatchingHelmetMaterial() {
         return switch (this) {
-            case WOOD -> Material.LEATHER_HELMET;
-            case STONE, COPPER -> Material.CHAINMAIL_HELMET;
+            case WOOD, STONE -> Material.LEATHER_HELMET;
+            case COPPER -> Material.CHAINMAIL_HELMET;
             case IRON -> Material.IRON_HELMET;
             case GOLD -> Material.GOLDEN_HELMET;
             case DIAMOND -> Material.DIAMOND_HELMET;
@@ -130,8 +130,8 @@ public enum EvolutionTier {
     @Nonnull
     public Material getMatchingChestplateMaterial() {
         return switch (this) {
-            case WOOD -> Material.LEATHER_CHESTPLATE;
-            case STONE, COPPER -> Material.CHAINMAIL_CHESTPLATE;
+            case WOOD, STONE -> Material.LEATHER_CHESTPLATE;
+            case COPPER -> Material.CHAINMAIL_CHESTPLATE;
             case IRON -> Material.IRON_CHESTPLATE;
             case GOLD -> Material.GOLDEN_CHESTPLATE;
             case DIAMOND -> Material.DIAMOND_CHESTPLATE;
@@ -142,8 +142,8 @@ public enum EvolutionTier {
     @Nonnull
     public Material getMatchingLeggingsMaterial() {
         return switch (this) {
-            case WOOD -> Material.LEATHER_LEGGINGS;
-            case STONE, COPPER -> Material.CHAINMAIL_LEGGINGS;
+            case WOOD, STONE -> Material.LEATHER_LEGGINGS;
+            case COPPER -> Material.CHAINMAIL_LEGGINGS;
             case IRON -> Material.IRON_LEGGINGS;
             case GOLD -> Material.GOLDEN_LEGGINGS;
             case DIAMOND -> Material.DIAMOND_LEGGINGS;
@@ -154,8 +154,8 @@ public enum EvolutionTier {
     @Nonnull
     public Material getMatchingBootsMaterial() {
         return switch (this) {
-            case WOOD -> Material.LEATHER_BOOTS;
-            case STONE, COPPER -> Material.CHAINMAIL_BOOTS;
+            case WOOD, STONE -> Material.LEATHER_BOOTS;
+            case COPPER -> Material.CHAINMAIL_BOOTS;
             case IRON -> Material.IRON_BOOTS;
             case GOLD -> Material.GOLDEN_BOOTS;
             case DIAMOND -> Material.DIAMOND_BOOTS;
@@ -172,6 +172,32 @@ public enum EvolutionTier {
             case GOLD -> 750;
             case DIAMOND -> 1500;
             case NETHERITE -> 3000;
+        };
+    }
+
+    @Nonnull
+    public String getArmorDisplayName() {
+        return switch (this) {
+            case WOOD -> "Leather Tier";
+            case STONE -> "Copper Tier";
+            case COPPER -> "Chainmail Tier";
+            case IRON -> "Iron Tier";
+            case GOLD -> "Gold Tier";
+            case DIAMOND -> "Diamond Tier";
+            case NETHERITE -> "Netherite Tier";
+        };
+    }
+
+    @Nonnull
+    public String getArmorMiniMessageTag() {
+        return switch (this) {
+            case WOOD -> "<gradient:#a0522d:#8b4513><b>[Leather Tier]</b></gradient>";
+            case STONE -> "<gradient:#d35400:#e67e22><b>[Copper Tier]</b></gradient>";
+            case COPPER -> "<gradient:#bdc3c7:#7f8c8d><b>[Chainmail Tier]</b></gradient>";
+            case IRON -> "<gradient:#ecf0f1:#bdc3c7><b>[Iron Tier]</b></gradient>";
+            case GOLD -> "<gradient:#f1c40f:#f39c12><b>[Gold Tier]</b></gradient>";
+            case DIAMOND -> "<gradient:#00f2fe:#4facfe><b>[Diamond Tier]</b></gradient>";
+            case NETHERITE -> "<gradient:#4b3832:#1e1e24><b>[Netherite Tier ★ MAX]</b></gradient>";
         };
     }
 }

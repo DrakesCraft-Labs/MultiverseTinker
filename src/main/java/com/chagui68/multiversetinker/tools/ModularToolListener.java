@@ -13,7 +13,9 @@ import com.chagui68.multiversetinker.storage.TinkerKeys;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -35,6 +37,7 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
@@ -104,6 +107,14 @@ public class ModularToolListener implements Listener {
 
         // Multi-Material Elemental Traits
         triggerMultiMaterialTraits(player, target, event, pdc);
+
+        // Lethal hit check for instant kill progression
+        if (pdc.has(TinkerKeys.IS_MODULAR_WEAPON, PersistentDataType.BYTE)) {
+            if (target.getHealth() - event.getFinalDamage() <= 0) {
+                target.getPersistentDataContainer().set(new NamespacedKey(plugin, "killed_by_mvtink"), PersistentDataType.BYTE, (byte) 1);
+                progressWeaponEvolution(player, hand);
+            }
+        }
 
         // Durability wear
         damageEquipment(player, hand, meta, pdc);
@@ -369,7 +380,18 @@ public class ModularToolListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDeath(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
+        if (entity.getPersistentDataContainer().has(new NamespacedKey(plugin, "killed_by_mvtink"), PersistentDataType.BYTE)) {
+            return; // Already counted via lethal combat damage
+        }
+
         Player killer = entity.getKiller();
+        if (killer == null && entity.getLastDamageCause() instanceof EntityDamageByEntityEvent edbe) {
+            if (edbe.getDamager() instanceof Player p) {
+                killer = p;
+            } else if (edbe.getDamager() instanceof Arrow arr && arr.getShooter() instanceof Player p) {
+                killer = p;
+            }
+        }
         if (killer == null) return;
 
         ItemStack hand = killer.getInventory().getItemInMainHand();
@@ -391,6 +413,7 @@ public class ModularToolListener implements Listener {
 
         int kills = pdc.getOrDefault(TinkerKeys.KILL_COUNT, PersistentDataType.INTEGER, 0) + 1;
         pdc.set(TinkerKeys.KILL_COUNT, PersistentDataType.INTEGER, kills);
+        item.setItemMeta(meta);
 
         String currentTierStr = pdc.getOrDefault(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, EvolutionTier.WOOD.name());
         EvolutionTier currentTier = EvolutionTier.fromString(currentTierStr);
@@ -399,10 +422,22 @@ public class ModularToolListener implements Listener {
         if (nextTier != null && kills >= nextTier.getKillRequirement()) {
             // Evolve Weapon!
             pdc.set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, nextTier.name());
-            applyTierUpgrade(player, item, meta, pdc, nextTier, true);
-        } else {
             item.setItemMeta(meta);
+            applyTierUpgrade(player, item, nextTier, true);
+        } else {
+            TinkerItemBuilder.updateWeaponProgress(item, currentTier, kills);
         }
+
+        // Action bar feedback
+        if (nextTier != null) {
+            int prevMilestone = currentTier.getKillRequirement();
+            int needed = Math.max(1, nextTier.getKillRequirement() - prevMilestone);
+            int curProgress = Math.max(0, kills - prevMilestone);
+            player.sendActionBar(miniMessage.deserialize("<gradient:#ffd700:#ff8c00>⚔ Kill Count: </gradient><yellow>" + kills + "</yellow> <gray>(" + curProgress + "/" + needed + " to " + nextTier.getDisplayName() + ")</gray>"));
+        } else {
+            player.sendActionBar(miniMessage.deserialize("<gradient:#ffd700:#ff8c00>⚔ Master Tier: </gradient><yellow>" + kills + " Total Kills</yellow>"));
+        }
+        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.8f);
     }
 
     private void progressToolEvolution(Player player, ItemStack item) {
@@ -412,6 +447,7 @@ public class ModularToolListener implements Listener {
 
         int blocks = pdc.getOrDefault(TinkerKeys.BLOCKS_BROKEN_COUNT, PersistentDataType.INTEGER, 0) + 1;
         pdc.set(TinkerKeys.BLOCKS_BROKEN_COUNT, PersistentDataType.INTEGER, blocks);
+        item.setItemMeta(meta);
 
         String currentTierStr = pdc.getOrDefault(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, EvolutionTier.WOOD.name());
         EvolutionTier currentTier = EvolutionTier.fromString(currentTierStr);
@@ -420,19 +456,36 @@ public class ModularToolListener implements Listener {
         if (nextTier != null && blocks >= nextTier.getBlockBreakRequirement()) {
             // Evolve Tool!
             pdc.set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, nextTier.name());
-            applyTierUpgrade(player, item, meta, pdc, nextTier, false);
-        } else {
             item.setItemMeta(meta);
+            applyTierUpgrade(player, item, nextTier, false);
+        } else {
+            TinkerItemBuilder.updateToolProgress(item, currentTier, blocks);
+        }
+
+        // Action bar feedback
+        if (nextTier != null) {
+            int prevMilestone = currentTier.getBlockBreakRequirement();
+            int needed = Math.max(1, nextTier.getBlockBreakRequirement() - prevMilestone);
+            int curProgress = Math.max(0, blocks - prevMilestone);
+            player.sendActionBar(miniMessage.deserialize("<gradient:#2ecc71:#27ae60>⛏ Block Mined: </gradient><yellow>" + blocks + "</yellow> <gray>(" + curProgress + "/" + needed + " to " + nextTier.getDisplayName() + ")</gray>"));
+        } else {
+            player.sendActionBar(miniMessage.deserialize("<gradient:#2ecc71:#27ae60>⛏ Master Tier: </gradient><yellow>" + blocks + " Total Blocks</yellow>"));
         }
     }
 
-    private void applyTierUpgrade(Player player, ItemStack item, ItemMeta meta, PersistentDataContainer pdc, EvolutionTier newTier, boolean isWeapon) {
+    private void applyTierUpgrade(Player player, ItemStack item, EvolutionTier newTier, boolean isWeapon) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+
         // Upgrade base material if applicable
         if (isWeapon) {
             String wType = pdc.get(TinkerKeys.WEAPON_TYPE, PersistentDataType.STRING);
             if (wType != null && (wType.equalsIgnoreCase(ModularWeaponType.SWORD.name()) || wType.equalsIgnoreCase(ModularWeaponType.SPEAR.name()))) {
                 item.setType(newTier.getMatchingSwordMaterial());
             }
+            int kills = pdc.getOrDefault(TinkerKeys.KILL_COUNT, PersistentDataType.INTEGER, 0);
+            TinkerItemBuilder.updateWeaponProgress(item, newTier, kills);
         } else {
             String tType = pdc.get(TinkerKeys.TOOL_TYPE, PersistentDataType.STRING);
             if (tType != null) {
@@ -441,6 +494,8 @@ public class ModularToolListener implements Listener {
                 else if (tType.equalsIgnoreCase(ModularToolType.SHOVEL.name())) item.setType(newTier.getMatchingShovelMaterial());
                 else if (tType.equalsIgnoreCase(ModularToolType.HOE.name())) item.setType(newTier.getMatchingHoeMaterial());
             }
+            int blocks = pdc.getOrDefault(TinkerKeys.BLOCKS_BROKEN_COUNT, PersistentDataType.INTEGER, 0);
+            TinkerItemBuilder.updateToolProgress(item, newTier, blocks);
         }
 
         // Play level-up sound, particle effects, and title
@@ -454,8 +509,6 @@ public class ModularToolListener implements Listener {
                 Title.Times.times(Duration.ofMillis(300), Duration.ofMillis(2500), Duration.ofMillis(600))
         );
         player.showTitle(title);
-
-        item.setItemMeta(meta);
     }
 
     // ==========================================
@@ -468,6 +521,9 @@ public class ModularToolListener implements Listener {
         addIfNotNull(pdc.get(TinkerKeys.TOOL_HEAD_COMP, PersistentDataType.STRING), rawCompositions);
         addIfNotNull(pdc.get(TinkerKeys.TOOL_ROD_COMP, PersistentDataType.STRING), rawCompositions);
         addIfNotNull(pdc.get(TinkerKeys.TOOL_BINDING_COMP, PersistentDataType.STRING), rawCompositions);
+        addIfNotNull(pdc.get(TinkerKeys.ARMOR_PLATE_COMP, PersistentDataType.STRING), rawCompositions);
+        addIfNotNull(pdc.get(TinkerKeys.ARMOR_LINING_COMP, PersistentDataType.STRING), rawCompositions);
+        addIfNotNull(pdc.get(TinkerKeys.ARMOR_TRIM_COMP, PersistentDataType.STRING), rawCompositions);
 
         for (String raw : rawCompositions) {
             PartComposition comp = PartComposition.deserialize(raw, materialRegistry);
@@ -492,6 +548,12 @@ public class ModularToolListener implements Listener {
     private void applyTraitEffect(@Nullable Player player, @Nonnull LivingEntity target,
                                   @Nullable EntityDamageByEntityEvent event,
                                   @Nonnull String matId, double ratio) {
+        // Gold - Midas Greed & Auric Strike (+30% attack damage!)
+        if (matId.equalsIgnoreCase("mvtink_gold") && event != null) {
+            event.setDamage(event.getDamage() * (1.0 + 0.30 * ratio));
+            target.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, target.getLocation().add(0, 1, 0), 6, 0.2, 0.2, 0.2, 0.0);
+        }
+
         // Ruby - Flame Edge
         if (matId.equalsIgnoreCase("mvtink_ruby")) {
             int ticks = (int) Math.round(80 * ratio);
@@ -510,6 +572,31 @@ public class ModularToolListener implements Listener {
         if (matId.equalsIgnoreCase("mvtink_silver") && isUndead(target) && event != null) {
             event.setDamage(event.getDamage() * (1.0 + 0.30 * ratio));
             target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 12, 0.3, 0.3, 0.3, 0.1);
+        }
+
+        // Borax - Thermal Flux / Flame & Fire Resistance
+        if (matId.equalsIgnoreCase("mvtink_borax")) {
+            target.setFireTicks((int) Math.max(30, 60 * ratio));
+            if (player != null) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, (int) Math.max(40, 100 * ratio), 0));
+            }
+        }
+
+        // Gypsum - Structural Lightness / Agile Momentum
+        if (matId.equalsIgnoreCase("mvtink_gypsum") && player != null) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, (int) Math.max(30, 80 * ratio), 0));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, (int) Math.max(30, 80 * ratio), 0));
+        }
+
+        // Titanium - Colossal Fortitude
+        if (matId.equalsIgnoreCase("mvtink_titanium") && player != null) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, (int) Math.max(40, 80 * ratio), 0));
+        }
+
+        // Stibnite - Sulfuric Thorns
+        if (matId.equalsIgnoreCase("mvtink_stibnite") && event != null) {
+            target.damage(2.0 * ratio);
+            target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 8, 0.2, 0.2, 0.2, 0.1);
         }
 
         // Malachite - Toxic Patina
@@ -599,7 +686,8 @@ public class ModularToolListener implements Listener {
     private void handleArmorDefensiveEffects(Player player, EntityDamageByEntityEvent event) {
         ItemStack[] armor = player.getInventory().getArmorContents();
         double damage = event.getDamage();
-        for (ItemStack piece : armor) {
+        for (int i = 0; i < armor.length; i++) {
+            ItemStack piece = armor[i];
             if (!isModularEquipment(piece)) continue;
             ItemMeta meta = piece.getItemMeta();
             if (meta == null) continue;
@@ -609,10 +697,11 @@ public class ModularToolListener implements Listener {
             // Damage absorbed progress
             int absorbed = pdc.getOrDefault(TinkerKeys.DAMAGE_ABSORBED, PersistentDataType.INTEGER, 0) + (int) Math.max(1, damage);
             pdc.set(TinkerKeys.DAMAGE_ABSORBED, PersistentDataType.INTEGER, absorbed);
+            piece.setItemMeta(meta);
 
             // Trigger defensive traits on damager
             if (event.getDamager() instanceof LivingEntity damager) {
-                triggerMultiMaterialTraits(player, damager, null, pdc);
+                triggerMultiMaterialTraits(player, damager, event, pdc);
             }
 
             // Check tier evolution
@@ -621,17 +710,32 @@ public class ModularToolListener implements Listener {
             EvolutionTier nextTier = curTier.getNextTier();
             if (nextTier != null && absorbed >= nextTier.getArmorDamageRequirement()) {
                 pdc.set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, nextTier.name());
-                applyArmorTierUpgrade(player, piece, meta, pdc, nextTier);
-            } else {
                 piece.setItemMeta(meta);
+                applyArmorTierUpgrade(player, piece, nextTier);
+            } else {
+                TinkerItemBuilder.updateArmorProgress(piece, curTier, absorbed);
+            }
+
+            // Action bar feedback
+            if (nextTier != null) {
+                int prevMilestone = curTier.getArmorDamageRequirement();
+                int needed = Math.max(1, nextTier.getArmorDamageRequirement() - prevMilestone);
+                int curProgress = Math.max(0, absorbed - prevMilestone);
+                player.sendActionBar(miniMessage.deserialize("<gradient:#9b59b6:#8e44ad>🛡 Damage Absorbed: </gradient><yellow>" + absorbed + "</yellow> <gray>(" + curProgress + "/" + needed + " to " + nextTier.getArmorDisplayName() + ")</gray>"));
+            } else {
+                player.sendActionBar(miniMessage.deserialize("<gradient:#9b59b6:#8e44ad>🛡 Master Armor: </gradient><yellow>" + absorbed + " Total Absorbed</yellow>"));
             }
 
             // Durability wear on armor piece
-            damageEquipment(player, piece, meta, pdc);
+            damageArmorPiece(player, piece, i);
         }
     }
 
-    private void applyArmorTierUpgrade(Player player, ItemStack item, ItemMeta meta, PersistentDataContainer pdc, EvolutionTier newTier) {
+    private void applyArmorTierUpgrade(Player player, ItemStack item, EvolutionTier newTier) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+
         String aType = pdc.get(TinkerKeys.ARMOR_TYPE, PersistentDataType.STRING);
         if (aType != null) {
             try {
@@ -644,16 +748,65 @@ public class ModularToolListener implements Listener {
                 }
             } catch (IllegalArgumentException ignored) {}
         }
+
+        // Apply copper/leather dye if leather-based tier
+        meta = item.getItemMeta();
+        if (meta instanceof LeatherArmorMeta lam) {
+            if (newTier == EvolutionTier.STONE) {
+                lam.setColor(Color.fromRGB(200, 100, 50));
+            } else if (newTier == EvolutionTier.WOOD) {
+                lam.setColor(Color.fromRGB(160, 101, 64));
+            }
+            item.setItemMeta(lam);
+        }
+
+        int absorbed = pdc.getOrDefault(TinkerKeys.DAMAGE_ABSORBED, PersistentDataType.INTEGER, 0);
+        TinkerItemBuilder.updateArmorProgress(item, newTier, absorbed);
+
         player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.2f, 1.1f);
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.2f);
         player.spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1.2, 0), 40, 0.4, 0.4, 0.4, 0.15);
 
         Title title = Title.title(
                 miniMessage.deserialize("<gradient:#9b59b6:#8e44ad><b>ARMOR EVOLUTION!</b></gradient>"),
-                miniMessage.deserialize("<gray>Your armor evolved into </gray>" + newTier.getMiniMessageTag() + "<gray>!</gray>"),
+                miniMessage.deserialize("<gray>Your armor evolved into </gray>" + newTier.getArmorMiniMessageTag() + "<gray>!</gray>"),
                 Title.Times.times(Duration.ofMillis(300), Duration.ofMillis(2500), Duration.ofMillis(600))
         );
         player.showTitle(title);
+    }
+
+    private void damageArmorPiece(Player player, ItemStack item, int armorSlotIndex) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+
+        String pComp = pdc.get(TinkerKeys.ARMOR_PLATE_COMP, PersistentDataType.STRING);
+        if (pComp != null && pComp.contains("mvtink_adamantium") && random.nextDouble() < 0.75) {
+            return;
+        }
+
+        int maxDur = pdc.getOrDefault(TinkerKeys.TOOL_MAX_DURABILITY, PersistentDataType.INTEGER, 1000);
+        int curDur = pdc.getOrDefault(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, maxDur);
+
+        curDur -= 1;
+        if (curDur <= 0) {
+            player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+            player.spawnParticle(Particle.ITEM, player.getLocation().add(0, 1, 0), 15, 0.2, 0.2, 0.2, 0.1, item);
+            ItemStack[] currentArmor = player.getInventory().getArmorContents();
+            currentArmor[armorSlotIndex] = new ItemStack(Material.AIR);
+            player.getInventory().setArmorContents(currentArmor);
+            player.sendMessage(miniMessage.deserialize("<red>🛡 Your modular armor piece shattered from durability fatigue!</red>"));
+            return;
+        }
+
+        pdc.set(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, curDur);
+
+        if (meta instanceof Damageable damageable) {
+            int vanillaMax = item.getType().getMaxDurability();
+            double damageRatio = 1.0 - ((double) curDur / maxDur);
+            damageable.setDamage((int) (vanillaMax * damageRatio));
+        }
+
         item.setItemMeta(meta);
     }
 

@@ -2,11 +2,18 @@ package com.chagui68.multiversetinker.commands;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.api.MineralOrigin;
+import com.chagui68.multiversetinker.api.ModularArmorType;
+import com.chagui68.multiversetinker.api.ModularToolType;
+import com.chagui68.multiversetinker.api.ModularWeaponType;
+import com.chagui68.multiversetinker.evolution.EvolutionTier;
+import com.chagui68.multiversetinker.items.PartComposition;
+import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -169,6 +176,28 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 }
             }
 
+            case "craft" -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(miniMessage.deserialize("<red>This command can only be executed by in-game players.</red>"));
+                    return true;
+                }
+
+                if (args.length < 5) {
+                    player.sendMessage(miniMessage.deserialize("<red>Usage: /" + label + " craft <weapon|tool|armor> <type> <mat1> <mat2> [mat3] [tier]</red>"));
+                    player.sendMessage(miniMessage.deserialize("<gray>Example: /" + label + " craft weapon SWORD gold ruby diamond NETHERITE</gray>"));
+                    return true;
+                }
+
+                String category = args[1].toLowerCase(Locale.ROOT);
+                switch (category) {
+                    case "weapon" -> handleCraftWeapon(player, args);
+                    case "tool" -> handleCraftTool(player, args);
+                    case "armor" -> handleCraftArmor(player, args);
+                    default -> player.sendMessage(miniMessage.deserialize("<red>Invalid category: " + category + ". Use: weapon, tool, or armor.</red>"));
+                }
+                return true;
+            }
+
             default -> {
                 sendHelp(sender, label);
                 return true;
@@ -176,8 +205,135 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    private TinkerMaterial parseMaterial(String id) {
+        if (id == null) return null;
+        String clean = id.toLowerCase(Locale.ROOT);
+        if (!clean.startsWith("mvtink_")) {
+            TinkerMaterial tm = materialRegistry.get("mvtink_" + clean);
+            if (tm != null) return tm;
+        }
+        return materialRegistry.get(clean);
+    }
+
+    private void handleCraftWeapon(Player player, String[] args) {
+        ModularWeaponType type;
+        try {
+            type = ModularWeaponType.valueOf(args[2].toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            player.sendMessage(miniMessage.deserialize("<red>Invalid weapon type: " + args[2] + ". Valid types: " + Arrays.toString(ModularWeaponType.values()) + "</red>"));
+            return;
+        }
+
+        TinkerMaterial m1 = parseMaterial(args[3]);
+        TinkerMaterial m2 = parseMaterial(args[4]);
+        if (m1 == null || m2 == null) {
+            player.sendMessage(miniMessage.deserialize("<red>Unrecognized material(s): " + args[3] + " or " + args[4] + "</red>"));
+            return;
+        }
+
+        TinkerMaterial m3 = null;
+        EvolutionTier tier = EvolutionTier.WOOD;
+
+        if (!type.isTwoPart()) {
+            if (args.length < 6) {
+                player.sendMessage(miniMessage.deserialize("<red>Weapon " + type.name() + " requires 3 materials: <head> <handle> <pommel> [tier]</red>"));
+                return;
+            }
+            m3 = parseMaterial(args[5]);
+            if (m3 == null) {
+                player.sendMessage(miniMessage.deserialize("<red>Unrecognized third material: " + args[5] + "</red>"));
+                return;
+            }
+            if (args.length >= 7) {
+                tier = EvolutionTier.fromString(args[6]);
+            }
+        } else {
+            if (args.length >= 6) {
+                tier = EvolutionTier.fromString(args[5]);
+            }
+        }
+
+        PartComposition c1 = PartComposition.fromMaterials(List.of(m1));
+        PartComposition c2 = PartComposition.fromMaterials(List.of(m2));
+        PartComposition c3 = (m3 != null) ? PartComposition.fromMaterials(List.of(m3)) : null;
+
+        ItemStack weapon = TinkerItemBuilder.createModularWeapon(type, c1, c2, c3, tier, 0);
+        player.getInventory().addItem(weapon);
+        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.2f);
+        player.sendMessage(miniMessage.deserialize("<green>✔ Admin Crafted: </green>").append(weapon.getItemMeta().displayName()).append(miniMessage.deserialize("<green>!</green>")));
+    }
+
+    private void handleCraftTool(Player player, String[] args) {
+        ModularToolType type;
+        try {
+            type = ModularToolType.valueOf(args[2].toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            player.sendMessage(miniMessage.deserialize("<red>Invalid tool type: " + args[2] + ". Valid types: PICKAXE, AXE, SHOVEL, HOE, FISHING_ROD</red>"));
+            return;
+        }
+
+        if (args.length < 6) {
+            player.sendMessage(miniMessage.deserialize("<red>Tool requires 3 materials: <head> <handle> <pommel> [tier]</red>"));
+            return;
+        }
+
+        TinkerMaterial m1 = parseMaterial(args[3]);
+        TinkerMaterial m2 = parseMaterial(args[4]);
+        TinkerMaterial m3 = parseMaterial(args[5]);
+        if (m1 == null || m2 == null || m3 == null) {
+            player.sendMessage(miniMessage.deserialize("<red>Unrecognized material(s) in arguments.</red>"));
+            return;
+        }
+
+        EvolutionTier tier = (args.length >= 7) ? EvolutionTier.fromString(args[6]) : EvolutionTier.WOOD;
+
+        PartComposition c1 = PartComposition.fromMaterials(List.of(m1));
+        PartComposition c2 = PartComposition.fromMaterials(List.of(m2));
+        PartComposition c3 = PartComposition.fromMaterials(List.of(m3));
+
+        ItemStack tool = TinkerItemBuilder.createModularTool(type, c1, c2, c3, tier, 0);
+        player.getInventory().addItem(tool);
+        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.2f);
+        player.sendMessage(miniMessage.deserialize("<green>✔ Admin Crafted: </green>").append(tool.getItemMeta().displayName()).append(miniMessage.deserialize("<green>!</green>")));
+    }
+
+    private void handleCraftArmor(Player player, String[] args) {
+        ModularArmorType type;
+        try {
+            type = ModularArmorType.valueOf(args[2].toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            player.sendMessage(miniMessage.deserialize("<red>Invalid armor type: " + args[2] + ". Valid types: HELMET, CHESTPLATE, LEGGINGS, BOOTS</red>"));
+            return;
+        }
+
+        if (args.length < 6) {
+            player.sendMessage(miniMessage.deserialize("<red>Armor requires 3 materials: <plate> <lining> <trim> [tier]</red>"));
+            return;
+        }
+
+        TinkerMaterial m1 = parseMaterial(args[3]);
+        TinkerMaterial m2 = parseMaterial(args[4]);
+        TinkerMaterial m3 = parseMaterial(args[5]);
+        if (m1 == null || m2 == null || m3 == null) {
+            player.sendMessage(miniMessage.deserialize("<red>Unrecognized material(s) in arguments.</red>"));
+            return;
+        }
+
+        EvolutionTier tier = (args.length >= 7) ? EvolutionTier.fromString(args[6]) : EvolutionTier.WOOD;
+
+        PartComposition c1 = PartComposition.fromMaterials(List.of(m1));
+        PartComposition c2 = PartComposition.fromMaterials(List.of(m2));
+        PartComposition c3 = PartComposition.fromMaterials(List.of(m3));
+
+        ItemStack armor = TinkerItemBuilder.createModularArmor(type, c1, c2, c3, tier, 0);
+        player.getInventory().addItem(armor);
+        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.2f);
+        player.sendMessage(miniMessage.deserialize("<green>✔ Admin Crafted: </green>").append(armor.getItemMeta().displayName()).append(miniMessage.deserialize("<green>!</green>")));
+    }
+
     private void sendHelp(CommandSender sender, String label) {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give items, parts, tools, raw ores, ingots, casts, or prospector brush.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " list [OVERWORLD|NETHER|THE_END]</yellow> <gray>- List all 90 geological materials.</gray>"));
@@ -191,7 +347,39 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return filter(List.of("give", "forge", "list", "reload"), args[0]);
+            return filter(List.of("craft", "give", "forge", "list", "reload"), args[0]);
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("craft")) {
+            return filter(List.of("weapon", "tool", "armor"), args[1]);
+        }
+
+        if (args.length == 3 && args[0].equalsIgnoreCase("craft")) {
+            String cat = args[1].toLowerCase(Locale.ROOT);
+            if (cat.equals("weapon")) {
+                return filter(Arrays.stream(ModularWeaponType.values()).map(Enum::name).toList(), args[2]);
+            } else if (cat.equals("tool")) {
+                return filter(Arrays.stream(ModularToolType.values()).filter(t -> t != ModularToolType.SWORD).map(Enum::name).toList(), args[2]);
+            } else if (cat.equals("armor")) {
+                return filter(Arrays.stream(ModularArmorType.values()).map(Enum::name).toList(), args[2]);
+            }
+        }
+
+        if (args.length >= 4 && args.length <= 6 && args[0].equalsIgnoreCase("craft")) {
+            List<String> mats = new ArrayList<>();
+            for (TinkerMaterial tm : materialRegistry.getAll()) {
+                mats.add(tm.getId().replace("mvtink_", ""));
+            }
+            if (args.length >= 5) {
+                for (EvolutionTier et : EvolutionTier.values()) {
+                    mats.add(et.name());
+                }
+            }
+            return filter(mats, args[args.length - 1]);
+        }
+
+        if (args.length == 7 && args[0].equalsIgnoreCase("craft")) {
+            return filter(Arrays.stream(EvolutionTier.values()).map(Enum::name).toList(), args[6]);
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("forge")) {

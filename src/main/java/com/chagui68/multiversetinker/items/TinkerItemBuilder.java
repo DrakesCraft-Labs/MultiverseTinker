@@ -12,10 +12,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -744,11 +746,19 @@ public class TinkerItemBuilder {
         double knockbackRes = (trim.getEntries().size() * 0.05) + (tier.ordinal() * 0.02);
 
         String displayNameMini = "<gradient:" + pMat.getColorHex() + ":" + lMat.getColorHex() + ">"
-                + tier.getDisplayName() + " " + pMat.getName() + " " + armorType.getDisplayName() + "</gradient>";
+                + tier.getArmorDisplayName() + " " + pMat.getName() + " " + armorType.getDisplayName() + "</gradient>";
         meta.displayName(MINI_MESSAGE.deserialize(displayNameMini).decoration(TextDecoration.ITALIC, false));
 
+        if (meta instanceof LeatherArmorMeta lam) {
+            if (tier == EvolutionTier.STONE) {
+                lam.setColor(Color.fromRGB(200, 100, 50)); // Polished Copper
+            } else if (tier == EvolutionTier.WOOD) {
+                lam.setColor(Color.fromRGB(160, 101, 64)); // Natural Tanned Leather
+            }
+        }
+
         List<Component> lore = new ArrayList<>();
-        lore.add(MINI_MESSAGE.deserialize(tier.getMiniMessageTag()).decoration(TextDecoration.ITALIC, false));
+        lore.add(MINI_MESSAGE.deserialize(tier.getArmorMiniMessageTag()).decoration(TextDecoration.ITALIC, false));
 
         // Damage Absorbed Progress Bar
         int nextDmgReq = (tier.getNextTier() != null) ? tier.getNextTier().getArmorDamageRequirement() : -1;
@@ -756,11 +766,11 @@ public class TinkerItemBuilder {
             lore.add(MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + damageAbsorbed + " Total Damage Absorbed)</gradient>").decoration(TextDecoration.ITALIC, false));
         } else {
             int prevMilestone = tier.getArmorDamageRequirement();
-            int needed = nextDmgReq - prevMilestone;
+            int needed = Math.max(1, nextDmgReq - prevMilestone);
             int curProgress = Math.max(0, damageAbsorbed - prevMilestone);
-            int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / Math.max(1, needed)) * 10)));
+            int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
             String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
-                    + curProgress + "/" + needed + " Damage Absorbed</yellow> <gray>(Next: " + tier.getNextTier().getDisplayName() + ")</gray>";
+                    + curProgress + "/" + needed + " Damage Absorbed</yellow> <gray>(Next: " + tier.getNextTier().getArmorDisplayName() + ")</gray>";
             lore.add(MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
         }
 
@@ -826,5 +836,80 @@ public class TinkerItemBuilder {
             case LEGGINGS -> "Stride Momentum: mitigates sprint stamina drain and boosts movement recovery.";
             case BOOTS -> "Feathered Grounding: negates up to 50% fall damage and grants anti-slip traction.";
         };
+    }
+
+    public static void updateWeaponProgress(@Nonnull ItemStack weapon, @Nonnull EvolutionTier tier, int killCount) {
+        ItemMeta meta = weapon.getItemMeta();
+        if (meta == null) return;
+        List<Component> lore = meta.lore();
+        if (lore == null || lore.size() < 2) return;
+
+        lore.set(0, MINI_MESSAGE.deserialize(tier.getMiniMessageTag()).decoration(TextDecoration.ITALIC, false));
+
+        int nextKillReq = (tier.getNextTier() != null) ? tier.getNextTier().getKillRequirement() : -1;
+        if (nextKillReq == -1) {
+            lore.set(1, MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + killCount + " Total Kills)</gradient>").decoration(TextDecoration.ITALIC, false));
+        } else {
+            int prevMilestone = tier.getKillRequirement();
+            int needed = Math.max(1, nextKillReq - prevMilestone);
+            int curProgress = Math.max(0, killCount - prevMilestone);
+            int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
+            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
+                    + curProgress + "/" + needed + " Kills</yellow> <gray>(Next: " + tier.getNextTier().getDisplayName() + ")</gray>";
+            lore.set(1, MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+        }
+
+        meta.lore(lore);
+        weapon.setItemMeta(meta);
+    }
+
+    public static void updateToolProgress(@Nonnull ItemStack tool, @Nonnull EvolutionTier tier, int blocksBroken) {
+        ItemMeta meta = tool.getItemMeta();
+        if (meta == null) return;
+        List<Component> lore = meta.lore();
+        if (lore == null || lore.size() < 2) return;
+
+        lore.set(0, MINI_MESSAGE.deserialize(tier.getMiniMessageTag()).decoration(TextDecoration.ITALIC, false));
+
+        int nextReq = (tier.getNextTier() != null) ? tier.getNextTier().getBlockBreakRequirement() : -1;
+        if (nextReq == -1) {
+            lore.set(1, MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + blocksBroken + " Total Blocks)</gradient>").decoration(TextDecoration.ITALIC, false));
+        } else {
+            int prevMilestone = tier.getBlockBreakRequirement();
+            int needed = Math.max(1, nextReq - prevMilestone);
+            int curProgress = Math.max(0, blocksBroken - prevMilestone);
+            int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
+            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
+                    + curProgress + "/" + needed + " Blocks</yellow> <gray>(Next: " + tier.getNextTier().getDisplayName() + ")</gray>";
+            lore.set(1, MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+        }
+
+        meta.lore(lore);
+        tool.setItemMeta(meta);
+    }
+
+    public static void updateArmorProgress(@Nonnull ItemStack armor, @Nonnull EvolutionTier tier, int damageAbsorbed) {
+        ItemMeta meta = armor.getItemMeta();
+        if (meta == null) return;
+        List<Component> lore = meta.lore();
+        if (lore == null || lore.size() < 2) return;
+
+        lore.set(0, MINI_MESSAGE.deserialize(tier.getArmorMiniMessageTag()).decoration(TextDecoration.ITALIC, false));
+
+        int nextDmgReq = (tier.getNextTier() != null) ? tier.getNextTier().getArmorDamageRequirement() : -1;
+        if (nextDmgReq == -1) {
+            lore.set(1, MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + damageAbsorbed + " Total Damage Absorbed)</gradient>").decoration(TextDecoration.ITALIC, false));
+        } else {
+            int prevMilestone = tier.getArmorDamageRequirement();
+            int needed = Math.max(1, nextDmgReq - prevMilestone);
+            int curProgress = Math.max(0, damageAbsorbed - prevMilestone);
+            int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
+            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
+                    + curProgress + "/" + needed + " Damage Absorbed</yellow> <gray>(Next: " + tier.getNextTier().getArmorDisplayName() + ")</gray>";
+            lore.set(1, MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+        }
+
+        meta.lore(lore);
+        armor.setItemMeta(meta);
     }
 }
