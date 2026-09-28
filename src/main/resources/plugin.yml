@@ -1,0 +1,22 @@
+name: MultiverseTinker
+version: ${project.version}
+main: com.chagui68.multiversetinker.MultiverseTinker
+api-version: "1.21"
+author: Chagui68
+description: Modular tools, armors, geological archaeology, smeltery crucible and metallurgy for Paper 1.21+.
+website: https://github.com/DrakesCraft-Labs/MultiverseTinker
+
+commands:
+  multiversetinker:
+    description: Main management command for MultiverseTinker.
+    aliases: [mvtink, mvt]
+    permission: multiversetinker.admin
+    usage: /mvtink <give|list|reload>
+
+permissions:
+  multiversetinker.admin:
+    description: Full administrative access to MultiverseTinker commands.
+    default: op
+  multiversetinker.archaeology:
+    description: Allows using the brush to extract minerals via archaeology.
+    default: true
