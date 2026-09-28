@@ -13,6 +13,7 @@ target/
 # Build artifacts
 *.jar
 !gradle-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 
 # Logs
 *.log
