@@ -32,7 +32,7 @@ Part of **Chagui68's Sovereign Multiverse Suite** alongside [MultiverseNets](htt
 * **Zero Worldgen Issues**: Minerals are discovered through an interactive **Geological Archaeology Brushing System** across stone, netherrack, and end stone without modifying chunk terrain generators.
 * **90 Unique Geological Materials**: Balanced with **exactly 30 minerals per dimension** (Overworld, Nether, and The End).
 * **5 Physical States per Material**: Every mineral features its **Raw Ore**, **Molten Liquid Bucket**, **Solid Ingot / Gem**, **Nugget**, and **Storage Block** with reversible $9\times$ crafting recipes.
-* **Smeltery Crucible**: A dedicated melting station that strictly demands **Lava directly beneath it** to heat up, featuring dynamic interactive GUI diagnostics and distinct melting durations.
+* **Smeltery Crucible**: A dedicated melting station heated by **Lava** (100% speed, 10% consume chance per melt) or **Magma Block** (70% speed, infinite stability) directly beneath it, featuring dynamic interactive GUI diagnostics and distinct melting durations.
 * **Water Cauldron Casting**: Reusable ceramic and iron molds (*Ingot Cast*, *Nugget Cast*, *Block Cast*) quench hot molten liquid buckets in water cauldrons with steam and cooling effects.
 * **Strict Collision Protection**: Every single item, material, recipe, and PersistentDataContainer (PDC) tag is prefixed with **`mvtink_`**.
 
@@ -51,11 +51,12 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 ---
 
 ### 2. 🌋 Tinker Smeltery Crucible (`mvtink_smeltery`)
-* **Placement**: Place the Smeltery Crucible block over a **source block of Lava**.
+* **Placement & Thermal Heat Sources (`BlockFace.DOWN`)**:
+  * **Lava**: 100% melting speed. Has a **10% chance** to consume the lava block (turning it into air with extinguishing sounds and smoke) upon finishing a melt.
+  * **Magma Block**: 70% melting speed (-30% speed / takes 30% longer). Permanent, safe heat source that is never consumed.
 * **Interactive Diagnostics GUI**:
-  * ❌ **No Lava**: The status indicator turns into a Barrier explaining why the crucible cannot melt:
-    > *"❌ Inactive: No Heat Source. Place a source block of Lava directly beneath this Smeltery block to ignite the melting crucible!"*
-  * 🔥 **Lava Detected**: The crucible ignites, showing active flames, crackling sounds, and a real-time percentage progress bar.
+  * ❌ **No Heat Source**: Status indicator turns into a Barrier explaining why the crucible cannot melt.
+  * 🔥 **Heat Detected**: The crucible ignites, showing active flames, crackling sounds, and a real-time percentage progress bar indicating whether Lava (100%) or Magma Block (70%) is fueling the melt.
 * **Operation**: Place raw minerals in Slot 10 and empty buckets in Slot 12. Once the material reaches its thermal melting duration, it produces a **Molten Liquid Bucket** (`mvtink_<id>_molten_bucket`).
 
 ---

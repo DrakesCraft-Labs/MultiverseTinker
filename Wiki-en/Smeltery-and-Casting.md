@@ -8,18 +8,26 @@ MultiverseTinker implements a thermal metallurgy progression system consisting o
 
 The Smeltery Crucible is a heavy-duty melting furnace designed to turn raw mineral ores into liquid molten metals.
 
-### ⚠ Thermal Requirement (Lava Beneath)
-* The Smeltery Crucible **strictly requires a source block of Lava directly underneath it (`BlockFace.DOWN`)**.
-* If placed over air, water, stone, or any block other than lava, the crucible will remain dormant.
+### ⚠ Thermal Heat Source Requirements (`BlockFace.DOWN`)
+The Smeltery Crucible strictly requires a valid heat source directly underneath it:
+
+| Heat Source Block | Smelting Speed | Consumption Chance | Behavior |
+|---|---|---|---|
+| **Lava** (`Material.LAVA`) | **100%** (Optimal) | **10%** per completed melt | Fastest melting; has a 10% chance to extinguish into air when an ore is smelted. |
+| **Magma Block** (`Material.MAGMA_BLOCK`) | **70%** (-30% Speed) | **0%** (Infinite) | Slower melting (+30% duration); permanent stability, never consumed. |
+
+* If placed over air, water, stone, or any block other than Lava or a Magma Block, the crucible will remain dormant.
 
 ### Interactive GUI Layout (27 Slots)
 Right-clicking the Smeltery Crucible opens its custom graphical interface:
 * **Slot 10**: Raw Mineral Input (`mvtink_*_raw`).
 * **Slot 12**: Empty Bucket Input (`Material.BUCKET`).
 * **Slot 14**: Dynamic Heat & Progress Indicator:
-  * ❌ **Cold / Inactive**: If lava is missing beneath the block, a barrier icon appears with detailed instructions:
-    > *"❌ Inactive: No Heat Source. Place a source block of Lava directly beneath this Smeltery block to ignite the melting crucible!"*
-  * 🔥 **Heated / Ready**: When lava is detected, blaze powder / fire charge displays optimal temperature status.
+  * ❌ **Cold / Inactive**: If a heat source is missing beneath the block, a barrier icon appears with detailed instructions:
+    > *"❌ Inactive: No Heat Source. Place a block of Lava or Magma Block directly beneath this Smeltery block to ignite the melting crucible!"*
+  * 🔥 **Heated / Ready**: Displays the active heat source type:
+    * *Lava Detected*: 100% Thermal Output, warns about the 10% consumption chance.
+    * *Magma Block Detected*: 70% Thermal Output, confirms permanent heat stability.
   * ⚡ **Smelting Progress**: Displays real-time melting completion percentage and an animated progress bar:
     > *"🔥 Smelting in Progress... [██████----] 60%"*
 * **Slot 16**: Output Slot containing the finished **Molten Liquid Bucket** (`mvtink_<id>_molten_bucket`).

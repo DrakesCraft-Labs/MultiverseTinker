@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SmelteryGUI implements InventoryHolder {
@@ -64,8 +65,12 @@ public class SmelteryGUI implements InventoryHolder {
     }
 
     public void updateStatus(boolean hasLava, boolean isSmelting, float progressRatio) {
+        updateStatus(hasLava ? HeatSource.LAVA : HeatSource.NONE, isSmelting, progressRatio);
+    }
+
+    public void updateStatus(@Nonnull HeatSource heatSource, boolean isSmelting, float progressRatio) {
         ItemStack indicator;
-        if (!hasLava) {
+        if (heatSource == HeatSource.NONE) {
             indicator = new ItemStack(Material.BARRIER);
             ItemMeta meta = indicator.getItemMeta();
             if (meta != null) {
@@ -74,8 +79,11 @@ public class SmelteryGUI implements InventoryHolder {
                 meta.lore(List.of(
                         Component.text("Crucible is cold and unheated!", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
                         Component.empty(),
-                        MINI_MESSAGE.deserialize("<yellow>Place a source block of <gold><b>Lava</b></gold> directly beneath</yellow>").decoration(TextDecoration.ITALIC, false),
-                        MINI_MESSAGE.deserialize("<yellow>this Smeltery block to ignite the melting crucible!</yellow>").decoration(TextDecoration.ITALIC, false)
+                        MINI_MESSAGE.deserialize("<yellow>Place a valid heat source directly beneath</yellow>").decoration(TextDecoration.ITALIC, false),
+                        MINI_MESSAGE.deserialize("<yellow>this Smeltery block to ignite the crucible:</yellow>").decoration(TextDecoration.ITALIC, false),
+                        Component.empty(),
+                        MINI_MESSAGE.deserialize("<gray>• <gold><b>Lava</b></gold>: 100% Speed (10% consume chance per melt)</gray>").decoration(TextDecoration.ITALIC, false),
+                        MINI_MESSAGE.deserialize("<gray>• <red><b>Magma Block</b></red>: 70% Speed (Infinite, non-consumable)</gray>").decoration(TextDecoration.ITALIC, false)
                 ));
                 indicator.setItemMeta(meta);
             }
@@ -87,26 +95,49 @@ public class SmelteryGUI implements InventoryHolder {
                         .decoration(TextDecoration.ITALIC, false));
 
                 int percent = (int) (progressRatio * 100);
-                meta.lore(List.of(
-                        Component.text("Lava heat source active and surging!", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                        Component.empty(),
-                        MINI_MESSAGE.deserialize("<gray>Melting Progress: </gray><gold>" + percent + "%</gold>").decoration(TextDecoration.ITALIC, false),
-                        MINI_MESSAGE.deserialize("<dark_gray>[" + "█".repeat(Math.max(1, percent / 10)) + "-".repeat(Math.max(0, 10 - percent / 10)) + "]</dark_gray>").decoration(TextDecoration.ITALIC, false)
-                ));
+                List<Component> lore = new ArrayList<>();
+                if (heatSource == HeatSource.LAVA) {
+                    lore.add(Component.text("Heat Source: Lava (100% Speed)", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+                } else {
+                    lore.add(Component.text("Heat Source: Magma Block (70% Speed / -30% Speed)", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+                }
+                lore.add(Component.empty());
+                lore.add(MINI_MESSAGE.deserialize("<gray>Melting Progress: </gray><gold>" + percent + "%</gold>").decoration(TextDecoration.ITALIC, false));
+                lore.add(MINI_MESSAGE.deserialize("<dark_gray>[" + "█".repeat(Math.max(1, percent / 10)) + "-".repeat(Math.max(0, 10 - percent / 10)) + "]</dark_gray>").decoration(TextDecoration.ITALIC, false));
+                lore.add(Component.empty());
+                if (heatSource == HeatSource.LAVA) {
+                    lore.add(Component.text("Notice: 10% chance to consume lava source upon melt.", NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false));
+                } else {
+                    lore.add(Component.text("Notice: Thermal output reduced by 30% (Infinite heat).", NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false));
+                }
+                meta.lore(lore);
                 indicator.setItemMeta(meta);
             }
         } else {
-            indicator = new ItemStack(Material.BLAZE_POWDER);
+            indicator = new ItemStack(heatSource == HeatSource.MAGMA_BLOCK ? Material.MAGMA_CREAM : Material.BLAZE_POWDER);
             ItemMeta meta = indicator.getItemMeta();
             if (meta != null) {
-                meta.displayName(MINI_MESSAGE.deserialize("<gold><b>🔥 Crucible Heated (Lava Detected)</b></gold>")
-                        .decoration(TextDecoration.ITALIC, false));
-                meta.lore(List.of(
-                        Component.text("Lava detected below. Temperature optimal!", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                        Component.empty(),
-                        Component.text("Insert raw ores on the left and an empty bucket", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
-                        Component.text("to begin smelting molten metal liquid.", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
-                ));
+                if (heatSource == HeatSource.LAVA) {
+                    meta.displayName(MINI_MESSAGE.deserialize("<gold><b>🔥 Crucible Heated (Lava Detected)</b></gold>")
+                            .decoration(TextDecoration.ITALIC, false));
+                    meta.lore(List.of(
+                            Component.text("Heat Source: Lava (Optimal Temperature - 100% Speed)", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("10% chance to consume lava source upon completing a melt.", NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false),
+                            Component.empty(),
+                            Component.text("Insert raw ores on the left and an empty bucket", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
+                            Component.text("to begin smelting molten metal liquid.", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                    ));
+                } else {
+                    meta.displayName(MINI_MESSAGE.deserialize("<gold><b>🔥 Crucible Heated (Magma Block Detected)</b></gold>")
+                            .decoration(TextDecoration.ITALIC, false));
+                    meta.lore(List.of(
+                            Component.text("Heat Source: Magma Block (Steady Heat - 70% Speed)", NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false),
+                            Component.text("Permanent thermal stability (Will never consume block).", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.empty(),
+                            Component.text("Insert raw ores on the left and an empty bucket", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
+                            Component.text("to begin smelting molten metal liquid.", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                    ));
+                }
                 indicator.setItemMeta(meta);
             }
         }

@@ -83,19 +83,31 @@ class MultiverseTinkerPluginTest {
     }
 
     @Test
-    @DisplayName("Smeltery lava detection logic should work correctly")
-    void testSmelteryLavaDetection() {
+    @DisplayName("Smeltery heat source detection (Lava & Magma Block) should work correctly")
+    void testSmelteryHeatSourceDetection() {
         org.bukkit.World world = server.addSimpleWorld("test_world");
         Block smelteryBlock = world.getBlockAt(0, 65, 0);
-        Block lavaBlock = world.getBlockAt(0, 64, 0);
+        Block heatBlock = world.getBlockAt(0, 64, 0);
 
         smelteryBlock.setType(Material.BLAST_FURNACE);
-        lavaBlock.setType(Material.LAVA);
+        heatBlock.setType(Material.LAVA);
 
         assertTrue(plugin.getSmelteryManager().hasLavaBeneath(smelteryBlock));
+        assertFalse(plugin.getSmelteryManager().hasMagmaBeneath(smelteryBlock));
+        assertTrue(plugin.getSmelteryManager().hasHeatSourceBeneath(smelteryBlock));
+        assertEquals(com.chagui68.multiversetinker.smeltery.HeatSource.LAVA, plugin.getSmelteryManager().getHeatSourceBeneath(smelteryBlock));
 
-        lavaBlock.setType(Material.WATER);
+        heatBlock.setType(Material.MAGMA_BLOCK);
         assertFalse(plugin.getSmelteryManager().hasLavaBeneath(smelteryBlock));
+        assertTrue(plugin.getSmelteryManager().hasMagmaBeneath(smelteryBlock));
+        assertTrue(plugin.getSmelteryManager().hasHeatSourceBeneath(smelteryBlock));
+        assertEquals(com.chagui68.multiversetinker.smeltery.HeatSource.MAGMA_BLOCK, plugin.getSmelteryManager().getHeatSourceBeneath(smelteryBlock));
+
+        heatBlock.setType(Material.WATER);
+        assertFalse(plugin.getSmelteryManager().hasLavaBeneath(smelteryBlock));
+        assertFalse(plugin.getSmelteryManager().hasMagmaBeneath(smelteryBlock));
+        assertFalse(plugin.getSmelteryManager().hasHeatSourceBeneath(smelteryBlock));
+        assertEquals(com.chagui68.multiversetinker.smeltery.HeatSource.NONE, plugin.getSmelteryManager().getHeatSourceBeneath(smelteryBlock));
     }
 
     @Test

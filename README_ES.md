@@ -32,7 +32,7 @@ Parte del **Ecosistema Soberano Multiverse de Chagui68** junto a [MultiverseNets
 * **Cero Problemas de Generación de Terreno**: Los minerales se descubren mediante un sistema interactivo de **Arqueología y Cepillado Geológico** sobre roca, netherrack y piedra del end sin alterar los generadores de chunks.
 * **90 Minerales Únicos**: Distribuidos de forma equilibrada en **exactamente 30 minerales por cada dimensión** (Overworld, Nether y The End).
 * **5 Formas Físicas por Mineral**: Cada mineral cuenta con su **Mineral en Bruto (Raw)**, **Balde Fundido Líquido**, **Lingote o Gema**, **Pepita** y **Bloque Compacto** con recetas reversibles de $9\times$.
-* **Crisol de Fundición (Smeltery Crucible)**: Estación de fundición que exige **Lava directamente debajo** para operar, con interfaz gráfica interactiva y tiempos de fusión diferenciados.
+* **Crisol de Fundición (Smeltery Crucible)**: Estación de fundición que opera con **Lava** (100% velocidad, 10% probabilidad de consumo) o **Bloque de Magma** (70% velocidad, estabilidad inagotable) directamente debajo, con interfaz gráfica interactiva y tiempos de fusión diferenciados.
 * **Enfriamiento en Caldero con Moldes**: Moldes cerámicos reutilizables (*Ingot Cast*, *Nugget Cast*, *Block Cast*) templan los baldes fundidos en calderos de agua con efectos de vapor y enfriamiento.
 * **Aislamiento Total**: Cada ítem, receta y tag en `PersistentDataContainer` (PDC) lleva el prefijo reservado **`mvtink_`**.
 
@@ -51,11 +51,12 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 ---
 
 ### 2. 🌋 Crisol de Fundición (*Tinker Smeltery Crucible*)
-* **Colocación**: Requiere un **bloque de Lava directamente debajo**.
+* **Colocación y Fuentes de Calor (`BlockFace.DOWN`)**:
+  * **Lava**: 100% de velocidad de fundición. Cuenta con un **10% de probabilidad** de consumirse (convirtiéndose en aire con sonido de extinción y humo) al terminar de fundir un mineral.
+  * **Bloque de Magma**: 70% de velocidad de fundición (-30% de velocidad / toma 30% más tiempo). Fuente inagotable y segura que nunca se consume.
 * **GUI Diagnóstica Dinámica**:
-  * ❌ **Sin Lava**: El indicador central se transforma en una barrera roja explicando la causa:
-    > *"❌ Inactive: No Heat Source. Place a source block of Lava directly beneath this Smeltery block to ignite the melting crucible!"*
-  * 🔥 **Con Lava**: Se enciende con fuego activo, chispas y barra de progreso porcentual.
+  * ❌ **Sin Calor**: El indicador central se transforma en una barrera roja explicando la necesidad de colocar Lava o Bloque de Magma.
+  * 🔥 **Con Calor Activo**: Se enciende con fuego, siseo y barra de progreso porcentual indicando la fuente de calor activa (Lava al 100% o Magma al 70%).
 * **Operación**: Se coloca el mineral en bruto en la ranura 10 y un balde vacío en la ranura 12. Al completarse el tiempo de fundición, entrega el **Balde de Mineral Fundido** (`mvtink_<id>_molten_bucket`).
 
 ---

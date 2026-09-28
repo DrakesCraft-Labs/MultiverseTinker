@@ -35,6 +35,14 @@ archaeology:
     sound-volume: 1.0
     particles-enabled: true
 
+# Smeltery Crucible Settings
+smeltery:
+  # Probability (0.0 to 1.0) that a lava block underneath is consumed upon completing a melt (0.10 = 10% chance)
+  lava-consume-chance: 0.10
+
+  # Smelting duration multiplier for Magma Block heat source (1.30 = 30% slower smelting speed)
+  magma-duration-multiplier: 1.30
+
 # Relative rarity weights for mineral drops
 rarity-weights:
   common: 50

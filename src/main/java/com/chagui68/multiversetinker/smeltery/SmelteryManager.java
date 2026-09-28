@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SmelteryManager {
 
@@ -71,15 +72,28 @@ public class SmelteryManager {
     }
 
     public boolean hasLavaBeneath(@Nonnull Block block) {
+        return getHeatSourceBeneath(block) == HeatSource.LAVA;
+    }
+
+    public boolean hasMagmaBeneath(@Nonnull Block block) {
+        return getHeatSourceBeneath(block) == HeatSource.MAGMA_BLOCK;
+    }
+
+    public boolean hasHeatSourceBeneath(@Nonnull Block block) {
+        return getHeatSourceBeneath(block) != HeatSource.NONE;
+    }
+
+    @Nonnull
+    public HeatSource getHeatSourceBeneath(@Nonnull Block block) {
         Material down = block.getRelative(BlockFace.DOWN).getType();
-        return down == Material.LAVA;
+        return HeatSource.fromMaterial(down);
     }
 
     public void openGUI(@Nonnull Player player, @Nonnull Block block) {
         Location loc = block.getLocation();
         SmelteryGUI gui = activeGUIs.computeIfAbsent(loc, k -> new SmelteryGUI(block));
-        boolean hasLava = hasLavaBeneath(block);
-        gui.updateStatus(hasLava, false, 0.0f);
+        HeatSource heatSource = getHeatSourceBeneath(block);
+        gui.updateStatus(heatSource, false, 0.0f);
         player.openInventory(gui.getInventory());
     }
 
@@ -96,7 +110,7 @@ public class SmelteryManager {
             }
 
             Inventory inv = gui.getInventory();
-            boolean hasLava = hasLavaBeneath(block);
+            HeatSource heatSource = getHeatSourceBeneath(block);
 
             ItemStack rawInput = inv.getItem(SmelteryGUI.SLOT_RAW_INPUT);
             ItemStack bucketInput = inv.getItem(SmelteryGUI.SLOT_BUCKET_INPUT);
@@ -106,36 +120,42 @@ public class SmelteryManager {
 
             if (material == null || bucketInput == null || bucketInput.getType() != Material.BUCKET) {
                 gui.setCurrentProgressTicks(0);
-                gui.updateStatus(hasLava, false, 0.0f);
+                gui.updateStatus(heatSource, false, 0.0f);
                 continue;
             }
 
-            if (!hasLava) {
+            if (heatSource == HeatSource.NONE) {
                 gui.setCurrentProgressTicks(0);
-                gui.updateStatus(false, false, 0.0f);
+                gui.updateStatus(HeatSource.NONE, false, 0.0f);
                 continue;
             }
 
             // Can output receive item?
             ItemStack moltenBucket = itemRegistry.getMoltenBucketItem(material.getId());
             if (moltenBucket == null) {
-                gui.updateStatus(true, false, 0.0f);
+                gui.updateStatus(heatSource, false, 0.0f);
                 continue;
             }
 
             if (output != null && output.getType() != Material.AIR) {
-                // Lava buckets cannot stack past 1
-                gui.updateStatus(true, false, 1.0f);
+                // Molten buckets cannot stack past 1
+                gui.updateStatus(heatSource, false, 1.0f);
                 continue;
             }
 
-            int reqTicks = material.getMeltingDurationTicks();
+            int baseTicks = material.getMeltingDurationTicks();
+            int reqTicks = baseTicks;
+            if (heatSource == HeatSource.MAGMA_BLOCK) {
+                double multiplier = plugin.getConfig().getDouble("smeltery.magma-duration-multiplier", 1.30);
+                reqTicks = (int) Math.round(baseTicks * multiplier);
+            }
+
             int currentTicks = gui.getCurrentProgressTicks() + 5; // Ticks advance by 5 per check
             gui.setCurrentProgressTicks(currentTicks);
             gui.setRequiredProgressTicks(reqTicks);
 
             float ratio = Math.min(1.0f, (float) currentTicks / (float) reqTicks);
-            gui.updateStatus(true, true, ratio);
+            gui.updateStatus(heatSource, true, ratio);
 
             // Smelting particle effects at block
             loc.getWorld().spawnParticle(Particle.FLAME, loc.clone().add(0.5, 0.6, 0.5), 3, 0.15, 0.15, 0.15, 0.02);
@@ -147,11 +167,26 @@ public class SmelteryManager {
                 inv.setItem(SmelteryGUI.SLOT_OUTPUT, moltenBucket);
 
                 gui.setCurrentProgressTicks(0);
-                gui.updateStatus(true, false, 0.0f);
 
                 loc.getWorld().playSound(loc.clone().add(0.5, 0.5, 0.5), Sound.BLOCK_LAVA_AMBIENT, 1.0f, 1.2f);
                 loc.getWorld().playSound(loc.clone().add(0.5, 0.5, 0.5), Sound.BLOCK_FURNACE_FIRE_CRACKLE, 1.0f, 1.0f);
                 loc.getWorld().spawnParticle(Particle.LAVA, loc.clone().add(0.5, 0.8, 0.5), 5, 0.2, 0.2, 0.2, 0.05);
+
+                // Check 10% chance to consume lava block underneath
+                if (heatSource == HeatSource.LAVA) {
+                    double consumeChance = plugin.getConfig().getDouble("smeltery.lava-consume-chance", 0.10);
+                    if (ThreadLocalRandom.current().nextDouble() < consumeChance) {
+                        Block underBlock = block.getRelative(BlockFace.DOWN);
+                        if (underBlock.getType() == Material.LAVA) {
+                            underBlock.setType(Material.AIR);
+                            loc.getWorld().playSound(underBlock.getLocation().add(0.5, 0.5, 0.5), Sound.BLOCK_LAVA_EXTINGUISH, 1.0f, 1.0f);
+                            loc.getWorld().spawnParticle(Particle.SMOKE, underBlock.getLocation().add(0.5, 0.8, 0.5), 10, 0.25, 0.25, 0.25, 0.05);
+                            heatSource = HeatSource.NONE;
+                        }
+                    }
+                }
+
+                gui.updateStatus(heatSource, false, 0.0f);
             }
         }
     }

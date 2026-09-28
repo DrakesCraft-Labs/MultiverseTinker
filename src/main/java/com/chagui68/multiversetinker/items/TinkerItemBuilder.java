@@ -53,7 +53,7 @@ public class TinkerItemBuilder {
         lore.add(Component.text("  " + material.getTraitDescription(), NamedTextColor.DARK_AQUA)
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.empty());
-        lore.add(Component.text("♨ Smelt in a Smeltery over lava to melt.", NamedTextColor.DARK_GRAY)
+        lore.add(Component.text("♨ Smelt in a Smeltery over lava or magma to melt.", NamedTextColor.DARK_GRAY)
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_raw</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
@@ -298,9 +298,11 @@ public class TinkerItemBuilder {
         lore.add(Component.text("Heavy-duty metallurgical melting furnace.", NamedTextColor.GRAY)
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.empty());
-        lore.add(Component.text("⚠ Crucial Requirement:", NamedTextColor.GOLD)
+        lore.add(Component.text("⚠ Heat Source Requirement:", NamedTextColor.GOLD)
                 .decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  Must have a Lava source directly beneath it to operate!", NamedTextColor.RED)
+        lore.add(Component.text("  • Lava: 100% Speed (10% consume chance per melt)", NamedTextColor.RED)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Magma Block: 70% Speed (Infinite, non-consumable)", NamedTextColor.GOLD)
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.empty());
         lore.add(Component.text("Operation:", NamedTextColor.YELLOW)

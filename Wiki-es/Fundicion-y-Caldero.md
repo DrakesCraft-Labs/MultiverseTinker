@@ -8,18 +8,26 @@ MultiverseTinker implementa una progresión metalúrgica basada en dos estacione
 
 El Crisol de Fundición es un horno refractario de alta resistencia diseñado para derretir minerales en bruto y transformarlos en metales líquidos fundidos.
 
-### ⚠ Requisito Térmico Obligatorio (Lava Debajo)
-* El Crisol de Fundición **exige de forma estricta un bloque fuente de Lava directamente debajo (`BlockFace.DOWN`)**.
-* Si se ubica sobre aire, agua, piedra o cualquier otro bloque, el crisol permanecerá apagado.
+### ⚠ Fuentes Térmicas Aceptadas (`BlockFace.DOWN`)
+El Crisol de Fundición requiere de forma obligatoria una fuente de calor válida directamente debajo:
+
+| Bloque Fuente de Calor | Velocidad de Fundición | Probabilidad de Consumo | Comportamiento |
+|---|---|---|---|
+| **Lava** (`Material.LAVA`) | **100%** (Óptima) | **10%** por mineral cocinado | Fundición a máxima velocidad; tiene un 10% de probabilidad de consumirse (convertirse en aire) al fundir un ítem. |
+| **Bloque de Magma** (`Material.MAGMA_BLOCK`) | **70%** (-30% de velocidad) | **0%** (Inagotable) | Fundición 30% más lenta (+30% tiempo requerido); fuente permanente y segura que nunca se consume. |
+
+* Si se coloca sobre aire, agua, piedra o cualquier bloque no térmico, el crisol permanecerá apagado.
 
 ### Interfaz Gráfica Dinámica (27 Ranuras)
 Al dar click derecho sobre el crisol se despliega su GUI personalizada:
 * **Ranura 10**: Entrada de Minerales en Bruto (`mvtink_*_raw`).
 * **Ranura 12**: Entrada de Baldes Vacíos (`Material.BUCKET`).
 * **Ranura 14**: Indicador de Calor y Progreso Diagnóstico:
-  * ❌ **Apagado / Sin Calor**: Si no hay lava debajo, aparece un icono de barrera con instrucciones:
-    > *"❌ Inactive: No Heat Source. Place a source block of Lava directly beneath this Smeltery block to ignite the melting crucible!"*
-  * 🔥 **Calentado / Listo**: Al detectar lava, muestra polvo de blaze / carga ígnea con estado óptimo.
+  * ❌ **Apagado / Sin Calor**: Si no hay calor debajo, muestra una barrera con instrucciones:
+    > *"❌ Inactive: No Heat Source. Place a block of Lava or Magma Block directly beneath this Smeltery block to ignite the melting crucible!"*
+  * 🔥 **Calentado / Listo**: Refleja la fuente térmica detectada:
+    * *Lava Detectada*: Salida térmica al 100%, con aviso del 10% de probabilidad de consumo.
+    * *Bloque de Magma Detectado*: Salida térmica al 70% (-30% velocidad), confirmando estabilidad infinita.
   * ⚡ **Fundiendo**: Muestra el porcentaje en tiempo real y una barra de progreso animada:
     > *"🔥 Smelting in Progress... [██████----] 60%"*
 * **Ranura 16**: Ranura de Salida con el **Balde de Mineral Fundido** (`mvtink_<id>_molten_bucket`).
