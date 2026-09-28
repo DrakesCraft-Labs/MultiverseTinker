@@ -31,12 +31,11 @@ Muestra guías interactivas que explican:
 
 ## 🔨 Sección 2: Moldes y Forjado de Partes Multimaterial
 
-### Selector Simétrico de Moldes
-La fila 1 cuenta con controles limpios e intuitivos idénticos a los selectores de armas, herramientas y armaduras:
-- **Ranura 12**: Molde Anterior (`◀`)
-- **Ranura 13**: **Selector de Molde** (Muestra el molde activo; clic izquierdo para avanzar, clic derecho para retroceder).
-- **Ranura 14**: Siguiente Molde (`▶`)
-- **Ranura 16**: **⚒ Tallar Molde** (Consume **1 Ladrillo de Arcilla** del inventario para obtener el molde seleccionado).
+### Selector Simétrico de Moldes y Tallado Directo
+La fila 1 cuenta con controles limpios y completamente intuitivos:
+- **Ranura 12**: Molde Anterior (`◀`) - Cambia al tipo de molde anterior.
+- **Ranura 13**: **⚒ Tallar Molde** (Muestra el molde seleccionado; **al hacer clic lo tallas directamente en tu inventario** consumiendo **1 Ladrillo de Arcilla**).
+- **Ranura 14**: Siguiente Molde (`▶`) - Cambia al tipo de molde siguiente.
 
 #### Moldes Disponibles:
 - **Head Cast** (`mvtink_cast_head`): Cabezas de herramientas y hojas de armas.

@@ -63,7 +63,6 @@ public class ForgeGUI implements InventoryHolder {
     public static final int SLOT_MOLD_PREV = 12;
     public static final int SLOT_MOLD_SELECTOR = 13;
     public static final int SLOT_MOLD_NEXT = 14;
-    public static final int SLOT_MOLD_CARVE = 16;
 
     public static final int SLOT_PART_CAST = 28;
     public static final int SLOT_PART_MAT1 = 30;
@@ -369,7 +368,7 @@ public class ForgeGUI implements InventoryHolder {
     private void renderTabParts() {
         CastType selectedCast = getSelectedCastType();
 
-        // Row 1: Symmetrical Mold Selector (with ◀ and ▶ arrows) and Carve Button
+        // Row 1: Symmetrical Mold Navigation (◀ and ▶ arrows) with Central Mold Carver
         inventory.setItem(SLOT_MOLD_PREV, createSystemButton(Material.ARROW,
                 "<gold>◀ Previous Mold</gold>",
                 List.of("Click to cycle to the previous mold type.")));
@@ -379,25 +378,17 @@ public class ForgeGUI implements InventoryHolder {
                 : ((selectedCast == CastType.NUGGET) ? Material.IRON_NUGGET : Material.BRICK));
 
         inventory.setItem(SLOT_MOLD_SELECTOR, createSystemButton(moldIcon,
-                "<gradient:#e67e22:#f39c12><b>Selected Mold: " + selectedCast.getDisplayName() + "</b></gradient>",
+                "<gradient:#e67e22:#d35400><b>⚒ Carve Mold: " + selectedCast.getDisplayName() + "</b></gradient>",
                 List.of(
                         selectedCast.getDescription(),
                         "",
                         "Cost: 1 Clay Brick in your inventory.",
-                        "Click to cycle next mold"
+                        "Click to carve this mold into your inventory!"
                 )));
 
         inventory.setItem(SLOT_MOLD_NEXT, createSystemButton(Material.ARROW,
                 "<gold>Next Mold ▶</gold>",
                 List.of("Click to cycle to the next mold type.")));
-
-        inventory.setItem(SLOT_MOLD_CARVE, createSystemButton(Material.BRICK,
-                "<gradient:#e67e22:#d35400><b>⚒ Carve " + selectedCast.getDisplayName() + "</b></gradient>",
-                List.of(
-                        "Consumes 1 Clay Brick to carve this reusable mold.",
-                        "",
-                        "Click to carve into your inventory"
-                )));
 
         // Row 2: Symmetrical Labels (Mold clearly separated from the 3 materials)
         inventory.setItem(19, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold><b>[ Mold / Cast Slot ]</b></gold>"));
@@ -737,14 +728,14 @@ public class ForgeGUI implements InventoryHolder {
             renderTabParts();
             return;
         }
-        if (rawSlot == SLOT_MOLD_NEXT || rawSlot == SLOT_MOLD_SELECTOR) {
+        if (rawSlot == SLOT_MOLD_NEXT) {
             event.setCancelled(true);
             cycleMold(true);
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
             renderTabParts();
             return;
         }
-        if (rawSlot == SLOT_MOLD_CARVE) {
+        if (rawSlot == SLOT_MOLD_SELECTOR) {
             event.setCancelled(true);
             carveMold(player, getSelectedCastType());
             return;
