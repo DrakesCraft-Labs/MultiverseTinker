@@ -98,6 +98,9 @@ public class CastingListener implements Listener {
             case BOWSTRING -> itemRegistry.getPartItem(ToolPartType.BOWSTRING, materialId);
             case SHIELD_PLATE -> itemRegistry.getPartItem(ToolPartType.SHIELD_PLATE, materialId);
             case SHIELD_BOSS -> itemRegistry.getPartItem(ToolPartType.SHIELD_BOSS, materialId);
+            case ARMOR_PLATE -> itemRegistry.getPartItem(ToolPartType.ARMOR_PLATE, materialId);
+            case ARMOR_LINING -> itemRegistry.getPartItem(ToolPartType.ARMOR_LINING, materialId);
+            case ARMOR_TRIM -> itemRegistry.getPartItem(ToolPartType.ARMOR_TRIM, materialId);
         };
 
         if (resultItem == null) {

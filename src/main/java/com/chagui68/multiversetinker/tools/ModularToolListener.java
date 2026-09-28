@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.tools;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
 import com.chagui68.multiversetinker.evolution.EvolutionTier;
@@ -70,6 +71,11 @@ public class ModularToolListener implements Listener {
             if (isModularEquipment(shieldItem) && shieldItem.getType() == Material.SHIELD) {
                 handleShieldBlock(victim, event.getDamager(), event, shieldItem);
             }
+        }
+
+        // 1.5 Handle Modular Armor defense & absorption
+        if (event.getEntity() instanceof Player victimPlayer) {
+            handleArmorDefensiveEffects(victimPlayer, event);
         }
 
         // 2. Handle Player Attacking
@@ -590,12 +596,74 @@ public class ModularToolListener implements Listener {
         };
     }
 
+    private void handleArmorDefensiveEffects(Player player, EntityDamageByEntityEvent event) {
+        ItemStack[] armor = player.getInventory().getArmorContents();
+        double damage = event.getDamage();
+        for (ItemStack piece : armor) {
+            if (!isModularEquipment(piece)) continue;
+            ItemMeta meta = piece.getItemMeta();
+            if (meta == null) continue;
+            PersistentDataContainer pdc = meta.getPersistentDataContainer();
+            if (!pdc.has(TinkerKeys.IS_MODULAR_ARMOR, PersistentDataType.BYTE)) continue;
+
+            // Damage absorbed progress
+            int absorbed = pdc.getOrDefault(TinkerKeys.DAMAGE_ABSORBED, PersistentDataType.INTEGER, 0) + (int) Math.max(1, damage);
+            pdc.set(TinkerKeys.DAMAGE_ABSORBED, PersistentDataType.INTEGER, absorbed);
+
+            // Trigger defensive traits on damager
+            if (event.getDamager() instanceof LivingEntity damager) {
+                triggerMultiMaterialTraits(player, damager, null, pdc);
+            }
+
+            // Check tier evolution
+            String curTierStr = pdc.getOrDefault(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, EvolutionTier.WOOD.name());
+            EvolutionTier curTier = EvolutionTier.fromString(curTierStr);
+            EvolutionTier nextTier = curTier.getNextTier();
+            if (nextTier != null && absorbed >= nextTier.getArmorDamageRequirement()) {
+                pdc.set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, nextTier.name());
+                applyArmorTierUpgrade(player, piece, meta, pdc, nextTier);
+            } else {
+                piece.setItemMeta(meta);
+            }
+
+            // Durability wear on armor piece
+            damageEquipment(player, piece, meta, pdc);
+        }
+    }
+
+    private void applyArmorTierUpgrade(Player player, ItemStack item, ItemMeta meta, PersistentDataContainer pdc, EvolutionTier newTier) {
+        String aType = pdc.get(TinkerKeys.ARMOR_TYPE, PersistentDataType.STRING);
+        if (aType != null) {
+            try {
+                ModularArmorType mat = ModularArmorType.valueOf(aType);
+                switch (mat) {
+                    case HELMET -> item.setType(newTier.getMatchingHelmetMaterial());
+                    case CHESTPLATE -> item.setType(newTier.getMatchingChestplateMaterial());
+                    case LEGGINGS -> item.setType(newTier.getMatchingLeggingsMaterial());
+                    case BOOTS -> item.setType(newTier.getMatchingBootsMaterial());
+                }
+            } catch (IllegalArgumentException ignored) {}
+        }
+        player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.2f, 1.1f);
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.2f);
+        player.spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1.2, 0), 40, 0.4, 0.4, 0.4, 0.15);
+
+        Title title = Title.title(
+                miniMessage.deserialize("<gradient:#9b59b6:#8e44ad><b>ARMOR EVOLUTION!</b></gradient>"),
+                miniMessage.deserialize("<gray>Your armor evolved into </gray>" + newTier.getMiniMessageTag() + "<gray>!</gray>"),
+                Title.Times.times(Duration.ofMillis(300), Duration.ofMillis(2500), Duration.ofMillis(600))
+        );
+        player.showTitle(title);
+        item.setItemMeta(meta);
+    }
+
     private boolean isModularEquipment(@Nullable ItemStack item) {
         if (item == null || item.getType() == Material.AIR) return false;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return false;
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         return pdc.has(TinkerKeys.IS_MODULAR_TOOL, PersistentDataType.BYTE) ||
-                pdc.has(TinkerKeys.IS_MODULAR_WEAPON, PersistentDataType.BYTE);
+                pdc.has(TinkerKeys.IS_MODULAR_WEAPON, PersistentDataType.BYTE) ||
+                pdc.has(TinkerKeys.IS_MODULAR_ARMOR, PersistentDataType.BYTE);
     }
 }

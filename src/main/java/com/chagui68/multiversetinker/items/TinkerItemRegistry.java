@@ -27,6 +27,9 @@ public class TinkerItemRegistry {
     private final Map<String, ItemStack> bowstringItems = new ConcurrentHashMap<>();
     private final Map<String, ItemStack> shieldPlateItems = new ConcurrentHashMap<>();
     private final Map<String, ItemStack> shieldBossItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> armorPlateItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> armorLiningItems = new ConcurrentHashMap<>();
+    private final Map<String, ItemStack> armorTrimItems = new ConcurrentHashMap<>();
     private final Map<CastType, ItemStack> castItems = new EnumMap<>(CastType.class);
 
     private final Map<String, ItemStack> allItemsById = new ConcurrentHashMap<>();
@@ -52,6 +55,9 @@ public class TinkerItemRegistry {
         bowstringItems.clear();
         shieldPlateItems.clear();
         shieldBossItems.clear();
+        armorPlateItems.clear();
+        armorLiningItems.clear();
+        armorTrimItems.clear();
         castItems.clear();
         allItemsById.clear();
 
@@ -83,6 +89,9 @@ public class TinkerItemRegistry {
             ItemStack bowstring = TinkerItemBuilder.createModularPart(ToolPartType.BOWSTRING, comp);
             ItemStack shieldPlate = TinkerItemBuilder.createModularPart(ToolPartType.SHIELD_PLATE, comp);
             ItemStack shieldBoss = TinkerItemBuilder.createModularPart(ToolPartType.SHIELD_BOSS, comp);
+            ItemStack armorPlate = TinkerItemBuilder.createModularPart(ToolPartType.ARMOR_PLATE, comp);
+            ItemStack armorLining = TinkerItemBuilder.createModularPart(ToolPartType.ARMOR_LINING, comp);
+            ItemStack armorTrim = TinkerItemBuilder.createModularPart(ToolPartType.ARMOR_TRIM, comp);
 
             rawItems.put(baseId, raw);
             ingotItems.put(baseId, ingot);
@@ -96,6 +105,9 @@ public class TinkerItemRegistry {
             bowstringItems.put(baseId, bowstring);
             shieldPlateItems.put(baseId, shieldPlate);
             shieldBossItems.put(baseId, shieldBoss);
+            armorPlateItems.put(baseId, armorPlate);
+            armorLiningItems.put(baseId, armorLining);
+            armorTrimItems.put(baseId, armorTrim);
 
             allItemsById.put(baseId + "_raw", raw);
             allItemsById.put(baseId + "_ingot", ingot);
@@ -112,6 +124,9 @@ public class TinkerItemRegistry {
             allItemsById.put(baseId + "_bowstring", bowstring);
             allItemsById.put(baseId + "_shield_plate", shieldPlate);
             allItemsById.put(baseId + "_shield_boss", shieldBoss);
+            allItemsById.put(baseId + "_armor_plate", armorPlate);
+            allItemsById.put(baseId + "_armor_lining", armorLining);
+            allItemsById.put(baseId + "_armor_trim", armorTrim);
             allItemsById.put(baseId, raw);
         }
     }
@@ -145,6 +160,9 @@ public class TinkerItemRegistry {
             case BOWSTRING -> bowstringItems.get(id);
             case SHIELD_PLATE -> shieldPlateItems.get(id);
             case SHIELD_BOSS -> shieldBossItems.get(id);
+            case ARMOR_PLATE -> armorPlateItems.get(id);
+            case ARMOR_LINING -> armorLiningItems.get(id);
+            case ARMOR_TRIM -> armorTrimItems.get(id);
         };
         return item != null ? item.clone() : null;
     }

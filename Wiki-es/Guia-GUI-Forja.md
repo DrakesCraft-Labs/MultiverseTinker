@@ -1,107 +1,147 @@
-# ⚒ Guía del GUI de la Forja del Multiverso y Equipo Modular
+# ⚒ Guía de la Interfaz (GUI) y Equipamiento de la Forja Multiverse
 
-La **Forja del Multiverso** incluye una interfaz gráfica de usuario completa dividida en 5 secciones interactivas, accesible al hacer clic derecho en el yunque central de una estructura de forja activa.
-
----
-
-## 🧭 Barra de Navegación Superior (Fila 0)
-
-La fila superior (casillas 0–8) permite cambiar de sección en cualquier momento:
-- **Casilla 0**: `[ 1. Codex & Guide ]` - Códice con guías del multiverso, mecánicas y estado de la estructura.
-- **Casilla 2**: `[ 2. Molds & Parts ]` - Tallado rápido de moldes y forjado de piezas multimaterial.
-- **Casilla 4**: `[ 3. Alloy Crucible ]` - Crisol para fundir y mezclar 2 materiales en aleaciones.
-- **Casilla 6**: `[ 4. Weapon Assembly ]` - Ensamblado de armas modulares (Arcos, Espadas, Tridentes, Lanzas, Mazos, Ballestas y Escudos).
-- **Casilla 8**: `[ 5. Tool Assembly ]` - Ensamblado de herramientas modulares (Picos, Hachas, Azadas, Palas y Caña de pescar).
+La **Forja Multiverse** cuenta con una interfaz gráfica completa y reorganizada de 6 secciones, accesible al hacer clic derecho en el yunque central de una estructura Multibloque activa.
 
 ---
 
-## 📖 Sección 1: Códice Informativo y Guías
-- Proporciona libros interactivos con información de:
-  1. **Estructura Multibloque**: 243 bloques, yunque central, 4 columnas de lava esquineras, toba cincelada, baldosas de pizarra profunda y escaleras/losas de ladrillos de toba.
-  2. **Forja Multimaterial**: Reglas de concentración (1 a 3 materiales por pieza con división porcentual de rasgos y estadísticas).
-  3. **Crisol de Aleaciones**: Las 16 recetas de aleaciones y sus bonificadores.
-  4. **Evolución por Rarezas/Tiers**: Progresión de Madera a Netherita mediante bajas o bloques rotos.
-  5. **Habilidades Únicas**: Habilidades especializadas para cada una de las 7 armas y 5 herramientas.
+## 🧭 Barra Superior de Navegación (Fila 0)
+
+La fila superior (ranuras 0 a 8) contiene controles persistentes perfectamente alineados:
+- **Ranura 0**: Panel de Cristal Borde.
+- **Ranura 1**: `[ 1. Códice y Guía ]` - Enciclopedia dentro del juego, guías de tiers y estructura multibloque.
+- **Ranura 2**: `[ 2. Moldes y Partes ]` - Selector compacto de moldes y forjado de componentes multimaterial.
+- **Ranura 3**: `[ 3. Crisol de Aleaciones ]` - Estación para mezclar 2 materiales y crear lingotes de aleación.
+- **Ranura 4**: Estandarte divisor central de la Forja Multiverse.
+- **Ranura 5**: `[ 4. Ensamblado de Armas ]` - Taller para construir armas modulares con selector cíclico.
+- **Ranura 6**: `[ 5. Ensamblado de Herramientas ]` - Taller para construir herramientas modulares.
+- **Ranura 7**: `[ 6. Ensamblado de Armaduras ]` - ¡Nueva sección para forjar y evolucionar armaduras modulares!
+- **Ranura 8**: Panel de Cristal Borde.
 
 ---
 
-## 🔨 Sección 2: Moldes y Forja de Piezas Multimaterial
+## 📖 Sección 1: Códice Informativo y Mecánicas
+Muestra guías interactivas que explican:
+1. **Estructura Multibloque**: 243 bloques, yunque central, 4 columnas de lava en esquinas, toba cincelada, baldosas de pizarra profunda y escaleras/losas de toba.
+2. **Forjado Multimaterial**: Reglas de concentración (1, 2 o 3 materiales por parte con potencia proporcional de rasgos).
+3. **Crisol de Aleaciones**: Las 16 recetas de aleaciones registradas.
+4. **Tiers de Evolución**: Progresión de Madera a Netherite mediante bajas (armas), bloques rotos (herramientas) y daño absorbido (armaduras).
+5. **Ventajas Especializadas**: Mecánicas exclusivas para las 7 armas, 5 herramientas y 4 piezas de armadura.
 
-### Tallado Rápido de Moldes
-Haz clic en cualquiera de los moldes de la fila superior teniendo **1 Ladrillo de Arcilla** en tu inventario para tallar un molde reutilizable:
-- **Molde de Cabeza** (`mvtink_cast_head`): Cabezas de armas y herramientas (Cabeza).
-- **Molde de Mango** (`mvtink_cast_rod`): Mangos y varas (Mango).
-- **Molde de Pomo** (`mvtink_cast_binding`): Pomos, uniones y contrapesos (Pomo).
-- **Molde de Brazos del Arco** (`mvtink_cast_bow_limbs`): Brazos del arco (Brazos del Arco).
-- **Molde de Cuerda Tensora** (`mvtink_cast_bowstring`): Cuerda elástica tensora (Cuerda Tensora).
-- **Molde de Placa Frontal** (`mvtink_cast_shield_plate`): Placa frontal del escudo (Placa Frontal).
-- **Molde de Umbo / Armazón** (`mvtink_cast_shield_boss`): Umbo central y armazón (Umbo / Armazón).
+---
 
-### Forja Multimaterial (1 a 3 Materiales)
-- Coloca **1 Molde** en la **Casilla 28**.
-- Coloca hasta 3 materiales (Lingotes, Gemas, Minerales o Cubos de metal fundido) en las **Casillas 30, 31 y 32**:
-  - **1 Material**: 100% de concentración (efecto y estadísticas completas).
-  - **2 Materiales**: 50% / 50% (por ejemplo, 50% Diamante + 50% Cuarzo otorga 50% de probabilidad o potencia a cada rasgo).
-  - **3 Materiales**: 33.3% / 33.3% / 33.4% dividido equitativamente entre los 3 rasgos.
-- Presiona el botón **⚒ Strike Anvil to Forge Part** (Casilla 38) para forjar la pieza terminada en la **Casilla 42**.
+## 🔨 Sección 2: Moldes y Forjado de Partes Multimaterial
+
+### Selector Único de Moldes
+En lugar de filas saturadas, la fila 1 cuenta con un selector central interactivo:
+- **Ranura 12**: Molde Anterior (`◀`)
+- **Ranura 13**: **Selector de Molde** (Clic izquierdo para avanzar, clic derecho para retroceder).
+- **Ranura 14**: **Botón Tallar Molde** (Consume **1 Ladrillo de Arcilla** del inventario).
+
+#### Moldes Disponibles:
+- **Head Cast** (`mvtink_cast_head`): Cabezas de herramientas y hojas de armas.
+- **Handle Cast** (`mvtink_cast_rod`): Mangos y astas.
+- **Pommel Cast** (`mvtink_cast_binding`): Pomos, guardas y uniones.
+- **Bow Limbs Cast** (`mvtink_cast_bow_limbs`): Brazos de arcos.
+- **Bowstring Mold** (`mvtink_cast_bowstring`): Cuerdas tensoras.
+- **Shield Plate Cast** (`mvtink_cast_shield_plate`): Placas frontales de escudo.
+- **Shield Boss Cast** (`mvtink_cast_shield_boss`): Umbón y armazón central.
+- **Armor Plate Cast** (`mvtink_cast_armor_plate`): Placas pesadas de armadura.
+- **Armor Lining Cast** (`mvtink_cast_armor_lining`): Malla interior y acolchado.
+- **Armor Trim Cast** (`mvtink_cast_armor_trim`): Ribetes, remaches y cierres.
+- **Moldes de Lingote / Pepita / Bloque**: Conversión de metales fundidos.
+
+### Forjado Multimaterial (1 a 3 Materiales)
+- Coloca **1 Molde** en la **Ranura 29**.
+- Coloca hasta 3 Materiales (Lingotes, Gemas, Minerales o Cubos de Metal Fundido) en las **Ranuras 30, 31 y 32**:
+  - **1 Material**: 100% de concentración (estadísticas completas y 100% activación de rasgo).
+  - **2 Materiales**: Reparto 50% / 50% (ambos rasgos activos con 50% de probabilidad o potencia).
+  - **3 Materiales**: Reparto 33.3% / 33.3% / 33.4% equilibrado entre los 3 rasgos.
+- Haz clic en **⚒ Golpear Yunque y Forjar Parte** (Ranura 40) para obtener la parte en la **Ranura 33**.
 - ¡Los moldes son **reutilizables** y nunca se consumen!
 
 ---
 
-## 🧪 Sección 3: Crisol de Aleaciones (Mezcla de Materiales)
-- Coloca el Material 1 en la **Casilla 20** y el Material 2 en la **Casilla 24**.
-- Presiona **🔥 Melt & Blend Alloy** (Casilla 31).
-- Obtendrás **2x Lingotes de la Aleación** terminada en la **Casilla 33**.
-- Consulta la [Guía de Mezcla de Materiales](Mezcla-de-Materiales.md) para ver las 16 recetas completas.
+## 🧪 Sección 3: Crisol de Aleaciones
+- Coloca el Material 1 en la **Ranura 29** y el Material 2 en la **Ranura 33**.
+- Haz clic en **♨ Encender Crisol y Fundir Aleación** (Ranura 31).
+- Obtén **2x Lingotes de Aleación Terminados** en la **Ranura 40**.
+- Haz clic en el **Códice de Recetas** (Ranura 49) para consultar en el chat las 16 fórmulas registradas.
+- Consulta la [Guía de Mezcla de Materiales](Mezcla-de-Materiales.md) para más detalles.
 
 ---
 
-## ⚔ Sección 4: Construcción de Armas Modulares
+## ⚔ Sección 4: Ensamblado de Armas Modulares
 
-Haz clic en el **Selector de Arma** en la **Casilla 13** para alternar entre los 7 tipos de armas:
+Haz clic en el **Selector de Armas** (Ranura 13) para alternar entre los 7 tipos:
 
-### Armas de 3 Piezas (Cabeza, Mango, Pomo)
-- **Espada Modular (Broadsword)**: Cabeza (Hoja) + Mango (Empuñadura) + Pomo (Guarda/Pomo).
-- **Ballesta Pesada Modular**: Cabeza (Arco frontal) + Mango (Culata) + Pomo (Mecanismo/Gatillo).
-- **Tridente Ancestral Modular**: Cabeza (Puntas) + Mango (Asta) + Pomo (Contrapeso).
-- **Lanza Cinética Modular**: Cabeza (Punta de lanza) + Mango (Asta larga) + Pomo (Regatón).
-- **Mazo de Guerra Modular**: Cabeza (Cabeza pesada) + Mango (Mango reforzado) + Pomo (Pomo con aletas).
+### Armas de 3 Partes (Cabeza, Mango, Pomo)
+- **Espada Ancha**: Cabeza (Hoja) + Mango (Empuñadura) + Pomo (Guarda).
+- **Ballesta Pesada**: Cabeza (Arco) + Mango (Culata) + Pomo (Mecanismo).
+- **Tridente Anciano**: Cabeza (Puntas) + Mango (Asta) + Pomo (Contrapeso).
+- **Lanza Cinética**: Cabeza (Punta) + Mango (Asta Larga) + Pomo (Regatón).
+- **Mazo de Guerra**: Cabeza (Maza Pesada) + Mango (Asta Reforzada) + Pomo (Pomo Alargado).
 
-### Armas de 2 Piezas
-- **Arco Modular (Longbow)**: Brazos del arco + Cuerda tensora.
-- **Escudo Torre Modular**: Placa frontal + Umbo / Armazón.
+### Armas de 2 Partes
+- **Arco Largo**: Brazos del Arco + Cuerda Tensora.
+- **Escudo Torre**: Placa Frontal + Umbón Central.
 
-### Evolución de Armas por Bajas y Habilidades Especiales
-- Toda arma empieza en **Rareza de Madera (Wood Tier)** con `0` bajas.
-- Derrotar enemigos incrementa el contador de bajas y sube el arma de nivel:
+### Evolución de Tiers de Armas
+- Cada arma inicia en **Tier Madera** (`0` bajas).
+- Derrotar enemigos incrementa el contador de bajas y avanza el arma:
   `Madera → Piedra (15 bajas) → Cobre (40) → Hierro (80) → Oro (150) → Diamante (300) → Netherite (600)`.
-- **Habilidades Especiales en Combate**:
-  - **Mazo de Guerra**: Golpes en caída desatan una onda de choque sísmica en el suelo que daña y lanza por los aires a los enemigos cercanos.
-  - **Arco**: Las flechas heredan los rasgos elementales de los brazos y de la cuerda.
-  - **Ballesta Pesada**: Los proyectiles ignoran el 30% de la armadura enemiga y desatan impacto explosivo.
-  - **Tridente**: Ataques cuerpo a cuerpo o arrojados bajo el agua o lluvia invocan rayos hidráulicos (+5.0 de daño adicional).
-  - **Lanza Cinética**: Alcance de ataque extendido y +30% de daño al golpear en carrera (embestida de justa).
-  - **Escudo Torre**: Bloquear refleja el 35% del daño al atacante y le aplica los efectos elementales del escudo.
-  - **Espada**: Ataques de barrido encadenan los rasgos elementales a todos los enemigos adyacentes.
+- **Ventajas de Combate Únicas**:
+  - **Mazo de Guerra**: Caídas de ataque generan ondas de choque sísmicas en área.
+  - **Arco Largo**: Las flechas disparadas heredan los rasgos elementales del arco.
+  - **Ballesta Pesada**: Los virotes ignoran armadura y causan explosión cinética.
+  - **Tridente Anciano**: Lanza rayos hidráulicos en agua o lluvia (+5.0 daño).
+  - **Lanza Cinética**: Alcance extendido y +30% daño al atacar esprintando.
+  - **Escudo Torre**: Refleja el 35% del daño bloqueado hacia el atacante.
+  - **Espada Ancha**: Los barridos propagan los rasgos elementales a enemigos adyacentes.
 
 ---
 
-## ⛏ Sección 5: Construcción de Herramientas Modulares
+## ⛏ Sección 5: Ensamblado de Herramientas Modulares
 
-Haz clic en el **Selector de Herramienta** en la **Casilla 13** para alternar entre los 5 tipos de herramientas:
-- **Pico Modular**: Cabeza (Cabeza de pico) + Mango (Mango) + Pomo (Pomo/Unión).
-- **Hacha de Batalla Modular**: Cabeza (Filo de hacha) + Mango (Mango) + Pomo (Pomo/Unión).
-- **Pala Excavadora Modular**: Cabeza (Pala) + Mango (Mango) + Pomo (Pomo/Unión).
-- **Guadaña / Azada Modular**: Cabeza (Hoja de azada) + Mango (Mango) + Pomo (Pomo/Unión).
-- **Caña de Pescar Modular**: Cabeza (Punta y sedal) + Mango (Cuerpo de caña) + Pomo (Carrete y agarre).
+Haz clic en el **Selector de Herramientas** (Ranura 13) para alternar entre los 5 tipos:
+- **Pico Modular**: Cabeza + Mango + Pomo.
+- **Hacha de Batalla**: Cabeza + Mango + Pomo.
+- **Pala Excavadora**: Cabeza + Mango + Pomo.
+- **Guadaña (Azada)**: Cabeza + Mango + Pomo.
+- **Caña de Pescar**: Cabeza + Mango + Pomo.
 
-### Evolución de Herramientas por Bloques Rotos y Habilidades Especiales
-- Toda herramienta empieza en **Rareza de Madera (Wood Tier)** con `0` bloques rotos.
-- Romper bloques incrementa el contador y sube la herramienta de nivel:
+### Evolución de Tiers de Herramientas
+- Inicia en **Tier Madera** (`0` bloques rotos).
+- Minar bloques avanza la herramienta:
   `Madera → Piedra (50 bloques) → Cobre (150) → Hierro (350) → Oro (750) → Diamante (1500) → Netherite (3000)`.
-- **Habilidades Especiales de Minería**:
-  - **Pico**: Resonancia de Vetas profundas otorga un 15% de probabilidad de soltar mineral extra y recibir Prisa minera I por 6s.
-  - **Hacha**: Tala columnas enteras de madera y deshabilita los escudos enemigos en golpes críticos.
-  - **Pala Excavadora**: Minar agachado rompe un área de 3x3 de bloques sueltos similares (tierra, arena, grava).
-  - **Azada**: Cosecha cultivos maduros en un área de 3x3 y replanta automáticamente las semillas de tu inventario.
-  - **Caña de Pescar**: Dragado abisal otorga un 15% de probabilidad de pescar minerales raros del fondo de las aguas.
+- **Ventajas de Minería**:
+  - **Pico**: Resonancia de Veta Profunda (15% probabilidad de minerales extra y Prisa).
+  - **Hacha**: Tala leños completos y desactiva escudos en golpes críticos.
+  - **Pala**: Temblor Sísmico excava áreas de 3x3 al agacharse.
+  - **Guadaña**: Cosecha cultivos en 3x3 y replanta automáticamente desde el inventario.
+  - **Caña de Pescar**: Dragado Abisal (15% de pescar minerales geológicos raros).
+
+---
+
+## 🛡 Sección 6: Ensamblado de Armaduras Modulares (¡NUEVO!)
+
+Haz clic en el **Selector de Armaduras** (Ranura 13) para alternar entre las 4 piezas:
+- **Casco Modular**: Placa de Armadura + Malla Interior + Ribete.
+- **Pechera Modular**: Placa de Armadura + Malla Interior + Ribete.
+- **Pantalones Modulares**: Placa de Armadura + Malla Interior + Ribete.
+- **Botas Modulares**: Placa de Armadura + Malla Interior + Ribete.
+
+### Roles de los Componentes de Armadura
+- **Placa de Armadura (Armor Plate)**: Blindaje exterior pesado. Determina los puntos de armadura base, durabilidad principal y rasgos defensivos primarios.
+- **Malla Interior (Armor Lining)**: Malla de cota de malla y acolchado flexible. Determina la dureza de armadura (toughness) y rasgos secundarios.
+- **Ribete de Armadura (Armor Trim)**: Refuerzos, remaches y hebillas. Determina la resistencia al empuje (knockback resistance) y rasgos de utilidad pasiva.
+
+### Evolución de Tiers de Armaduras
+- Cada pieza inicia en **Tier Madera** (`0` daño absorbido).
+- Al absorber daño en combate, la armadura acumula progreso:
+  `Madera → Piedra (50 daño) → Cobre (150) → Hierro (350) → Oro (750) → Diamante (1500) → Netherite (3000)`.
+- Conforme evoluciona, el material base de Minecraft se transforma automáticamente (Cuero → Malla → Hierro → Oro → Diamante → Netherite), aumentando drásticamente la protección, durabilidad y dureza.
+- **Ventajas Especiales de Armadura**:
+  - **Casco (Cranium Ward)**: Reduce el daño crítico a la cabeza e inmunidad a peligros ambientales.
+  - **Pechera (Kinetic Dampener)**: Absorbe el 25% de impactos fuertes y libera energía defensiva.
+  - **Pantalones (Stride Momentum)**: Reduce el agotamiento al correr y acelera la recuperación de movimiento.
+  - **Botas (Feathered Grounding)**: Anula hasta el 50% del daño por caída y previene resbalones.

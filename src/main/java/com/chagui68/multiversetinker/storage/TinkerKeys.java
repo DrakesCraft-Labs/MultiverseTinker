@@ -49,6 +49,15 @@ public final class TinkerKeys {
     public static NamespacedKey SHIELD_PLATE_COMP;
     public static NamespacedKey SHIELD_BOSS_COMP;
 
+    // Armor & System GUI Keys
+    public static NamespacedKey IS_MODULAR_ARMOR;
+    public static NamespacedKey ARMOR_TYPE;
+    public static NamespacedKey ARMOR_PLATE_COMP;
+    public static NamespacedKey ARMOR_LINING_COMP;
+    public static NamespacedKey ARMOR_TRIM_COMP;
+    public static NamespacedKey DAMAGE_ABSORBED;
+    public static NamespacedKey SYSTEM_GUI_ITEM;
+
     private TinkerKeys() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -93,6 +102,14 @@ public final class TinkerKeys {
         BOWSTRING_COMP = new NamespacedKey(plugin, "mvtink_bowstring_comp");
         SHIELD_PLATE_COMP = new NamespacedKey(plugin, "mvtink_shield_plate_comp");
         SHIELD_BOSS_COMP = new NamespacedKey(plugin, "mvtink_shield_boss_comp");
+
+        IS_MODULAR_ARMOR = new NamespacedKey(plugin, "mvtink_is_modular_armor");
+        ARMOR_TYPE = new NamespacedKey(plugin, "mvtink_armor_type");
+        ARMOR_PLATE_COMP = new NamespacedKey(plugin, "mvtink_armor_plate_comp");
+        ARMOR_LINING_COMP = new NamespacedKey(plugin, "mvtink_armor_lining_comp");
+        ARMOR_TRIM_COMP = new NamespacedKey(plugin, "mvtink_armor_trim_comp");
+        DAMAGE_ABSORBED = new NamespacedKey(plugin, "mvtink_damage_absorbed");
+        SYSTEM_GUI_ITEM = new NamespacedKey(plugin, "mvtink_system_gui_item");
     }
 
     @Nonnull

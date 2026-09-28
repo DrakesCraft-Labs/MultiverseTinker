@@ -114,4 +114,64 @@ public enum EvolutionTier {
             case NETHERITE -> Material.NETHERITE_HOE;
         };
     }
+
+    @Nonnull
+    public Material getMatchingHelmetMaterial() {
+        return switch (this) {
+            case WOOD -> Material.LEATHER_HELMET;
+            case STONE, COPPER -> Material.CHAINMAIL_HELMET;
+            case IRON -> Material.IRON_HELMET;
+            case GOLD -> Material.GOLDEN_HELMET;
+            case DIAMOND -> Material.DIAMOND_HELMET;
+            case NETHERITE -> Material.NETHERITE_HELMET;
+        };
+    }
+
+    @Nonnull
+    public Material getMatchingChestplateMaterial() {
+        return switch (this) {
+            case WOOD -> Material.LEATHER_CHESTPLATE;
+            case STONE, COPPER -> Material.CHAINMAIL_CHESTPLATE;
+            case IRON -> Material.IRON_CHESTPLATE;
+            case GOLD -> Material.GOLDEN_CHESTPLATE;
+            case DIAMOND -> Material.DIAMOND_CHESTPLATE;
+            case NETHERITE -> Material.NETHERITE_CHESTPLATE;
+        };
+    }
+
+    @Nonnull
+    public Material getMatchingLeggingsMaterial() {
+        return switch (this) {
+            case WOOD -> Material.LEATHER_LEGGINGS;
+            case STONE, COPPER -> Material.CHAINMAIL_LEGGINGS;
+            case IRON -> Material.IRON_LEGGINGS;
+            case GOLD -> Material.GOLDEN_LEGGINGS;
+            case DIAMOND -> Material.DIAMOND_LEGGINGS;
+            case NETHERITE -> Material.NETHERITE_LEGGINGS;
+        };
+    }
+
+    @Nonnull
+    public Material getMatchingBootsMaterial() {
+        return switch (this) {
+            case WOOD -> Material.LEATHER_BOOTS;
+            case STONE, COPPER -> Material.CHAINMAIL_BOOTS;
+            case IRON -> Material.IRON_BOOTS;
+            case GOLD -> Material.GOLDEN_BOOTS;
+            case DIAMOND -> Material.DIAMOND_BOOTS;
+            case NETHERITE -> Material.NETHERITE_BOOTS;
+        };
+    }
+
+    public int getArmorDamageRequirement() {
+        return switch (this) {
+            case WOOD -> 0;
+            case STONE -> 50;
+            case COPPER -> 150;
+            case IRON -> 350;
+            case GOLD -> 750;
+            case DIAMOND -> 1500;
+            case NETHERITE -> 3000;
+        };
+    }
 }

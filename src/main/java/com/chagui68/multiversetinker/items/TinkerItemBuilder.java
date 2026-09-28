@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.items;
 
 import com.chagui68.multiversetinker.api.CastType;
+import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
 import com.chagui68.multiversetinker.api.ToolPartType;
@@ -391,6 +392,9 @@ public class TinkerItemBuilder {
             case BOWSTRING -> Material.STRING;
             case SHIELD_PLATE -> primary.getBlockVanillaMaterial();
             case SHIELD_BOSS -> Material.IRON_BLOCK;
+            case ARMOR_PLATE -> primary.getBlockVanillaMaterial();
+            case ARMOR_LINING -> Material.CHAINMAIL_CHESTPLATE;
+            case ARMOR_TRIM -> Material.IRON_NUGGET;
         };
 
         ItemStack item = new ItemStack(vanillaBase);
@@ -629,9 +633,9 @@ public class TinkerItemBuilder {
         lore.add(Component.empty());
 
         lore.add(Component.text("✦ Tool Composition:", NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • Cabeza (Head): ", NamedTextColor.GRAY).append(Component.text(hMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • Mango (Handle): ", NamedTextColor.GRAY).append(Component.text(rMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • Pomo (Pommel): ", NamedTextColor.GRAY).append(Component.text(bMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Head: ", NamedTextColor.GRAY).append(Component.text(hMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Handle: ", NamedTextColor.GRAY).append(Component.text(rMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Pommel: ", NamedTextColor.GRAY).append(Component.text(bMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
 
         lore.add(Component.empty());
         lore.add(Component.text("✦ Tool Perk: ", NamedTextColor.GOLD)
@@ -709,6 +713,118 @@ public class TinkerItemBuilder {
             case HOE -> "Harvest Scythe: harvests 3x3 crops and replants seeds automatically.";
             case FISHING_ROD -> "Abyssal Dredge: deep water fishing has a 15% chance to hook rare minerals.";
             default -> "Elemental Utility";
+        };
+    }
+
+    @Nonnull
+    public static ItemStack createModularArmor(@Nonnull ModularArmorType armorType,
+                                               @Nonnull PartComposition plate,
+                                               @Nonnull PartComposition lining,
+                                               @Nonnull PartComposition trim,
+                                               @Nonnull EvolutionTier tier,
+                                               int damageAbsorbed) {
+        Material baseMat = switch (armorType) {
+            case HELMET -> tier.getMatchingHelmetMaterial();
+            case CHESTPLATE -> tier.getMatchingChestplateMaterial();
+            case LEGGINGS -> tier.getMatchingLeggingsMaterial();
+            case BOOTS -> tier.getMatchingBootsMaterial();
+        };
+
+        ItemStack item = new ItemStack(baseMat);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        TinkerMaterial pMat = plate.getPrimaryMaterial();
+        TinkerMaterial lMat = lining.getPrimaryMaterial();
+        TinkerMaterial tMat = trim.getPrimaryMaterial();
+
+        int totalDurability = armorType.getBaseDurability() + plate.getDurability() + lining.getDurability() + (trim.getDurability() / 2) + tier.getBonusDurability();
+        int defensePoints = armorType.getBaseDefense() + (int) Math.round(plate.getAttackDamage() / 3.0) + tier.ordinal();
+        double toughness = armorType.getBaseToughness() + (lining.getAttackDamage() / 4.0) + (tier.ordinal() * 0.5);
+        double knockbackRes = (trim.getEntries().size() * 0.05) + (tier.ordinal() * 0.02);
+
+        String displayNameMini = "<gradient:" + pMat.getColorHex() + ":" + lMat.getColorHex() + ">"
+                + tier.getDisplayName() + " " + pMat.getName() + " " + armorType.getDisplayName() + "</gradient>";
+        meta.displayName(MINI_MESSAGE.deserialize(displayNameMini).decoration(TextDecoration.ITALIC, false));
+
+        List<Component> lore = new ArrayList<>();
+        lore.add(MINI_MESSAGE.deserialize(tier.getMiniMessageTag()).decoration(TextDecoration.ITALIC, false));
+
+        // Damage Absorbed Progress Bar
+        int nextDmgReq = (tier.getNextTier() != null) ? tier.getNextTier().getArmorDamageRequirement() : -1;
+        if (nextDmgReq == -1) {
+            lore.add(MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + damageAbsorbed + " Total Damage Absorbed)</gradient>").decoration(TextDecoration.ITALIC, false));
+        } else {
+            int prevMilestone = tier.getArmorDamageRequirement();
+            int needed = nextDmgReq - prevMilestone;
+            int curProgress = Math.max(0, damageAbsorbed - prevMilestone);
+            int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / Math.max(1, needed)) * 10)));
+            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
+                    + curProgress + "/" + needed + " Damage Absorbed</yellow> <gray>(Next: " + tier.getNextTier().getDisplayName() + ")</gray>";
+            lore.add(MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+        }
+
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Modular Attributes:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Durability: " + totalDurability + " / " + totalDurability, NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Defense: +" + defensePoints + " Armor Points", NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Toughness: +" + String.format(Locale.US, "%.1f", toughness), NamedTextColor.BLUE).decoration(TextDecoration.ITALIC, false));
+        if (knockbackRes > 0) {
+            lore.add(Component.text("  • Knockback Resistance: +" + String.format(Locale.US, "%.0f%%", knockbackRes * 100), NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
+        }
+
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Armor Composition:", NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Armor Plate: ", NamedTextColor.GRAY).append(Component.text(pMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Armor Lining: ", NamedTextColor.GRAY).append(Component.text(lMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Armor Trim: ", NamedTextColor.GRAY).append(Component.text(tMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
+
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Armor Perk: ", NamedTextColor.GOLD)
+                .append(Component.text(getArmorPerkDescription(armorType), NamedTextColor.AQUA))
+                .decoration(TextDecoration.ITALIC, false));
+
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Active Defensive Traits:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • " + pMat.getTraitName() + ": " + pMat.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+        if (!lMat.getId().equals(pMat.getId())) {
+            lore.add(Component.text("  • " + lMat.getTraitName() + ": " + lMat.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+        }
+        if (!tMat.getId().equals(pMat.getId()) && !tMat.getId().equals(lMat.getId())) {
+            lore.add(Component.text("  • " + tMat.getTraitName() + ": " + tMat.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+        }
+
+        meta.lore(lore);
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(TinkerKeys.IS_TINKER_ITEM, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.IS_MODULAR_ARMOR, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(TinkerKeys.ARMOR_TYPE, PersistentDataType.STRING, armorType.name());
+        pdc.set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, tier.name());
+        pdc.set(TinkerKeys.DAMAGE_ABSORBED, PersistentDataType.INTEGER, damageAbsorbed);
+
+        pdc.set(TinkerKeys.ARMOR_PLATE_COMP, PersistentDataType.STRING, plate.serialize());
+        pdc.set(TinkerKeys.ARMOR_LINING_COMP, PersistentDataType.STRING, lining.serialize());
+        pdc.set(TinkerKeys.ARMOR_TRIM_COMP, PersistentDataType.STRING, trim.serialize());
+
+        pdc.set(TinkerKeys.TOOL_HEAD_MAT, PersistentDataType.STRING, pMat.getId());
+        pdc.set(TinkerKeys.TOOL_ROD_MAT, PersistentDataType.STRING, lMat.getId());
+        pdc.set(TinkerKeys.TOOL_BINDING_MAT, PersistentDataType.STRING, tMat.getId());
+
+        pdc.set(TinkerKeys.TOOL_MAX_DURABILITY, PersistentDataType.INTEGER, totalDurability);
+        pdc.set(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, totalDurability);
+
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    @Nonnull
+    private static String getArmorPerkDescription(@Nonnull ModularArmorType type) {
+        return switch (type) {
+            case HELMET -> "Cranium Ward: reduces incoming headshot damage and grants hazard immunity.";
+            case CHESTPLATE -> "Kinetic Dampener: absorbs 25% of heavy impacts and releases protective energy.";
+            case LEGGINGS -> "Stride Momentum: mitigates sprint stamina drain and boosts movement recovery.";
+            case BOOTS -> "Feathered Grounding: negates up to 50% fall damage and grants anti-slip traction.";
         };
     }
 }

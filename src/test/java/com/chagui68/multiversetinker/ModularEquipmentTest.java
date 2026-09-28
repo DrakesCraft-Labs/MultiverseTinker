@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker;
 
+import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
 import com.chagui68.multiversetinker.evolution.EvolutionTier;
@@ -102,5 +103,48 @@ class ModularEquipmentTest {
         assertTrue(pdc.has(TinkerKeys.IS_MODULAR_TOOL, PersistentDataType.BYTE));
         assertEquals(EvolutionTier.WOOD.name(), pdc.get(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING));
         assertEquals(0, pdc.get(TinkerKeys.BLOCKS_BROKEN_COUNT, PersistentDataType.INTEGER));
+    }
+
+    @Test
+    @DisplayName("Should create 3-part modular armor across all 4 pieces and evolution tiers")
+    void testCreateModularArmor() {
+        PartComposition plate = PartComposition.fromMaterials(List.of(diamond));
+        PartComposition lining = PartComposition.fromMaterials(List.of(iron));
+        PartComposition trim = PartComposition.fromMaterials(List.of(gold));
+
+        // Helmet
+        ItemStack helmet = TinkerItemBuilder.createModularArmor(
+                ModularArmorType.HELMET, plate, lining, trim, EvolutionTier.WOOD, 0
+        );
+        assertNotNull(helmet);
+        assertEquals(Material.LEATHER_HELMET, helmet.getType());
+        var hPdc = helmet.getItemMeta().getPersistentDataContainer();
+        assertTrue(hPdc.has(TinkerKeys.IS_MODULAR_ARMOR, PersistentDataType.BYTE));
+        assertEquals(ModularArmorType.HELMET.name(), hPdc.get(TinkerKeys.ARMOR_TYPE, PersistentDataType.STRING));
+        assertEquals(EvolutionTier.WOOD.name(), hPdc.get(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING));
+
+        // Chestplate at Diamond Tier
+        ItemStack chestplate = TinkerItemBuilder.createModularArmor(
+                ModularArmorType.CHESTPLATE, plate, lining, trim, EvolutionTier.DIAMOND, 1500
+        );
+        assertNotNull(chestplate);
+        assertEquals(Material.DIAMOND_CHESTPLATE, chestplate.getType());
+        var cPdc = chestplate.getItemMeta().getPersistentDataContainer();
+        assertEquals(EvolutionTier.DIAMOND.name(), cPdc.get(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING));
+        assertEquals(1500, cPdc.get(TinkerKeys.DAMAGE_ABSORBED, PersistentDataType.INTEGER));
+
+        // Leggings
+        ItemStack leggings = TinkerItemBuilder.createModularArmor(
+                ModularArmorType.LEGGINGS, plate, lining, trim, EvolutionTier.IRON, 350
+        );
+        assertNotNull(leggings);
+        assertEquals(Material.IRON_LEGGINGS, leggings.getType());
+
+        // Boots at Netherite Tier
+        ItemStack boots = TinkerItemBuilder.createModularArmor(
+                ModularArmorType.BOOTS, plate, lining, trim, EvolutionTier.NETHERITE, 3000
+        );
+        assertNotNull(boots);
+        assertEquals(Material.NETHERITE_BOOTS, boots.getType());
     }
 }
