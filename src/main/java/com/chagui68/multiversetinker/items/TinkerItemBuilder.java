@@ -471,8 +471,10 @@ public class TinkerItemBuilder {
                                                 @Nonnull EvolutionTier tier,
                                                 int killCount) {
         Material baseMat = weaponType.getBaseMaterial();
-        if (weaponType == ModularWeaponType.SWORD || weaponType == ModularWeaponType.SPEAR) {
+        if (weaponType == ModularWeaponType.SWORD) {
             baseMat = tier.getMatchingSwordMaterial();
+        } else if (weaponType == ModularWeaponType.SPEAR) {
+            baseMat = tier.getMatchingSpearMaterial();
         }
 
         ItemStack item = new ItemStack(baseMat);

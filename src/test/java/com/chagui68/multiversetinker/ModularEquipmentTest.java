@@ -147,4 +147,44 @@ class ModularEquipmentTest {
         assertNotNull(boots);
         assertEquals(Material.NETHERITE_BOOTS, boots.getType());
     }
+
+    @Test
+    @DisplayName("Should create modular spear using native vanilla spear materials")
+    void testCreateModularSpear() {
+        PartComposition head = PartComposition.fromMaterials(List.of(diamond));
+        PartComposition shaft = PartComposition.fromMaterials(List.of(iron));
+        PartComposition buttCap = PartComposition.fromMaterials(List.of(gold));
+
+        // Wood tier spear
+        ItemStack woodSpear = TinkerItemBuilder.createModularWeapon(
+                ModularWeaponType.SPEAR, head, shaft, buttCap, EvolutionTier.WOOD, 0
+        );
+        assertNotNull(woodSpear);
+        assertEquals(Material.WOODEN_SPEAR, woodSpear.getType());
+
+        // Diamond tier spear
+        ItemStack diamondSpear = TinkerItemBuilder.createModularWeapon(
+                ModularWeaponType.SPEAR, head, shaft, buttCap, EvolutionTier.DIAMOND, 300
+        );
+        assertNotNull(diamondSpear);
+        assertEquals(Material.DIAMOND_SPEAR, diamondSpear.getType());
+    }
+
+    @Test
+    @DisplayName("Should update weapon progress and lore accurately on kills")
+    void testWeaponKillProgress() {
+        PartComposition head = PartComposition.fromMaterials(List.of(diamond));
+        PartComposition hilt = PartComposition.fromMaterials(List.of(iron));
+        PartComposition guard = PartComposition.fromMaterials(List.of(gold));
+
+        ItemStack sword = TinkerItemBuilder.createModularWeapon(
+                ModularWeaponType.SWORD, head, hilt, guard, EvolutionTier.WOOD, 0
+        );
+        assertNotNull(sword);
+
+        // Update progress to 10 kills
+        TinkerItemBuilder.updateWeaponProgress(sword, EvolutionTier.WOOD, 10);
+        assertNotNull(sword.getItemMeta().lore());
+        assertTrue(sword.getItemMeta().lore().get(1).toString().contains("10/15 Kills"));
+    }
 }

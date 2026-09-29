@@ -21,10 +21,12 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -108,16 +110,17 @@ public class ModularToolListener implements Listener {
         // Multi-Material Elemental Traits
         triggerMultiMaterialTraits(player, target, event, pdc);
 
+        // Durability wear on attack FIRST (so it does not overwrite kill tracking)
+        damageEquipment(player, hand);
+
         // Lethal hit check for instant kill progression
         if (pdc.has(TinkerKeys.IS_MODULAR_WEAPON, PersistentDataType.BYTE)) {
-            if (target.getHealth() - event.getFinalDamage() <= 0) {
-                target.getPersistentDataContainer().set(new NamespacedKey(plugin, "killed_by_mvtink"), PersistentDataType.BYTE, (byte) 1);
-                progressWeaponEvolution(player, hand);
+            NamespacedKey killKey = new NamespacedKey(plugin, "killed_by_mvtink");
+            if (target.getHealth() - event.getFinalDamage() <= 0 && !target.getPersistentDataContainer().has(killKey, PersistentDataType.BYTE)) {
+                target.getPersistentDataContainer().set(killKey, PersistentDataType.BYTE, (byte) 1);
+                progressWeaponEvolution(player, player.getInventory().getItemInMainHand());
             }
         }
-
-        // Durability wear
-        damageEquipment(player, hand, meta, pdc);
     }
 
     private void handleSpecializedWeaponCombat(Player player, LivingEntity target, EntityDamageByEntityEvent event, String weaponType) {
@@ -263,11 +266,11 @@ public class ModularToolListener implements Listener {
         }
 
         // 2. Durability wear
-        damageEquipment(player, hand, meta, pdc);
+        damageEquipment(player, hand);
 
         // 3. Tool Evolution Progression (Blocks Broken)
         if (pdc.has(TinkerKeys.IS_MODULAR_TOOL, PersistentDataType.BYTE)) {
-            progressToolEvolution(player, hand);
+            progressToolEvolution(player, player.getInventory().getItemInMainHand());
         }
     }
 
@@ -377,10 +380,13 @@ public class ModularToolListener implements Listener {
     // ==========================================
     // WEAPON EVOLUTION ON KILL
     // ==========================================
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
-        if (entity.getPersistentDataContainer().has(new NamespacedKey(plugin, "killed_by_mvtink"), PersistentDataType.BYTE)) {
+        if (entity instanceof ArmorStand) return;
+
+        NamespacedKey killKey = new NamespacedKey(plugin, "killed_by_mvtink");
+        if (entity.getPersistentDataContainer().has(killKey, PersistentDataType.BYTE)) {
             return; // Already counted via lethal combat damage
         }
 
@@ -389,6 +395,8 @@ public class ModularToolListener implements Listener {
             if (edbe.getDamager() instanceof Player p) {
                 killer = p;
             } else if (edbe.getDamager() instanceof Arrow arr && arr.getShooter() instanceof Player p) {
+                killer = p;
+            } else if (edbe.getDamager() instanceof Trident tri && tri.getShooter() instanceof Player p) {
                 killer = p;
             }
         }
@@ -402,11 +410,13 @@ public class ModularToolListener implements Listener {
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
 
         if (pdc.has(TinkerKeys.IS_MODULAR_WEAPON, PersistentDataType.BYTE)) {
+            entity.getPersistentDataContainer().set(killKey, PersistentDataType.BYTE, (byte) 1);
             progressWeaponEvolution(killer, hand);
         }
     }
 
     private void progressWeaponEvolution(Player player, ItemStack item) {
+        if (item == null || item.getType() == Material.AIR) return;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -421,12 +431,18 @@ public class ModularToolListener implements Listener {
 
         if (nextTier != null && kills >= nextTier.getKillRequirement()) {
             // Evolve Weapon!
-            pdc.set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, nextTier.name());
-            item.setItemMeta(meta);
+            meta = item.getItemMeta();
+            if (meta != null) {
+                meta.getPersistentDataContainer().set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, nextTier.name());
+                item.setItemMeta(meta);
+            }
             applyTierUpgrade(player, item, nextTier, true);
         } else {
             TinkerItemBuilder.updateWeaponProgress(item, currentTier, kills);
         }
+
+        player.getInventory().setItemInMainHand(item);
+        player.updateInventory();
 
         // Action bar feedback
         if (nextTier != null) {
@@ -441,6 +457,7 @@ public class ModularToolListener implements Listener {
     }
 
     private void progressToolEvolution(Player player, ItemStack item) {
+        if (item == null || item.getType() == Material.AIR) return;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -455,12 +472,18 @@ public class ModularToolListener implements Listener {
 
         if (nextTier != null && blocks >= nextTier.getBlockBreakRequirement()) {
             // Evolve Tool!
-            pdc.set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, nextTier.name());
-            item.setItemMeta(meta);
+            meta = item.getItemMeta();
+            if (meta != null) {
+                meta.getPersistentDataContainer().set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, nextTier.name());
+                item.setItemMeta(meta);
+            }
             applyTierUpgrade(player, item, nextTier, false);
         } else {
             TinkerItemBuilder.updateToolProgress(item, currentTier, blocks);
         }
+
+        player.getInventory().setItemInMainHand(item);
+        player.updateInventory();
 
         // Action bar feedback
         if (nextTier != null) {
@@ -481,8 +504,12 @@ public class ModularToolListener implements Listener {
         // Upgrade base material if applicable
         if (isWeapon) {
             String wType = pdc.get(TinkerKeys.WEAPON_TYPE, PersistentDataType.STRING);
-            if (wType != null && (wType.equalsIgnoreCase(ModularWeaponType.SWORD.name()) || wType.equalsIgnoreCase(ModularWeaponType.SPEAR.name()))) {
-                item.setType(newTier.getMatchingSwordMaterial());
+            if (wType != null) {
+                if (wType.equalsIgnoreCase(ModularWeaponType.SWORD.name())) {
+                    item.setType(newTier.getMatchingSwordMaterial());
+                } else if (wType.equalsIgnoreCase(ModularWeaponType.SPEAR.name())) {
+                    item.setType(newTier.getMatchingSpearMaterial());
+                }
             }
             int kills = pdc.getOrDefault(TinkerKeys.KILL_COUNT, PersistentDataType.INTEGER, 0);
             TinkerItemBuilder.updateWeaponProgress(item, newTier, kills);
@@ -497,6 +524,9 @@ public class ModularToolListener implements Listener {
             int blocks = pdc.getOrDefault(TinkerKeys.BLOCKS_BROKEN_COUNT, PersistentDataType.INTEGER, 0);
             TinkerItemBuilder.updateToolProgress(item, newTier, blocks);
         }
+
+        player.getInventory().setItemInMainHand(item);
+        player.updateInventory();
 
         // Play level-up sound, particle effects, and title
         player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.2f, 1.1f);
@@ -646,7 +676,12 @@ public class ModularToolListener implements Listener {
         }
     }
 
-    private void damageEquipment(Player player, ItemStack item, ItemMeta meta, PersistentDataContainer pdc) {
+    private void damageEquipment(Player player, ItemStack item) {
+        if (item == null || item.getType() == Material.AIR) return;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+
         // Adamantium: 75% chance to ignore wear
         String hComp = pdc.get(TinkerKeys.TOOL_HEAD_COMP, PersistentDataType.STRING);
         if (hComp != null && hComp.contains("mvtink_adamantium") && random.nextDouble() < 0.75) {
@@ -674,6 +709,7 @@ public class ModularToolListener implements Listener {
         }
 
         item.setItemMeta(meta);
+        player.getInventory().setItemInMainHand(item);
     }
 
     private boolean isUndead(LivingEntity entity) {

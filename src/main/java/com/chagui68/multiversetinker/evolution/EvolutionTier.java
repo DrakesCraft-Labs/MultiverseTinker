@@ -68,6 +68,19 @@ public enum EvolutionTier {
     }
 
     @Nonnull
+    public Material getMatchingSpearMaterial() {
+        return switch (this) {
+            case WOOD -> Material.WOODEN_SPEAR;
+            case STONE -> Material.STONE_SPEAR;
+            case COPPER -> Material.COPPER_SPEAR;
+            case IRON -> Material.IRON_SPEAR;
+            case GOLD -> Material.GOLDEN_SPEAR;
+            case DIAMOND -> Material.DIAMOND_SPEAR;
+            case NETHERITE -> Material.NETHERITE_SPEAR;
+        };
+    }
+
+    @Nonnull
     public Material getMatchingPickaxeMaterial() {
         return switch (this) {
             case WOOD -> Material.WOODEN_PICKAXE;

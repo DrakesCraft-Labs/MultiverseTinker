@@ -24,7 +24,7 @@ public enum ModularWeaponType {
             "Head / Prongs", "Handle / Shaft", "Pommel / Counterweight",
             "Harnesses oceanic surges and releases hydraulic lightning strikes."),
 
-    SPEAR("Modular Kinetic Spear", Material.WOODEN_SWORD, 3,
+    SPEAR("Modular Kinetic Spear", Material.WOODEN_SPEAR, 3,
             "Head / Spearhead", "Handle / Shaft", "Pommel / Butt Cap",
             "Features extended melee reach with deadly jousting thrusts."),
 
