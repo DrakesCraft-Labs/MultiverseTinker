@@ -3,17 +3,18 @@ package com.chagui68.multiversetinker;
 import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.access.AccessControl.Mode;
 import com.chagui68.multiversetinker.access.AccessControl.Surface;
+import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI;
 import com.chagui68.multiversetinker.forge.gui.ForgeGUI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.block.data.Levelled;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -61,30 +62,13 @@ class AccessControlTest {
     }
 
     @Test
-    @DisplayName("The shipped config opens the public surfaces and keeps the admin commands behind the node")
+    @DisplayName("The shipped defaults open the public surfaces and keep the admin commands behind the node")
     void shippedDefaultsReproduceTheHistoricalBehaviour() {
-        YamlConfiguration config = loadResource("config.yml");
-
-        for (Surface surface : Surface.values()) {
-            assertTrue(config.isString(surface.configKey()), surface.configKey() + " must be documented");
-            assertTrue(config.isString(surface.messageKey()), surface.messageKey() + " must be documented");
-            assertEquals(Mode.parse(config.getString(surface.configKey()), surface.defaultMode()),
-                    AccessControl.mode(surface),
-                    surface.configKey() + " must be the mode the plugin is actually running with");
-        }
-
         assertEquals(Mode.PUBLIC, AccessControl.mode(Surface.CODEX));
         assertEquals(Mode.PUBLIC, AccessControl.mode(Surface.FORGE));
         assertEquals(Mode.PUBLIC, AccessControl.mode(Surface.ARCHAEOLOGY));
         assertEquals(Mode.PERMISSION, AccessControl.mode(Surface.ADMIN_COMMANDS),
                 "Administrative commands must stay behind the permission node");
-
-        // plugin.yml has to document the node every surface falls back to, forge included.
-        YamlConfiguration descriptor = loadResource("plugin.yml");
-        for (Surface surface : Surface.values()) {
-            assertNotNull(descriptor.getString("permissions." + surface.permission() + ".description"),
-                    surface.permission() + " must be declared in plugin.yml");
-        }
     }
 
     @Test
@@ -222,8 +206,8 @@ class AccessControlTest {
     }
 
     @Test
-    @DisplayName("Closing the forge in config.yml stops the anvil, the crucible and the brush where they are")
-    void forgeAndArchaeologyAccessIsEnforcedInGame() {
+    @DisplayName("Closing the forge in config.yml stops the anvil and the crucible where they are")
+    void forgeAccessIsEnforcedOnTheAnvilAndCrucible() {
         World world = server.addSimpleWorld("access_world");
         Location anvilLocation = new Location(world, 10, 65, 10);
         plugin.getForgeManager().buildStructure(anvilLocation, 0);
@@ -261,30 +245,116 @@ class AccessControlTest {
         rightClick(operator, crucible);
         assertTrue(isSmelteryOpen(operator));
         operator.closeInventory();
+    }
 
-        // The brush follows access.archaeology, and a granted node must not override an op-only rule.
+    @Test
+    @DisplayName("The brush follows access.archaeology even when the permission node is granted")
+    void archaeologyAccessIsEnforcedOnTheBrush() {
+        World world = server.addSimpleWorld("brush_world");
         Block stone = world.getBlockAt(0, 64, 0);
         stone.setType(Material.STONE);
-        Block secondStone = world.getBlockAt(1, 64, 0);
-        secondStone.setType(Material.STONE);
-        ItemStack brush = plugin.getItemRegistry().getProspectorBrush();
 
+        PlayerMock guest = server.addPlayer("visitor");
+        guest.getInventory().setItemInMainHand(new ItemStack(Material.BRUSH));
+
+        // public: brushing a valid block starts a session.
+        drainActionBars(guest);
+        rightClick(guest, stone);
+        Component started = guest.nextActionBar();
+        assertNotNull(started, "A public brush must be able to start a session");
+        assertFalse(plain(started).contains("do not have permission"), "Got: " + plain(started));
+
+        // op: refused on the way in, even though the node itself was granted.
         plugin.getConfig().set("access.archaeology", "op");
         plugin.applyAccessSettings();
         guest.addAttachment(plugin, Surface.ARCHAEOLOGY.permission(), true);
 
         drainActionBars(guest);
-        plugin.getArchaeologyManager().handleBrushing(guest, secondStone, BlockFace.UP, brush);
+        rightClick(guest, stone);
         assertTrue(plain(guest.nextActionBar()).contains("do not have permission to perform geological archaeology"),
                 "An op-only surface must refuse even a granted node");
+    }
 
-        plugin.getConfig().set("access.archaeology", "public");
+    @Test
+    @DisplayName("The casting cauldron follows access.forge and keeps the metal when it refuses")
+    void castingAccessFollowsTheForgeRule() {
+        World world = server.addSimpleWorld("casting_world");
+        Block cauldron = world.getBlockAt(0, 64, 0);
+        cauldron.setType(Material.WATER_CAULDRON);
+        Levelled water = (Levelled) cauldron.getBlockData();
+        water.setLevel(3);
+        cauldron.setBlockData(water);
+
+        PlayerMock guest = server.addPlayer("visitor");
+        ItemStack molten = plugin.getItemRegistry().getMoltenBucketItem("mvtink_tin");
+        assertNotNull(molten);
+        guest.getInventory().setItemInMainHand(molten);
+        guest.getInventory().setItemInOffHand(plugin.getItemRegistry().getCastItem(CastType.INGOT));
+
+        // op-only: refused, and the water level proves nothing was cast.
+        plugin.getConfig().set("access.forge", "op");
         plugin.applyAccessSettings();
         drainActionBars(guest);
-        plugin.getArchaeologyManager().handleBrushing(guest, stone, BlockFace.UP, brush);
-        Component started = guest.nextActionBar();
-        assertNotNull(started, "A public brush must be able to start a session");
-        assertFalse(plain(started).contains("do not have permission"), "Got: " + plain(started));
+        rightClick(guest, cauldron);
+        assertTrue(plain(guest.nextActionBar()).contains("do not have permission to use the Forge"));
+        assertEquals(3, ((Levelled) cauldron.getBlockData()).getLevel(),
+                "A refused casting must not consume water or melt the cast");
+
+        // public: the casting completes, so the water drops by one level and the ingot arrives.
+        plugin.getConfig().set("access.forge", "public");
+        plugin.applyAccessSettings();
+        drainActionBars(guest);
+        rightClick(guest, cauldron);
+        assertEquals(2, ((Levelled) cauldron.getBlockData()).getLevel(),
+                "A public casting must consume one water level");
+        assertTrue(holdsItem(guest, "mvtink_tin_ingot"), "The cast ingot must land in the inventory");
+    }
+
+    @Test
+    @DisplayName("The forge's book button honours access.codex, exactly like the command")
+    void forgeBookButtonHonoursCodexAccess() {
+        World world = server.addSimpleWorld("book_world");
+        Location anvilLocation = new Location(world, 10, 65, 10);
+        plugin.getForgeManager().buildStructure(anvilLocation, 0);
+        anvilLocation.getBlock().setType(Material.ANVIL);
+
+        PlayerMock guest = server.addPlayer("visitor");
+        rightClick(guest, anvilLocation.getBlock());
+        assertTrue(isForgeOpen(guest), "The forge must open before the book button can be reached");
+
+        // The book lives in the Alloy tab.
+        guest.simulateInventoryClick(ForgeGUI.SLOT_NAV_ALLOY);
+        drainActionBars(guest);
+
+        plugin.getConfig().set("access.codex", "op");
+        plugin.applyAccessSettings();
+        guest.simulateInventoryClick(ForgeGUI.SLOT_ALLOY_RECIPES);
+        assertFalse(isCodexOpen(guest), "A closed codex must not open from the forge button");
+        assertTrue(plain(guest.nextActionBar()).contains("do not have permission to open the Alloy Codex"));
+
+        plugin.getConfig().set("access.codex", "public");
+        plugin.applyAccessSettings();
+        drainActionBars(guest);
+        guest.simulateInventoryClick(ForgeGUI.SLOT_ALLOY_RECIPES);
+        assertTrue(isCodexOpen(guest), "The book button must open the codex while the surface is public");
+    }
+
+    @Test
+    @DisplayName("/mvtink reload applies a changed access rule without a restart")
+    void reloadAppliesAccessChanges() {
+        PlayerMock operator = server.addPlayer("keeper");
+        operator.setOp(true);
+
+        plugin.getConfig().set("access.forge", "op");
+        plugin.saveConfig();
+        assertEquals(Mode.PUBLIC, AccessControl.mode(Surface.FORGE),
+                "Nothing is applied until the reload runs");
+
+        drain(operator);
+        assertTrue(operator.performCommand("mvtink reload"));
+        assertEquals(Mode.OP, AccessControl.mode(Surface.FORGE), "The reload must re-read the access block");
+        assertEquals(Mode.PUBLIC, AccessControl.mode(Surface.CODEX), "Untouched surfaces keep their value");
+        assertTrue(drain(operator).stream().anyMatch(line -> line.contains("reloaded successfully")));
     }
 
     // ==========================================
@@ -302,6 +372,18 @@ class AccessControlTest {
         PlayerInteractEvent event = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK,
                 player.getInventory().getItemInMainHand(), block, BlockFace.UP, EquipmentSlot.HAND);
         server.getPluginManager().callEvent(event);
+    }
+
+    /** True when the player is carrying an item with that registry id. */
+    private boolean holdsItem(PlayerMock player, String itemId) {
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item == null || !item.hasItemMeta()) continue;
+            String id = item.getItemMeta().getPersistentDataContainer()
+                    .get(com.chagui68.multiversetinker.storage.TinkerKeys.ITEM_ID,
+                            org.bukkit.persistence.PersistentDataType.STRING);
+            if (itemId.equals(id)) return true;
+        }
+        return false;
     }
 
     private boolean isCodexOpen(PlayerMock player) {
@@ -345,13 +427,4 @@ class AccessControlTest {
         return messages;
     }
 
-    private YamlConfiguration loadResource(String name) {
-        try (java.io.InputStream stream = getClass().getClassLoader().getResourceAsStream(name)) {
-            assertNotNull(stream, name + " must be packaged in the jar");
-            return YamlConfiguration.loadConfiguration(new java.io.InputStreamReader(stream,
-                    java.nio.charset.StandardCharsets.UTF_8));
-        } catch (java.io.IOException exception) {
-            throw new java.io.UncheckedIOException(exception);
-        }
-    }
 }

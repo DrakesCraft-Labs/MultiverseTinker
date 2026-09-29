@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker;
 
+import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.items.LoreWrap;
 import com.chagui68.multiversetinker.items.TinkerItemBuilder;
@@ -118,6 +119,26 @@ class MultiverseTinkerPluginTest {
                 TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE + " must be a boolean");
         assertEquals(config.getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE),
                 TinkerItemBuilder.isModularArmorDefense());
+    }
+
+    @Test
+    @DisplayName("config.yml documents the access rules and the plugin runs with them")
+    void testAccessConfiguration() {
+        YamlConfiguration config = loadResource("config.yml");
+
+        for (AccessControl.Surface surface : AccessControl.Surface.values()) {
+            assertTrue(config.isString(surface.configKey()), surface.configKey() + " must be a string");
+            assertTrue(config.isString(surface.messageKey()), surface.messageKey() + " must be a string");
+            assertEquals(surface.defaultMode(), AccessControl.mode(surface),
+                    surface.configKey() + " must be the mode the plugin applied on enable");
+        }
+
+        // The forge joins the command, the codex and archaeology as a documented surface.
+        YamlConfiguration descriptor = loadResource("plugin.yml");
+        for (AccessControl.Surface surface : AccessControl.Surface.values()) {
+            assertNotNull(descriptor.getString("permissions." + surface.permission() + ".description"),
+                    surface.permission() + " must be declared in plugin.yml");
+        }
     }
 
     /** Reads a packaged resource such as plugin.yml or config.yml. */
