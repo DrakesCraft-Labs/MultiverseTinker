@@ -213,12 +213,28 @@ animations:
 | Pantalones | Stride Coil | `CLOUD` | `ENTITY_PHANTOM_FLAP` |
 | Botas | Grounding Puff | `SNOWFLAKE` | `BLOCK_POWDER_SNOW_BREAK` |
 
+### ⚔️ Reglas del equipo modular (`equipment`)
+
+Las armas, herramientas y armaduras forjadas llevan su **propio contador de durabilidad**, así que el desgaste vanilla queda desactivado: el ítem es irrompible para el servidor (con el flag oculto, sin fila "Unbreakable" en el tooltip) y la durabilidad restante la informa su propia fila de lore `• Durability: actual / máxima`, que pasa de verde → amarillo → rojo según se desgasta. Una espada ya no puede romperse con el calendario vanilla mientras su contador modular sigue intacto.
+
+| Clave | Tipo | Por defecto | Qué hace |
+| --- | --- | --- | --- |
+| `equipment.modular-attack-damage` | booleano | `true` | `true` hace que el arma golpee con el daño de ataque calculado a partir de sus minerales (el valor que imprime su lore). `false` conserva el daño del material vanilla base; la durabilidad sigue siendo modular en ambos casos. |
+
+```yaml
+equipment:
+  modular-attack-damage: true
+```
+
+Con la regla activa, el golpe conserva críticos, fuerza y encantamientos: la contribución vanilla se mide desde el atributo de daño de ataque en vivo del jugador y solo se sustituye la base, de modo que los multiplicadores siguen escalando el daño forjado.
+
 ### 🧭 Otras secciones
 
 | Sección | Propósito |
 | --- | --- |
 | `archaeology` | Sistema de cepillado: interruptor, duración, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque, enfriamiento anti-macro y rendimientos de la brocha. |
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
+| `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado o con el del material vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumo de lava y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
 | `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). |
 | `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |

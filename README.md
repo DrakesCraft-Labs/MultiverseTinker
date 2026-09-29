@@ -212,12 +212,28 @@ animations:
 | Leggings | Stride Coil | `CLOUD` | `ENTITY_PHANTOM_FLAP` |
 | Boots | Grounding Puff | `SNOWFLAKE` | `BLOCK_POWDER_SNOW_BREAK` |
 
+### ⚔️ Modular equipment rules (`equipment`)
+
+Forged weapons, tools and armor carry their **own durability counter**, so vanilla wear is disabled: the item is unbreakable for the server (with the flag hidden, no "Unbreakable" row in the tooltip) and the remaining durability is reported by the item's own `• Durability: current / max` lore row, which turns green → yellow → red as the piece wears down. A sword can therefore never break on a vanilla schedule while its modular counter sits untouched.
+
+| Key | Type | Default | What it does |
+| --- | --- | --- | --- |
+| `equipment.modular-attack-damage` | boolean | `true` | `true` makes a weapon hit for the attack damage rolled from its minerals (the value printed in its lore). `false` keeps the base vanilla material's damage; durability stays modular either way. |
+
+```yaml
+equipment:
+  modular-attack-damage: true
+```
+
+When the rule is on, the strike keeps its critical hits, strength and enchantments: the vanilla contribution is measured from the player's live attack-damage attribute and only the base is swapped, so the multipliers still scale the forged damage.
+
 ### 🧭 Other sections
 
 | Section | Purpose |
 | --- | --- |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour, anti-macro cooldown and brush yields. |
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
+| `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage or the vanilla material value (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: lava consumption chance and the Magma Block heat-source slowdown multiplier. |
 | `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). |
 | `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |

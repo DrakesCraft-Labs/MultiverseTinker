@@ -61,6 +61,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 plugin.reloadConfig();
                 plugin.applyLoreSettings();
                 plugin.applyAnimationSettings();
+                plugin.applyEquipmentSettings();
                 plugin.getArchaeologyManager().getLootTable().reload();
                 itemRegistry.reload();
                 sender.sendMessage(miniMessage.deserialize("<green>MultiverseTinker configuration, items and loot tables reloaded successfully!</green>"));

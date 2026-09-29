@@ -45,6 +45,32 @@ public class TinkerItemBuilder {
     /** Armor always answers hits, so every armor trait block is labelled the same way. */
     private static final String ARMOR_TRAIT_CHANNEL = "when struck";
 
+    /** Config key that decides whether the rolled attack damage replaces the vanilla one. */
+    public static final String CONFIG_MODULAR_ATTACK_DAMAGE = "equipment.modular-attack-damage";
+
+    private static volatile boolean modularAttackDamage = true;
+
+    /**
+     * Applies the equipment rules of {@code config.yml}.
+     *
+     * @param replaceVanillaDamage whether the mineral-rolled attack damage replaces the base
+     *                             material's vanilla damage; {@code false} keeps vanilla combat
+     *                             values while still stopping vanilla wear
+     */
+    public static void configureEquipment(boolean replaceVanillaDamage) {
+        modularAttackDamage = replaceVanillaDamage;
+    }
+
+    /** Restores the shipped default (modular attack damage applied). */
+    public static void resetEquipment() {
+        configureEquipment(true);
+    }
+
+    /** Whether forged equipment fights with the damage printed in its own lore. */
+    public static boolean isModularAttackDamage() {
+        return modularAttackDamage;
+    }
+
     @Nonnull
     public static ItemStack createRawMineral(@Nonnull TinkerMaterial material) {
         ItemStack item = new ItemStack(material.getBaseVanillaMaterial());
@@ -633,6 +659,10 @@ public class TinkerItemBuilder {
         pdc.set(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, totalDurability);
         pdc.set(TinkerKeys.TOOL_ATTACK_DAMAGE, PersistentDataType.FLOAT, (float) attackDamage);
 
+        // Vanilla must not wear the weapon out: its own counter is the only durability it can lose.
+        // The rolled attack damage is applied on the strike, where the live swing multipliers are known.
+        applyUnbreakable(meta);
+
         item.setItemMeta(meta);
         return item;
     }
@@ -748,6 +778,9 @@ public class TinkerItemBuilder {
         pdc.set(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, totalDurability);
         pdc.set(TinkerKeys.TOOL_MINING_SPEED, PersistentDataType.FLOAT, (float) miningSpeed);
         pdc.set(TinkerKeys.TOOL_ATTACK_DAMAGE, PersistentDataType.FLOAT, (float) attackDamage);
+
+        // Same rule as weapons: vanilla wear is off, the damage is applied on the strike.
+        applyUnbreakable(meta);
 
         item.setItemMeta(meta);
         return item;
@@ -977,6 +1010,9 @@ public class TinkerItemBuilder {
         pdc.set(TinkerKeys.TOOL_MAX_DURABILITY, PersistentDataType.INTEGER, totalDurability);
         pdc.set(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, totalDurability);
 
+        // Armor keeps its vanilla defensive attributes, but its wear belongs to the modular counter.
+        applyUnbreakable(meta);
+
         item.setItemMeta(meta);
         return item;
     }
@@ -1059,6 +1095,50 @@ public class TinkerItemBuilder {
      * separator row that follows it instead of by fixed indices — a wrapped bar stays intact and the
      * rows below keep their place.</p>
      */
+    /**
+     * Keeps vanilla durability out of modular equipment.
+     *
+     * <p>Forged gear tracks its own counter, so if the server were allowed to spend vanilla durability
+     * a sword would wear on every swing and break on a vanilla schedule while the modular counter sat
+     * untouched. Marking the item unbreakable hands durability entirely to the plugin, and the flag is
+     * hidden so the client does not print an "Unbreakable" row either.</p>
+     */
+    private static void applyUnbreakable(@Nonnull ItemMeta meta) {
+        meta.setUnbreakable(true);
+        meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+    }
+
+    /**
+     * Rewrites the {@code • Durability: current / max} row of a modular item in place.
+     *
+     * <p>Because the item is unbreakable for the server, the vanilla durability bar no longer shows
+     * wear; this row is the item's durability readout instead. It is located by its text, so the
+     * wrapped lore around it can change without breaking the update, and it is coloured by how much
+     * of the piece is left.</p>
+     */
+    public static void updateDurabilityLine(@Nonnull ItemStack item, int current, int max) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        List<Component> lore = meta.lore();
+        if (lore == null || lore.isEmpty()) return;
+
+        String label = "  • Durability: ";
+        for (int i = 0; i < lore.size(); i++) {
+            if (!PLAIN.serialize(lore.get(i)).startsWith(label)) continue;
+
+            double ratio = max <= 0 ? 1.0 : (double) current / max;
+            NamedTextColor color = ratio > 0.5 ? NamedTextColor.GREEN
+                    : ratio > 0.2 ? NamedTextColor.YELLOW : NamedTextColor.RED;
+
+            List<Component> rebuilt = new ArrayList<>(lore);
+            rebuilt.set(i, Component.text(label + Math.max(0, current) + " / " + max, color)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(rebuilt);
+            item.setItemMeta(meta);
+            return;
+        }
+    }
+
     private static void updateProgressHeader(@Nonnull ItemMeta meta, @Nonnull Component tierTag, @Nonnull Component progressLine) {
         List<Component> lore = meta.lore();
         if (lore == null || lore.isEmpty()) return;

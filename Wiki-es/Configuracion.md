@@ -124,12 +124,43 @@ Cuándo salta cada animación:
 
 ---
 
+## ⚔️ Reglas del equipo modular (`equipment`)
+
+Un arma, herramienta o pieza de armadura forjada lleva su **propio contador de durabilidad**. Por eso el desgaste
+vanilla está apagado: el ítem es irrompible para el servidor (el flag va oculto, así el tooltip nunca imprime una
+fila "Unbreakable") y la durabilidad restante la informa su propia fila de lore `• Durability: actual / máxima`, que
+pasa de verde → amarillo → rojo según se desgasta. Sin esto, Minecraft y el plugin gastarían durabilidad en el mismo
+golpe y una espada se rompería con el calendario vanilla mientras su contador modular seguía intacto.
+
+| Clave | Tipo | Por defecto | Qué hace |
+| --- | --- | --- | --- |
+| `equipment.modular-attack-damage` | booleano | `true` | `true` hace que el arma golpee con el daño de ataque calculado a partir de sus minerales — el valor que imprime su lore. `false` conserva el daño del material vanilla base. La durabilidad sigue siendo modular en ambos casos. |
+
+```yaml
+equipment:
+  modular-attack-damage: true
+```
+
+### Cómo se calcula un golpe modular
+
+El arma por debajo es un ítem vanilla, así que el servidor usaría el daño del material base: una espada ancha forjada
+de Piedra del Vacío golpearía exactamente igual de fuerte que la espada de madera sobre la que está construida. Con
+la regla activa, la contribución vanilla se lee del atributo de daño de ataque en vivo del jugador y solo se sustituye
+esa base, de modo que los críticos, las pociones de fuerza y los encantamientos siguen multiplicando el daño forjado
+en lugar de perderse.
+
+Poner `modular-attack-damage: false` restaura los valores de combate vanilla puros (útil para servidores con sus
+propios plugins de daño), mientras que el desgaste vanilla sigue desactivado en ambos casos.
+
+---
+
 ## 🧭 Otras secciones
 
 | Sección | Propósito |
 | --- | --- |
 | `archaeology` | Sistema de cepillado: interruptor, duración del cepillado, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque (`DEGRADE` / `COOLDOWN` / `NONE`), enfriamiento anti-macro y rendimientos de la brocha. |
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
+| `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado o con el del material vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumir la lava fuente y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
 | `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). |
 | `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |

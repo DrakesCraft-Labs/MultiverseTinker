@@ -124,12 +124,42 @@ When the animation plays:
 
 ---
 
+## ⚔️ Modular equipment rules (`equipment`)
+
+A forged weapon, tool or armor piece carries its **own durability counter**. Vanilla wear is therefore off: the
+item is unbreakable for the server (the flag is hidden, so the tooltip never prints an "Unbreakable" row) and the
+remaining durability is reported by the item's own `• Durability: current / max` lore row, which turns
+green → yellow → red as the piece wears down. Without this, Minecraft and the plugin would both spend durability on
+the same swing and a sword would break on a vanilla schedule while its modular counter sat untouched.
+
+| Key | Type | Default | What it does |
+| --- | --- | --- | --- |
+| `equipment.modular-attack-damage` | boolean | `true` | `true` makes a weapon hit for the attack damage rolled from its minerals — the value printed in its lore. `false` keeps the base vanilla material's damage. Durability stays modular either way. |
+
+```yaml
+equipment:
+  modular-attack-damage: true
+```
+
+### How a modular strike is calculated
+
+The weapon is a vanilla item underneath, so the server would otherwise use the base material's damage — a
+broadsword forged from Voidstone would hit exactly as hard as the wooden sword it is built on. With the rule on,
+the vanilla contribution is read from the player's live attack-damage attribute and only that base is replaced, so
+critical hits, strength potions and enchantments keep multiplying the forged damage instead of being discarded.
+
+Setting `modular-attack-damage: false` restores pure vanilla combat values (handy for servers that use their own
+damage plugins), while vanilla wear stays disabled in both cases.
+
+---
+
 ## 🧭 Other sections
 
 | Section | Purpose |
 | --- | --- |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour (`DEGRADE` / `COOLDOWN` / `NONE`), anti-macro cooldown and brush yields. |
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
+| `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage or the vanilla material value (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: chance to consume the lava source and the Magma Block heat-source slowdown multiplier. |
 | `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). |
 | `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |

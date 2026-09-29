@@ -21,6 +21,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Ageable;
@@ -47,7 +49,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -154,6 +155,10 @@ public class ModularToolListener implements Listener {
         ItemMeta meta = hand.getItemMeta();
         if (meta == null) return;
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
+
+        // The weapon fights with the damage its own materials rolled, never with the vanilla material
+        // it is built on. Applied before the perks so their scaling starts from the real strike.
+        applyModularAttackDamage(player, pdc, event);
 
         String weaponTypeName = pdc.get(TinkerKeys.WEAPON_TYPE, PersistentDataType.STRING);
         String toolTypeName = pdc.get(TinkerKeys.TOOL_TYPE, PersistentDataType.STRING);
@@ -1327,6 +1332,44 @@ public class ModularToolListener implements Listener {
         }
     }
 
+    /**
+     * Makes a modular weapon hit for the attack damage rolled from its own materials.
+     *
+     * <p>Underneath, the weapon is a vanilla item, so the server would use the base material's damage
+     * — a broadsword forged from Voidstone would hit exactly as hard as the wooden sword it is built
+     * on. The vanilla contribution is read from the player's live attack damage attribute and the
+     * rolled damage is scaled by the ratio the swing already carries, so critical hits, strength and
+     * enchantments keep multiplying the new base instead of being discarded.</p>
+     */
+    private void applyModularAttackDamage(@Nonnull Player player, @Nonnull PersistentDataContainer pdc,
+                                          @Nonnull EntityDamageByEntityEvent event) {
+        if (!TinkerItemBuilder.isModularAttackDamage()) return;
+
+        Float rolled = pdc.get(TinkerKeys.TOOL_ATTACK_DAMAGE, PersistentDataType.FLOAT);
+        if (rolled == null || rolled <= 0) return;
+
+        AttributeInstance attack = player.getAttribute(Attribute.ATTACK_DAMAGE);
+        if (attack == null) return;
+
+        event.setDamage(scaleToRolledDamage(rolled, attack.getValue(), event.getDamage()));
+    }
+
+    /**
+     * Swaps the vanilla base damage of a swing for the weapon's rolled damage while keeping whatever
+     * multipliers that swing already carries.
+     *
+     * <p>Public and free of server state, so the maths is unit tested directly.</p>
+     *
+     * @param rolled        attack damage rolled from the weapon's materials
+     * @param vanillaDamage attack damage contributed by the vanilla base material
+     * @param currentDamage damage the event carries right now (crit, strength and enchants included)
+     * @return the damage the strike should deal
+     */
+    public static double scaleToRolledDamage(double rolled, double vanillaDamage, double currentDamage) {
+        if (rolled <= 0.0 || vanillaDamage <= 0.0) return currentDamage;
+        return Math.max(0.0, rolled * (currentDamage / vanillaDamage));
+    }
+
     private void damageEquipment(Player player, ItemStack item) {
         if (item == null || item.getType() == Material.AIR) return;
         ItemMeta meta = item.getItemMeta();
@@ -1358,13 +1401,11 @@ public class ModularToolListener implements Listener {
 
         pdc.set(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, curDur);
 
-        if (meta instanceof Damageable damageable) {
-            int vanillaMax = item.getType().getMaxDurability();
-            double damageRatio = 1.0 - ((double) curDur / maxDur);
-            damageable.setDamage((int) (vanillaMax * damageRatio));
-        }
-
+        // Modular equipment is unbreakable for vanilla, so the vanilla durability bar is no longer the
+        // wear readout: the item's own lore row is, and it is rewritten with the remaining durability.
         item.setItemMeta(meta);
+        player.getInventory().setItemInMainHand(item);
+        TinkerItemBuilder.updateDurabilityLine(item, curDur, maxDur);
         player.getInventory().setItemInMainHand(item);
     }
 
@@ -1517,13 +1558,8 @@ public class ModularToolListener implements Listener {
 
         pdc.set(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, curDur);
 
-        if (meta instanceof Damageable damageable) {
-            int vanillaMax = item.getType().getMaxDurability();
-            double damageRatio = 1.0 - ((double) curDur / maxDur);
-            damageable.setDamage((int) (vanillaMax * damageRatio));
-        }
-
         item.setItemMeta(meta);
+        TinkerItemBuilder.updateDurabilityLine(item, curDur, maxDur);
     }
 
     private boolean isModularEquipment(@Nullable ItemStack item) {

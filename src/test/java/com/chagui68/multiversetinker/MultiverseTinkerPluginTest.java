@@ -2,6 +2,7 @@ package com.chagui68.multiversetinker;
 
 import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.items.LoreWrap;
+import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import com.chagui68.multiversetinker.tools.EquipmentAnimation;
 import org.bukkit.Material;
@@ -94,6 +95,17 @@ class MultiverseTinkerPluginTest {
         assertEquals(config.getDouble(EquipmentAnimation.CONFIG_PARTICLE_SCALE), EquipmentAnimation.configuredParticleScale());
         assertEquals(config.getBoolean(EquipmentAnimation.CONFIG_SOUNDS), EquipmentAnimation.isSoundsEnabled());
         assertEquals(config.getInt(EquipmentAnimation.CONFIG_COOLDOWN_MILLIS), EquipmentAnimation.configuredCooldownMillis());
+    }
+
+    @Test
+    @DisplayName("config.yml documents the modular equipment rules and the plugin applies them")
+    void testEquipmentConfiguration() {
+        YamlConfiguration config = loadResource("config.yml");
+
+        assertTrue(config.isBoolean(TinkerItemBuilder.CONFIG_MODULAR_ATTACK_DAMAGE),
+                TinkerItemBuilder.CONFIG_MODULAR_ATTACK_DAMAGE + " must be a boolean");
+        assertEquals(config.getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ATTACK_DAMAGE),
+                TinkerItemBuilder.isModularAttackDamage());
     }
 
     /** Reads a packaged resource such as plugin.yml or config.yml. */

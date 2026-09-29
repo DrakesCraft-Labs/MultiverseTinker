@@ -10,6 +10,7 @@ import com.chagui68.multiversetinker.commands.MultiverseTinkerCommand;
 import com.chagui68.multiversetinker.forge.ForgeListener;
 import com.chagui68.multiversetinker.forge.ForgeManager;
 import com.chagui68.multiversetinker.items.LoreWrap;
+import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
@@ -56,6 +57,7 @@ public class MultiverseTinker extends JavaPlugin {
         saveConfig();
         applyLoreSettings();
         applyAnimationSettings();
+        applyEquipmentSettings();
 
         getLogger().info("========================================");
         getLogger().info("   MultiverseTinker - Paper 1.21+       ");
@@ -163,6 +165,22 @@ public class MultiverseTinker extends JavaPlugin {
                         + (EquipmentAnimation.isSoundsEnabled() ? "on" : "off") + ", cooldown "
                         + EquipmentAnimation.configuredCooldownMillis() + "ms)."
                 : "disabled."));
+    }
+
+    /**
+     * Applies the modular equipment rules of {@code config.yml}.
+     *
+     * <p>Forged equipment is always unbreakable for vanilla — its own durability counter is the only
+     * wear it can take — while the attack damage printed in its lore can be toggled between the
+     * mineral-rolled value and the plain vanilla material value.</p>
+     */
+    public void applyEquipmentSettings() {
+        TinkerItemBuilder.configureEquipment(
+                getConfig().getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ATTACK_DAMAGE, true));
+
+        getLogger().info("Modular equipment: vanilla durability disabled, attack damage "
+                + (TinkerItemBuilder.isModularAttackDamage() ? "taken from the forged materials."
+                        : "left at the vanilla material value."));
     }
 
     private void registerRecipes() {
