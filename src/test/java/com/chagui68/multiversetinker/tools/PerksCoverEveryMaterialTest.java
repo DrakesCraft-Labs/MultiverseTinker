@@ -1,5 +1,6 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.tools;
 
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.MaterialRarity;
 import com.chagui68.multiversetinker.api.MaterialType;
@@ -12,7 +13,6 @@ import com.chagui68.multiversetinker.items.PartComposition;
 import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
-import com.chagui68.multiversetinker.tools.PerkEpithet;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;

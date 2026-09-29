@@ -1,9 +1,8 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.tools;
 
 import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
-import com.chagui68.multiversetinker.tools.EquipmentAnimation;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

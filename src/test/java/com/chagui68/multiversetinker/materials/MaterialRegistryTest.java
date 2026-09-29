@@ -1,8 +1,6 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.materials;
 
 import com.chagui68.multiversetinker.api.MineralOrigin;
-import com.chagui68.multiversetinker.materials.MaterialRegistry;
-import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

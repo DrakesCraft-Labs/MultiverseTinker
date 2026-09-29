@@ -1,6 +1,5 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.items;
 
-import com.chagui68.multiversetinker.items.PartComposition;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import org.junit.jupiter.api.BeforeEach;

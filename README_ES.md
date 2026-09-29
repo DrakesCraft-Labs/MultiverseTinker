@@ -292,6 +292,18 @@ La página es un sitio estático en [`docs/`](docs), desplegado por el [workflow
 
 ---
 
+## 🛠️ Compilación y tests
+
+```bash
+mvn clean package
+```
+
+Compilado y verificado para **Paper / Purpur 1.21+** con **Java 21**.
+
+Los tests viven en `src/test/java/com/chagui68/multiversetinker/`, en una carpeta por subsistema cubierto — `alloys`, `items`, `tools`, `forge`, `archaeology`, `commands`, `materials`, `evolution` y `access` — más `wiki` y `site` para las páginas generadas y el JSON que las respalda. Se ejecutan todos con `./mvnw -o test`, o una sola clase por su nombre simple con `./mvnw -o test -Dtest=SiteDataTest`, esté en la carpeta que esté.
+
+---
+
 <div align="center">
 
 **DrakesCraft Labs** · Diseñado por **Chagui68**  

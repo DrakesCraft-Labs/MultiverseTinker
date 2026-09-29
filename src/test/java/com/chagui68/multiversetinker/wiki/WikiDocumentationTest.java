@@ -1,9 +1,9 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.wiki;
 
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.alloys.TinkerAlloy;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
-import com.chagui68.multiversetinker.wiki.WikiPages;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

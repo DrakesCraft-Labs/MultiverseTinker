@@ -1,4 +1,4 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.forge;
 
 import com.chagui68.multiversetinker.forge.structure.ForgeStructure;
 import org.junit.jupiter.api.Test;

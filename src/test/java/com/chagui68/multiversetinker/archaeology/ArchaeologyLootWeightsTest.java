@@ -1,8 +1,8 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.archaeology;
 
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.api.MaterialRarity;
 import com.chagui68.multiversetinker.api.MineralOrigin;
-import com.chagui68.multiversetinker.archaeology.ArchaeologyLootTable;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import org.bukkit.configuration.file.YamlConfiguration;

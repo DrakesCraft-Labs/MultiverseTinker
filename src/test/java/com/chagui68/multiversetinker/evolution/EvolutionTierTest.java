@@ -1,6 +1,5 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.evolution;
 
-import com.chagui68.multiversetinker.evolution.EvolutionTier;
 import org.bukkit.Material;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

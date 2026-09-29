@@ -1,5 +1,6 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.tools;
 
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.evolution.EvolutionTier;
 import com.chagui68.multiversetinker.items.LoreWrap;

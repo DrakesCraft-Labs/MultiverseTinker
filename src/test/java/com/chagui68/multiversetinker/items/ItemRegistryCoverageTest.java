@@ -1,9 +1,8 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.items;
 
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.CastType;
-import com.chagui68.multiversetinker.items.PartComposition;
-import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.tools.VanillaCatalyst;

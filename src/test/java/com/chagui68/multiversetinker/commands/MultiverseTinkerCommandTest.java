@@ -1,5 +1,6 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.commands;
 
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;

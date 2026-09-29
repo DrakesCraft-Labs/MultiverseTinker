@@ -1,7 +1,7 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.site;
 
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
-import com.chagui68.multiversetinker.site.SiteData;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

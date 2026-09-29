@@ -1,11 +1,10 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.items;
 
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
 import com.chagui68.multiversetinker.evolution.EvolutionTier;
-import com.chagui68.multiversetinker.items.PartComposition;
-import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;

@@ -301,6 +301,8 @@ mvn clean package
 
 Built and verified for **Paper / Purpur 1.21+** with **Java 21**.
 
+Tests live in `src/test/java/com/chagui68/multiversetinker/`, in one folder per subsystem they cover — `alloys`, `items`, `tools`, `forge`, `archaeology`, `commands`, `materials`, `evolution` and `access` — plus `wiki` and `site` for the generated pages and the JSON behind them. Run them all with `./mvnw -o test`, or a single class by its simple name with `./mvnw -o test -Dtest=SiteDataTest`, whatever folder it sits in.
+
 ---
 
 <div align="center">

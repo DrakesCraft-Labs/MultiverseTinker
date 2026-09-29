@@ -1,6 +1,6 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.access;
 
-import com.chagui68.multiversetinker.access.AccessControl;
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.access.AccessControl.Mode;
 import com.chagui68.multiversetinker.access.AccessControl.Surface;
 import com.chagui68.multiversetinker.api.CastType;

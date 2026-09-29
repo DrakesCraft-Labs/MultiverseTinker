@@ -1,5 +1,6 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.forge;
 
+import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.alloys.TinkerAlloy;
 import com.chagui68.multiversetinker.api.MaterialRarity;

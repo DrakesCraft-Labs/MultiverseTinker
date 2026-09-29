@@ -1,7 +1,6 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.archaeology;
 
 import com.chagui68.multiversetinker.api.MineralOrigin;
-import com.chagui68.multiversetinker.archaeology.ArchaeologyBlockType;
 import org.bukkit.Material;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

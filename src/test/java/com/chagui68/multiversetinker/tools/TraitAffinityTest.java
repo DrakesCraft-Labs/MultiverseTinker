@@ -1,12 +1,10 @@
-package com.chagui68.multiversetinker;
+package com.chagui68.multiversetinker.tools;
 
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
 import com.chagui68.multiversetinker.items.PartComposition;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
-import com.chagui68.multiversetinker.tools.TraitAffinity;
-import com.chagui68.multiversetinker.tools.WeaponPerkProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
