@@ -33,6 +33,8 @@ class AlloyCodexTest {
     private static final int SLOT_SECTION_FIRST = 1;
     private static final int SLOT_PREV = 45;
     private static final int SLOT_NEXT = 53;
+    private static final int SLOT_SCOPE = 46;
+    private static final int SLOT_KIND = 48;
 
     private ServerMock server;
     private MultiverseTinker plugin;
@@ -119,6 +121,84 @@ class AlloyCodexTest {
         assertEquals(org.bukkit.Material.GRAY_STAINED_GLASS_PANE,
                 codex.getInventory().getItem(SLOT_PREV).getType(),
                 "The first page must not offer a previous page");
+    }
+
+    @Test
+    @DisplayName("The registry scope lists every registered item id, filterable by kind")
+    void registryScopeListsEveryItemId() {
+        codex.handleClick(player, SLOT_SECTION_FIRST + 6);
+        assertEquals(AlloyCodexGUI.Section.MINERALS, codex.getSection());
+        assertFalse(codex.isRegistryScope(), "The catalog opens on the curated materials");
+
+        int registryIds = plugin.getItemRegistry().getAvailableItemIdCount();
+        assertTrue(registryIds > 2000, "The registry must hold thousands of ids, got " + registryIds);
+
+        codex.handleClick(player, SLOT_SCOPE);
+        assertTrue(codex.isRegistryScope());
+        assertEquals(registryIds, codex.entryCount(AlloyCodexGUI.Section.MINERALS),
+                "The flat scope must expose every registered id, not just one per material");
+        assertTrue(registryIds > materials.getAll().size() * 10,
+                "Every material contributes far more than one id");
+
+        // A kind filter narrows the listing to ids of that kind only.
+        int expectedRaw = 0;
+        for (String id : plugin.getItemRegistry().getAllItemIds()) {
+            if (id.endsWith("_raw")) expectedRaw++;
+        }
+        codex.handleClick(player, SLOT_KIND);
+        assertEquals(com.chagui68.multiversetinker.items.TinkerItemRegistry.ItemKind.RAW, codex.getKindFilter());
+        assertEquals(expectedRaw, codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+
+        // And the page can be walked without ever leaving the range.
+        int pages = (int) Math.ceil(expectedRaw / 36.0);
+        for (int i = 0; i < pages + 2; i++) {
+            codex.handleClick(player, SLOT_NEXT);
+        }
+        assertEquals(org.bukkit.Material.GRAY_STAINED_GLASS_PANE,
+                codex.getInventory().getItem(SLOT_NEXT).getType(), "The last page must close the listing");
+        assertNotNull(codex.registryIdAt(expectedRaw - 1), "The final id must still be reachable");
+        assertNull(codex.registryIdAt(expectedRaw), "Out-of-range ids must not resolve");
+
+        // Cycling the filter all the way back to ALL restores the full registry.
+        for (int i = 0; i < com.chagui68.multiversetinker.items.TinkerItemRegistry.ItemKind.values().length; i++) {
+            codex.handleClick(player, SLOT_KIND);
+        }
+        assertNull(codex.getKindFilter(), "The filter must cycle back to ALL");
+        assertEquals(registryIds, codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+    }
+
+    @Test
+    @DisplayName("Clicking a material drills into every id that belongs to it")
+    void catalogDrillsIntoAMaterial() {
+        codex.handleClick(player, SLOT_SECTION_FIRST + 6);
+
+        TinkerMaterial copper = materials.get("mvtink_copper");
+        assertNotNull(copper);
+        int copperIndex = new ArrayList<>(materials.getAll()).indexOf(copper);
+        assertTrue(copperIndex >= 0, "Copper must be in the catalog");
+
+        int slot = CONTENT_START + (copperIndex % 36);
+        for (int page = 0; page < copperIndex / 36; page++) {
+            codex.handleClick(player, SLOT_NEXT);
+        }
+        codex.handleClick(player, slot);
+
+        assertNotNull(codex.getCatalogTarget(), "Clicking a material must drill into it");
+        assertEquals(copper.getId(), codex.getCatalogTarget().getId());
+
+        long expected = plugin.getItemRegistry().getAllItemIds().stream()
+                .filter(id -> id.startsWith(copper.getId()))
+                .count();
+        assertEquals(expected, codex.entryCount(AlloyCodexGUI.Section.MINERALS),
+                "The drill-down must list every id of that material");
+        assertTrue(expected >= 15, "A material owns a raw, ingot, nugget, block, bucket and ten parts");
+        // Each entry names its own id, so a player can copy it into /mvtink give.
+        String entryText = plainText(codex.getInventory().getItem(CONTENT_START));
+        assertTrue(entryText.contains(copper.getId()), "The entry must name the id, got: " + entryText);
+
+        // Any click in the drill-down returns to the material list.
+        codex.handleClick(player, CONTENT_START);
+        assertNull(codex.getCatalogTarget());
     }
 
     @Test

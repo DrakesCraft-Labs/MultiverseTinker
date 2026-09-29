@@ -56,7 +56,7 @@ public class AlloyCodexGUI implements InventoryHolder {
         SUMMARY(Material.BOOK, "<gradient:#f1c40f:#e67e22><b>Alloy Space Summary</b></gradient>",
                 "How many alloys exist, by category."),
         MINERALS(Material.AMETHYST_CLUSTER, "<gradient:#00ffaa:#00aaff><b>Mineral Catalog</b></gradient>",
-                "Every geological, vanilla and alloy material this server knows, with its traits.");
+                "Every material this server knows — and every registered item id, down to the last part.");
 
         private final Material icon;
         private final String title;
@@ -74,8 +74,12 @@ public class AlloyCodexGUI implements InventoryHolder {
     private static final int CONTENT_SLOTS = 36;
     private static final int SLOT_BACK = 0;
     private static final int SLOT_SECTION_FIRST = 1;
-    /** The top row is fully used by the sections, so the chat dump lives in the bottom row. */
+    /** The top row is fully used by the sections, so the controls live in the bottom row. */
     private static final int SLOT_PRINT = 47;
+    /** Catalog scope toggle: curated materials or the flat item registry. */
+    private static final int SLOT_SCOPE = 46;
+    /** Kind filter of the flat item registry. */
+    private static final int SLOT_KIND = 48;
     private static final int SLOT_CLOSE = 8;
     private static final int SLOT_PREV = 45;
     private static final int SLOT_INFO = 49;
@@ -93,6 +97,14 @@ public class AlloyCodexGUI implements InventoryHolder {
     /** Material selected in the explorer, or {@code null} while choosing one. */
     @Nullable
     private TinkerMaterial explorerTarget;
+    /** True while the catalog lists every registered item id instead of the curated materials. */
+    private boolean registryScope;
+    /** Kind filter of the registry scope; {@code null} lists every kind. */
+    @Nullable
+    private TinkerItemRegistry.ItemKind kindFilter;
+    /** Material the catalog is drilled into, or {@code null} while listing materials. */
+    @Nullable
+    private TinkerMaterial catalogTarget;
     /** True when the codex was opened from the forge GUI, so closing returns there. */
     private boolean cameFromForge;
 
@@ -135,8 +147,30 @@ public class AlloyCodexGUI implements InventoryHolder {
         inventory.clear();
         renderNavBar();
 
+        int entries;
+        if (isFlatRegistry()) {
+            // The registry holds thousands of ids, so only the visible page is ever turned into items.
+            List<String> ids = registryIds();
+            entries = ids.size();
+            int pages = Math.max(1, (int) Math.ceil(entries / (double) CONTENT_SLOTS));
+            page = Math.max(0, Math.min(page, pages - 1));
+
+            int from = page * CONTENT_SLOTS;
+            for (int i = 0; i < CONTENT_SLOTS && from + i < ids.size(); i++) {
+                inventory.setItem(CONTENT_START + i, registryEntry(ids.get(from + i)));
+            }
+            if (ids.isEmpty()) {
+                inventory.setItem(22, emptyState(section));
+            }
+            renderPager(pages);
+            renderInfo(entries, pages);
+            renderCatalogControls();
+            return;
+        }
+
         List<ItemStack> content = contentFor(section);
-        int pages = Math.max(1, (int) Math.ceil(content.size() / (double) CONTENT_SLOTS));
+        entries = content.size();
+        int pages = Math.max(1, (int) Math.ceil(entries / (double) CONTENT_SLOTS));
         page = Math.max(0, Math.min(page, pages - 1));
 
         int from = page * CONTENT_SLOTS;
@@ -148,18 +182,65 @@ public class AlloyCodexGUI implements InventoryHolder {
             inventory.setItem(22, emptyState(section));
         }
 
+        renderPager(pages);
+        renderInfo(entries, pages);
+        renderCatalogControls();
+    }
+
+    private void renderPager(int pages) {
         inventory.setItem(SLOT_PREV, page > 0
                 ? button(Material.ARROW, "<gold>◀ Previous Page</gold>", List.of("Page " + (page + 1) + " of " + pages))
                 : decor(Material.GRAY_STAINED_GLASS_PANE, " "));
         inventory.setItem(SLOT_NEXT, page + 1 < pages
                 ? button(Material.ARROW, "<gold>Next Page ▶</gold>", List.of("Page " + (page + 1) + " of " + pages))
                 : decor(Material.GRAY_STAINED_GLASS_PANE, " "));
+    }
+
+    private void renderInfo(int entries, int pages) {
+        List<String> lore = new ArrayList<>();
+        lore.add("<gray>" + section.description + "</gray>");
+        lore.add("");
+        lore.add("<gray>Entries: <yellow>" + entries + "</yellow> · Page <yellow>" + (page + 1)
+                + "</yellow>/<yellow>" + pages + "</yellow></gray>");
+        if (section == Section.MINERALS) {
+            lore.add("<gray>Scope: <yellow>" + (registryScope ? "every item id" : "materials") + "</yellow>"
+                    + (catalogTarget != null ? " · drilled into <yellow>" + catalogTarget.getName() + "</yellow>" : "")
+                    + "</gray>");
+            if (registryScope) {
+                lore.add("<gray>Kind filter: <yellow>" + (kindFilter != null ? kindFilter.name() : "ALL") + "</yellow></gray>");
+            }
+        }
         inventory.setItem(SLOT_INFO, button(Material.PAPER,
-                "<yellow><b>" + section.title.replaceAll("<[^>]*>", "") + "</b></yellow>",
-                List.of("<gray>" + section.description + "</gray>",
-                        "",
-                        "<gray>Entries: <yellow>" + content.size() + "</yellow> · Page <yellow>" + (page + 1)
-                                + "</yellow>/<yellow>" + pages + "</yellow></gray>")));
+                "<yellow><b>" + section.title.replaceAll("<[^>]*>", "") + "</b></yellow>", lore));
+    }
+
+    /** Scope and kind controls, shown only by the catalog section. */
+    private void renderCatalogControls() {
+        if (section != Section.MINERALS) return;
+
+        boolean flat = registryScope && catalogTarget == null;
+        List<String> scopeLore = new ArrayList<>();
+        scopeLore.add("<gray>Materials: <yellow>" + materialRegistry.getAll().size()
+                + "</yellow> curated entries with their traits.</gray>");
+        scopeLore.add("<gray>Every item: <yellow>" + itemRegistry.getAvailableItemIdCount()
+                + "</yellow> registered ids, including parts and casts.</gray>");
+        scopeLore.add("");
+        scopeLore.add("<yellow>Click to switch scope.</yellow>");
+        inventory.setItem(SLOT_SCOPE, button(Material.CHEST,
+                "<gold><b>Scope: " + (flat ? "Every item" : "Materials") + "</b></gold>", scopeLore));
+
+        List<String> kindLore = new ArrayList<>();
+        kindLore.add("<gray>Filters the <yellow>Every item</yellow> scope by item kind:</gray>");
+        kindLore.add("<gray>raw, ingot, nugget, block, molten bucket and the ten part types.</gray>");
+        kindLore.add("");
+        kindLore.add(flat ? "<yellow>Click to cycle the kind.</yellow>" : "<dark_gray>Switch scope to use it.</dark_gray>");
+        inventory.setItem(SLOT_KIND, button(flat ? Material.HOPPER : Material.GRAY_DYE,
+                "<gold><b>Kind: " + (kindFilter != null ? kindFilter.name() : "ALL") + "</b></gold>", kindLore));
+    }
+
+    /** True when the catalog is showing the flat list of every registered id. */
+    private boolean isFlatRegistry() {
+        return section == Section.MINERALS && registryScope && catalogTarget == null;
     }
 
     private void renderNavBar() {
@@ -219,6 +300,12 @@ public class AlloyCodexGUI implements InventoryHolder {
                             "",
                             "<yellow>► Tip: browse the Combination Explorer to see how</yellow>",
                             "<yellow>many pairs each mineral accepts.</yellow>"));
+            case MINERALS -> button(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+                    "<gray><b>No item matches this filter</b></gray>",
+                    List.of("<gray>This material has no ids of the selected kind.",
+                            "",
+                            "<yellow>► Tip: click the Kind button to cycle the filter,</yellow>",
+                            "<yellow>or switch back to the Materials scope.</yellow>"));
             case EXPLORER -> button(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
                     "<gray><b>No partner for this material</b></gray>",
                     List.of("<gray>This material cannot be blended right now.</gray>",
@@ -241,8 +328,80 @@ public class AlloyCodexGUI implements InventoryHolder {
             case PRIMES -> forgedEntries(true);
             case EXPLORER -> explorerTarget == null ? explorerChoices() : explorerPartners();
             case SUMMARY -> summaryEntries();
-            case MINERALS -> mineralEntries();
+            case MINERALS -> catalogEntries();
         };
+    }
+
+    /**
+     * The catalog: the material list, or the ids of the material the player drilled into.
+     *
+     * <p>The flat registry is rendered separately, because building thousands of item stacks just to
+     * count the pages would be wasteful — the ids are generated as strings and only the entries of
+     * the visible page become items.</p>
+     */
+    private List<ItemStack> catalogEntries() {
+        return catalogTarget != null ? drilledEntries(catalogTarget) : materialEntries();
+    }
+
+    /** Every registered id, narrowed by the kind filter. Strings only: nothing is built here. */
+    private List<String> registryIds() {
+        List<String> ids = new ArrayList<>();
+        for (String id : itemRegistry.getAllItemIds()) {
+            if (kindFilter != null && kindOfId(id) != kindFilter) continue;
+            ids.add(id);
+        }
+        return ids;
+    }
+
+    /**
+     * Every id that belongs to one material: its raw ore, ingot, nugget, block, molten bucket, ten
+     * part types and the legacy aliases that still resolve.
+     */
+    private List<ItemStack> drilledEntries(@Nonnull TinkerMaterial material) {
+        List<ItemStack> entries = new ArrayList<>();
+        String baseId = material.getId().toLowerCase(Locale.ROOT);
+        for (String id : itemRegistry.getAllItemIds()) {
+            if (!id.startsWith(baseId)) continue;
+            entries.add(registryEntry(id));
+        }
+        return entries;
+    }
+
+    /** Renders one registered id as its own item, with the id spelled out for commands. */
+    private ItemStack registryEntry(@Nonnull String id) {
+        ItemStack item = itemRegistry.getItemById(id);
+        if (item == null || item.getType() == Material.AIR) {
+            return button(Material.BARRIER, "<red><b>" + id + "</b></red>",
+                    List.of("<gray>Registered id with no item stack behind it.</gray>"));
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        List<Component> lore = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
+        lore.add(Component.empty());
+        lore.add(miniMessage.deserialize("<dark_gray>ID: " + id + "</dark_gray>")
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(miniMessage.deserialize("<dark_gray>Give it with: <gray>/mvtink give <player> " + id + "</gray></dark_gray>")
+                .decoration(TextDecoration.ITALIC, false));
+        lore.addAll(LoreWrap.wrap(miniMessage.deserialize("<yellow>Click to print the id in chat.</yellow>")
+                .decoration(TextDecoration.ITALIC, false)));
+        meta.lore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    /** Item kind implied by an id, or {@code null} for ids that are not a material kind. */
+    @Nullable
+    private static TinkerItemRegistry.ItemKind kindOfId(@Nonnull String id) {
+        for (TinkerItemRegistry.ItemKind kind : TinkerItemRegistry.ItemKind.values()) {
+            if (id.endsWith(kind.getSuffix())) return kind;
+        }
+        // Legacy aliases: _processed is an ingot, _handle a rod and _pommel a binding.
+        if (id.endsWith("_processed")) return TinkerItemRegistry.ItemKind.INGOT;
+        if (id.endsWith("_handle")) return TinkerItemRegistry.ItemKind.ROD;
+        if (id.endsWith("_pommel")) return TinkerItemRegistry.ItemKind.BINDING;
+        return null;
     }
 
     /**
@@ -253,7 +412,7 @@ public class AlloyCodexGUI implements InventoryHolder {
      * inventory. Composites and primes forged on this server appear here as well, because they become
      * forgeable materials the moment they are smelted.</p>
      */
-    private List<ItemStack> mineralEntries() {
+    private List<ItemStack> materialEntries() {
         List<ItemStack> entries = new ArrayList<>();
         for (TinkerMaterial material : materialRegistry.getAll()) {
             List<String> lore = new ArrayList<>();
@@ -550,6 +709,22 @@ public class AlloyCodexGUI implements InventoryHolder {
                 render();
                 return;
             }
+            case SLOT_SCOPE -> {
+                if (section != Section.MINERALS) return;
+                registryScope = !registryScope;
+                catalogTarget = null;
+                if (!registryScope) kindFilter = null;
+                page = 0;
+                render();
+                return;
+            }
+            case SLOT_KIND -> {
+                if (section != Section.MINERALS || !registryScope || catalogTarget != null) return;
+                kindFilter = nextKindFilter();
+                page = 0;
+                render();
+                return;
+            }
             default -> {
                 // handled below
             }
@@ -561,11 +736,38 @@ public class AlloyCodexGUI implements InventoryHolder {
             section = sections[sectionIndex];
             page = 0;
             explorerTarget = null;
+            catalogTarget = null;
             render();
             return;
         }
 
         if (rawSlot < CONTENT_START || rawSlot >= CONTENT_START + CONTENT_SLOTS) return;
+
+        int index = page * CONTENT_SLOTS + (rawSlot - CONTENT_START);
+
+        if (section == Section.MINERALS) {
+            if (isFlatRegistry()) {
+                // Every registered id is listed: clicking one hands the player the id for commands.
+                String id = registryIdAt(index);
+                if (id != null) {
+                    player.sendMessage(miniMessage.deserialize("<gray>ID: <yellow>" + id
+                            + "</yellow> · give it with <yellow>/mvtink give <player> " + id + "</yellow></gray>"));
+                }
+            } else if (catalogTarget != null) {
+                // Drilled into a material: any click goes back to the material list.
+                catalogTarget = null;
+                page = 0;
+                render();
+            } else {
+                TinkerMaterial clicked = materialAt(index);
+                if (clicked != null) {
+                    catalogTarget = clicked;
+                    page = 0;
+                    render();
+                }
+            }
+            return;
+        }
 
         if (section == Section.EXPLORER) {
             if (explorerTarget == null) {
@@ -581,6 +783,23 @@ public class AlloyCodexGUI implements InventoryHolder {
                 render();
             }
         }
+    }
+
+    /** Material shown at the given index of the catalog's material list, or {@code null}. */
+    @Nullable
+    private TinkerMaterial materialAt(int index) {
+        if (index < 0) return null;
+        List<TinkerMaterial> materials = new ArrayList<>(materialRegistry.getAll());
+        return index < materials.size() ? materials.get(index) : null;
+    }
+
+    /** Cycles the registry kind filter: ALL → each item kind → ALL. */
+    @Nullable
+    private TinkerItemRegistry.ItemKind nextKindFilter() {
+        TinkerItemRegistry.ItemKind[] kinds = TinkerItemRegistry.ItemKind.values();
+        if (kindFilter == null) return kinds[0];
+        int next = kindFilter.ordinal() + 1;
+        return next < kinds.length ? kinds[next] : null;
     }
 
     /** Maps a clicked explorer slot back to the material it belongs to. */
@@ -706,7 +925,35 @@ public class AlloyCodexGUI implements InventoryHolder {
 
     /** Number of entries the given section would show right now (used by tests and diagnostics). */
     public int entryCount(@Nonnull Section section) {
+        if (section == Section.MINERALS && registryScope && catalogTarget == null) {
+            return registryIds().size();
+        }
         return contentFor(section).size();
+    }
+
+    /** True while the catalog lists every registered item id (tests and diagnostics). */
+    public boolean isRegistryScope() {
+        return registryScope;
+    }
+
+    /** Kind filter currently applied to the registry scope, or {@code null} for every kind. */
+    @Nullable
+    public TinkerItemRegistry.ItemKind getKindFilter() {
+        return kindFilter;
+    }
+
+    /** Material the catalog is drilled into, or {@code null} while listing materials. */
+    @Nullable
+    public TinkerMaterial getCatalogTarget() {
+        return catalogTarget;
+    }
+
+    /** One registered id shown by the catalog, by its position in the current scope. */
+    @Nullable
+    public String registryIdAt(int index) {
+        if (!isFlatRegistry()) return null;
+        List<String> ids = registryIds();
+        return index >= 0 && index < ids.size() ? ids.get(index) : null;
     }
 
     @Nonnull
