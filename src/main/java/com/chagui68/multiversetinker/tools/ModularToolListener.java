@@ -74,6 +74,34 @@ public class ModularToolListener implements Listener {
     private static final ThreadLocal<Integer> TRAIT_CHAIN = ThreadLocal.withInitial(() -> 0);
     private static final int MAX_TRAIT_CHAIN = 3;
 
+    /**
+     * Weapon perks deal area damage (sweeps, shockwaves, kinetic blasts), and because damage
+     * immunity is cleared before every hit those hits always land and fire nested combat events.
+     * Without this guard a sweep would re-trigger itself from each mob it cleaves, recursing until
+     * the server stack overflows.
+     */
+    private static final ThreadLocal<Boolean> WEAPON_PERK_ACTIVE = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    /**
+     * Claims the weapon-perk slot of the current thread.
+     *
+     * @return {@code true} when the caller may run perk mechanics, {@code false} when a perk is
+     *         already running further up the stack and this call is the perk's own area damage.
+     */
+    static boolean enterWeaponPerk() {
+        if (WEAPON_PERK_ACTIVE.get()) return false;
+        WEAPON_PERK_ACTIVE.set(Boolean.TRUE);
+        return true;
+    }
+
+    static void exitWeaponPerk() {
+        WEAPON_PERK_ACTIVE.set(Boolean.FALSE);
+    }
+
+    static boolean isWeaponPerkActive() {
+        return WEAPON_PERK_ACTIVE.get();
+    }
+
     private boolean enterTraitChain() {
         int depth = TRAIT_CHAIN.get();
         if (depth >= MAX_TRAIT_CHAIN) return false;
@@ -160,6 +188,17 @@ public class ModularToolListener implements Listener {
 
     private void handleSpecializedWeaponCombat(Player player, LivingEntity target, EntityDamageByEntityEvent event,
                                               String weaponType, @Nonnull PersistentDataContainer pdc) {
+        // A perk's own area damage fires nested events: never let a perk re-enter itself.
+        if (!enterWeaponPerk()) return;
+        try {
+            runSpecializedWeaponCombat(player, target, event, weaponType, pdc);
+        } finally {
+            exitWeaponPerk();
+        }
+    }
+
+    private void runSpecializedWeaponCombat(Player player, LivingEntity target, EntityDamageByEntityEvent event,
+                                            String weaponType, @Nonnull PersistentDataContainer pdc) {
         ModularWeaponType type;
         try {
             type = ModularWeaponType.valueOf(weaponType);
