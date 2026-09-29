@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.forge;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI;
 import com.chagui68.multiversetinker.forge.gui.ForgeGUI;
 import com.chagui68.multiversetinker.forge.structure.ForgeStructure;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
@@ -102,6 +103,11 @@ public class ForgeListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getInventory().getHolder() instanceof ForgeGUI gui) {
             gui.handleClick(event, (Player) event.getWhoClicked());
+            return;
+        }
+        if (event.getInventory().getHolder() instanceof AlloyCodexGUI codex) {
+            event.setCancelled(true);
+            codex.handleClick((Player) event.getWhoClicked(), event.getRawSlot());
         }
     }
 

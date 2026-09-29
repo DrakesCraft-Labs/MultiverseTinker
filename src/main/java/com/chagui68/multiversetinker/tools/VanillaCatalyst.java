@@ -116,6 +116,11 @@ public enum VanillaCatalyst {
         return "❖ Catalyst: " + displayName + " — " + description;
     }
 
+    /** How many prime alloys this catalyst can produce: one per legendary alloy. */
+    public int compatiblePrimes() {
+        return com.chagui68.multiversetinker.alloys.AlloyRegistry.LEGENDARY_IDS.size();
+    }
+
     @Nullable
     public static VanillaCatalyst byMaterialId(@Nullable String materialId) {
         if (materialId == null || !materialId.startsWith(ID_PREFIX)) return null;

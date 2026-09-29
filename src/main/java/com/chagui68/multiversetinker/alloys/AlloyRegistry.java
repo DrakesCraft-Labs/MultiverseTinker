@@ -225,18 +225,14 @@ public class AlloyRegistry {
 
         boolean prime = isPrimePair(first, second);
 
-        String id1 = first.getId().replace("mvtink_", "");
-        String id2 = second.getId().replace("mvtink_", "");
-        String dynamicAlloyId = (prime ? PRIME_PREFIX : "mvtink_alloy_") + id1 + "_" + id2;
+        String dynamicAlloyId = dynamicId(first, second, prime);
 
         TinkerAlloy cached = alloys.get(dynamicAlloyId.toLowerCase(Locale.ROOT));
         if (cached != null) {
             return cached;
         }
 
-        String alloyName = prime
-                ? first.getName() + " " + second.getName() + " Prime"
-                : first.getName() + "-" + second.getName() + " Alloy";
+        String alloyName = dynamicName(first, second, prime);
         String blendedColor = blendHexColors(first.getColorHex(), second.getColorHex());
 
         // Catalysts carry no metallurgical mass: a prime forged with one is built from the alloy it
@@ -376,6 +372,42 @@ public class AlloyRegistry {
                 .inheritedAffinities(inheritedAffinitiesOf(materialRegistry, alloy.mat1Id(), alloy.mat2Id()))
                 .build();
         materialRegistry.register(tm);
+    }
+
+    /**
+     * Canonical id a freshly forged pair would receive, without registering anything.
+     *
+     * <p>The crucible codex uses this to preview combinations; {@link #findOrCreateAlloy} uses the
+     * same helper, so what the codex shows is exactly what the crucible will produce.</p>
+     */
+    @Nonnull
+    public static String dynamicId(@Nonnull TinkerMaterial first, @Nonnull TinkerMaterial second) {
+        return dynamicId(first, second, isPrimePair(first, second));
+    }
+
+    @Nonnull
+    private static String dynamicId(@Nonnull TinkerMaterial first, @Nonnull TinkerMaterial second, boolean prime) {
+        // Canonical order, exactly like findOrCreateAlloy: (a, b) and (b, a) must preview the same id.
+        TinkerMaterial canonicalA = first.getId().compareTo(second.getId()) <= 0 ? first : second;
+        TinkerMaterial canonicalB = canonicalA == first ? second : first;
+        String id1 = canonicalA.getId().replace("mvtink_", "");
+        String id2 = canonicalB.getId().replace("mvtink_", "");
+        return (prime ? PRIME_PREFIX : "mvtink_alloy_") + id1 + "_" + id2;
+    }
+
+    /** Name a freshly forged pair would receive, without registering anything. */
+    @Nonnull
+    public static String dynamicName(@Nonnull TinkerMaterial first, @Nonnull TinkerMaterial second) {
+        return dynamicName(first, second, isPrimePair(first, second));
+    }
+
+    @Nonnull
+    private static String dynamicName(@Nonnull TinkerMaterial first, @Nonnull TinkerMaterial second, boolean prime) {
+        TinkerMaterial canonicalA = first.getId().compareTo(second.getId()) <= 0 ? first : second;
+        TinkerMaterial canonicalB = canonicalA == first ? second : first;
+        return prime
+                ? canonicalA.getName() + " " + canonicalB.getName() + " Prime"
+                : canonicalA.getName() + "-" + canonicalB.getName() + " Alloy";
     }
 
     /**

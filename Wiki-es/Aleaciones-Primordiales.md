@@ -141,7 +141,28 @@ que porta.
 
 ---
 
-## 🔗 Páginas relacionadas
+## 📖 El Codex de Aleaciones
+
+Todo lo anterior es navegable in-game. Abre el **Codex de Aleaciones** con `/mvtink codex` o pulsando el
+botón del libro en la pestaña del Crisol de Aleaciones (shift-clic para imprimir el listado simple en el
+chat). El codex es un menú paginado de 54 slots con seis secciones:
+
+| Sección | Qué muestra |
+|---|---|
+| **Recetas Legendarias** | Las 16 aleaciones curadas: padres, stats, esencias y rasgo curado. |
+| **Catalizadores Primordiales** | Los 12 catalizadores vanilla, con el ultimate y el estado que otorga cada uno. |
+| **Compuestas Forjadas** | Cada compuesta descubierta en este servidor, con padres, stats y esencias. |
+| **Aleaciones Primordiales** | Cada primordial forjada hasta ahora, con su ultimate y su estado. |
+| **Explorador de Combinaciones** | Elige cualquier material y ve **todos** los socios que acepta el crisol, con el nombre e id exactos del resultado. |
+| **Resumen del Espacio de Aleaciones** | Pares de minerales, recetas legendarias, conteo de fusiones primordiales y el gran total. |
+
+> 🔍 El explorador no tiene efectos secundarios: previsualiza el id, el nombre y las esencias del
+> resultado sin forjar nada, así puedes planificar una build antes de gastar un solo lingote. Las
+> aleaciones primordiales nunca aparecen como socias, porque no se pueden refundir.
+
+---
+
+## Páginas relacionadas
 
 * [Mezcla de Materiales y Aleaciones](Mezcla-de-Materiales.md) — el crisol, las 16 recetas legendarias y los 5.995 pares de minerales.
 * [Afinidades de Rasgos](Afinidades-de-Rasgos.md) — cómo una primordial conserva las esencias de ambos padres.

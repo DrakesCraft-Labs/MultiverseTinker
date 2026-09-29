@@ -62,6 +62,30 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
 
+            case "codex" -> {
+                Player viewer;
+                if (args.length >= 2) {
+                    viewer = Bukkit.getPlayerExact(args[1]);
+                    if (viewer == null) {
+                        sender.sendMessage(miniMessage.deserialize("<red>Player not found: " + args[1] + "</red>"));
+                        return true;
+                    }
+                } else if (sender instanceof Player self) {
+                    viewer = self;
+                } else {
+                    sender.sendMessage(miniMessage.deserialize("<red>Console must specify a player: /" + label + " codex <player></red>"));
+                    return true;
+                }
+
+                com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI codex =
+                        new com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI(plugin, itemRegistry, materialRegistry);
+                viewer.openInventory(codex.getInventory());
+                if (viewer != sender) {
+                    sender.sendMessage(miniMessage.deserialize("<green>Opened the Alloy Codex for " + viewer.getName() + ".</green>"));
+                }
+                return true;
+            }
+
             case "verify" -> {
                 // Proves that every material and every item kind is actually registered and resolvable.
                 int materials = materialRegistry.getAll().size();
@@ -387,6 +411,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give any raw ore, ingot, nugget, block, molten bucket, part, cast, smeltery or brush. The mvtink_ prefix is optional.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " codex [player]</yellow> <gray>- Open the browsable Alloy Codex: legendary recipes, catalysts, forged composites and primes, a combination explorer and the totals.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " verify</yellow> <gray>- Check that every material and every item kind is registered and resolvable.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));                sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " list [OVERWORLD|NETHER|THE_END]</yellow> <gray>- List all 97 geological materials.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " reload</yellow> <gray>- Reload configuration and caches.</gray>"));
@@ -399,7 +424,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return filter(List.of("craft", "give", "forge", "list", "verify", "reload"), args[0]);
+            return filter(List.of("craft", "give", "forge", "codex", "list", "verify", "reload"), args[0]);
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("craft")) {
@@ -442,7 +467,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
             return filter(List.of("0", "90", "180", "270"), args[2]);
         }
 
-        if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
+        if (args.length == 2 && (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("codex"))) {
             return null; // Player names
         }
 

@@ -476,12 +476,13 @@ public class ForgeGUI implements InventoryHolder {
 
         // Row 5 Recipe Codex
         inventory.setItem(SLOT_ALLOY_RECIPES, createSystemButton(Material.BOOK,
-                "<gradient:#ffd700:#ff8c00><b>Alloy Recipes Codex</b></gradient>",
+                "<gradient:#ffd700:#ff8c00><b>Alloy Codex</b></gradient>",
                 List.of(
-                        "Click to browse every registered alloy in chat.",
-                        "Any 2 brush or vanilla minerals can be blended together!",
-                        "16 legendary recipes are predefined; all other pairs",
-                        "synthesize their own unique composite alloy on the spot.",
+                        "Click to open the browsable codex GUI.",
+                        "Legendary recipes, catalysts, composites, primes",
+                        "and a combination explorer in one menu.",
+                        "",
+                        "Sneak-click to print the old chat listing instead.",
                         "Fuse a legendary alloy with an alloy, a mineral or one of",
                         "the 12 vanilla catalysts to forge a PRIME alloy."
                 )));
@@ -877,7 +878,14 @@ public class ForgeGUI implements InventoryHolder {
         }
         if (rawSlot == SLOT_ALLOY_RECIPES) {
             event.setCancelled(true);
-            displayAlloyRecipes(player);
+            if (player.isSneaking()) {
+                // Sneak-click keeps the old chat dump for screenshots and logs.
+                displayAlloyRecipes(player);
+            } else {
+                AlloyCodexGUI codex = new AlloyCodexGUI(plugin, itemRegistry, materialRegistry);
+                codex.setCameFromForge(true);
+                player.openInventory(codex.getInventory());
+            }
             return;
         }
 

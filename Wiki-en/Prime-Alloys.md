@@ -137,6 +137,27 @@ tool or armor piece also shows a `✦ Prime Alloy:` line naming the ultimate and
 
 ---
 
+## 📖 The Alloy Codex
+
+Everything above is browsable in game. Open the **Alloy Codex** with `/mvtink codex` or by clicking the
+book button in the Alloy Crucible tab (sneak-click it to print the plain chat listing instead). The codex
+is a paginated 54-slot menu with six sections:
+
+| Section | What it shows |
+|---|---|
+| **Legendary Recipes** | The 16 curated alloys with parents, stats, essences and curated trait. |
+| **Prime Catalysts** | The 12 vanilla catalysts with the ultimate and state each one grants. |
+| **Forged Composites** | Every composite this server has discovered, with parents, stats and essences. |
+| **Prime Alloys** | Every legendary fusion forged so far, with its ultimate and armor state. |
+| **Combination Explorer** | Pick any material and see **every** partner the crucible accepts, with the exact result name and id. |
+| **Alloy Space Summary** | Mineral pairs, curated recipes, prime fusion counts and the grand total. |
+
+> 🔍 The explorer has no side effects: it previews the resulting id, name and essences without forging
+> anything, so you can plan a build before spending a single ingot. Prime alloys never appear as
+> partners, because they cannot be reforged.
+
+---
+
 ## 🔗 Related pages
 
 * [Alloy Mixing & Metallurgy](Alloy-Mixing.md) — the crucible, the 16 legendary recipes and the 5,995 mineral pairs.

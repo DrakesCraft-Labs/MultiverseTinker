@@ -132,6 +132,7 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 * `/mvtink forge check` — Valida el yunque al que estás apuntando y muestra el porcentaje de coincidencia.
 * `/mvtink forge gui` — Abre directamente la interfaz gráfica de la Forja Multiverse.
 * `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha). El prefijo `mvtink_` es opcional, los ids se resuelven bajo demanda y las aleaciones compuestas/primordiales forjadas después del arranque también se pueden entregar.
+* `/mvtink codex [jugador]` — Abre el **Codex de Aleaciones** navegable: recetas legendarias, catalizadores primordiales, compuestas y primordiales forjadas, un explorador de combinaciones y los totales (también disponible in-game desde el botón del libro en la pestaña del Crisol; shift-clic en ese botón imprime el listado antiguo en el chat).
 * `/mvtink verify` — Diagnostica el registro de ítems: materiales registrados, tipos de ítem por material, ids distintos y una comprobación completa de resolubilidad (cada material × cada tipo).
 * `/mvtink list [OVERWORLD|NETHER|THE_END]` — Lista todos los materiales registrados (97 geológicos + 14 vanilla) con sus rasgos, rarezas y colores.
 * `/mvtink reload` — Recarga la configuración y las tablas de arqueología.
