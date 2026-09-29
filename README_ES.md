@@ -279,6 +279,14 @@ El modo se aplica **antes** que el nodo: con `access.archaeology: op`, incluso u
 
 ---
 
+## 🌐 Sitio interactivo de aleaciones
+
+**[drakescraft-labs.github.io/MultiverseTinker](https://drakescraft-labs.github.io/MultiverseTinker/)** — todo el catálogo de materiales en el navegador, en **español e inglés**, cambiando el idioma con un solo botón. Explora los 139 materiales con sus estadísticas de forja, los canales del rasgo, las esencias, los epítetos de perk, las recetas legendarias y los ultimates de cada catalizador, y elige **dos materiales** para ver exactamente qué forjaría el Crisol de Aleaciones con ellos: nombre, id, durabilidad, velocidad de minado, daño y esencias heredadas.
+
+La página es un sitio estático en [`docs/`](docs), desplegado por el [workflow `pages`](.github/workflows/pages.yml). Su archivo de datos se **genera desde los registros** y está protegido igual que la wiki: `./mvnw -o test -Dtest=SiteDataTest` falla cuando `docs/data/alloys.json` se separa del plugin (se regenera con `-Dmvtink.site.write=true`), y `node docs/js/selfcheck.mjs` reproduce pares que el crisol real ya forjó usando las mismas cuentas de la página, así que la previsualización del navegador nunca puede prometer una aleación que el plugin no produciría.
+
+---
+
 <div align="center">
 
 **DrakesCraft Labs** · Diseñado por **Chagui68**  

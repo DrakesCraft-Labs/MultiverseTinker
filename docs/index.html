@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MultiverseTinker · Alloys</title>
+  <meta name="description"
+        content="Interactive explorer for every MultiverseTinker material, trait, essence and crucible fusion.">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="grow">
+      <h1 id="title">MultiverseTinker·Alloys</h1>
+      <p class="lead" id="subtitle"></p>
+      <p class="notes">
+        <span id="generated"></span>
+        <span id="gameText"></span>
+      </p>
+    </div>
+    <div class="langs" role="group" id="langs"></div>
+  </header>
+
+  <section class="filters" id="filters" aria-label="filters"></section>
+  <div class="chips" id="chips"></div>
+
+  <div class="layout">
+    <section class="panel" aria-label="catalog">
+      <div class="list-head">
+        <span id="count"></span>
+        <button class="inline-btn" id="clear" type="button"></button>
+      </div>
+      <div class="list" id="list" role="listbox"></div>
+    </section>
+
+    <section class="panel detail" id="detail" aria-live="polite"></section>
+  </div>
+
+  <section class="panel crucible" id="crucible">
+    <h3 class="section" id="crucibleTitle"></h3>
+    <p class="hint" id="crucibleHint"></p>
+    <div class="crucible-grid" id="crucibleSelectors"></div>
+    <div class="result" id="result" aria-live="polite"></div>
+  </section>
+
+  <footer class="foot">
+    <h3 class="section" id="footerTitle"></h3>
+    <ul id="footerLinks"></ul>
+    <p id="footerNote"></p>
+  </footer>
+</div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

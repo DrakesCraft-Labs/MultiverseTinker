@@ -280,6 +280,14 @@ The mode applies **before** the permission node: with `access.archaeology: op`, 
 
 ---
 
+## 🌐 Interactive Alloy Site
+
+**[drakescraft-labs.github.io/MultiverseTinker](https://drakescraft-labs.github.io/MultiverseTinker/)** — the whole material catalog in a browser, in **English and Spanish**, switched with one button. Browse the 139 shipped materials with their forge stats, trait channels, essences, perk epithets, legendary recipes and catalyst ultimates, and pick any **two materials** to see exactly what the Alloy Crucible would forge from them: name, id, durability, mining speed, damage and inherited essences.
+
+The page is a static site in [`docs/`](docs), deployed by the [`pages` workflow](.github/workflows/pages.yml). Its data file is **generated from the registries** and guarded the same way the wiki is: `./mvnw -o test -Dtest=SiteDataTest` fails when the committed `docs/data/alloys.json` drifts from the plugin (regenerate with `-Dmvtink.site.write=true`), and `node docs/js/selfcheck.mjs` replays pairs the real crucible forged through the page's own mixing math, so the browser preview can never promise an alloy the plugin would not produce.
+
+---
+
 ## 🛠️ Build & Compilation
 
 ```bash

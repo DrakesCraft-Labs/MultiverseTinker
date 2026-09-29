@@ -531,8 +531,12 @@ public final class WikiPages {
     // SHORTHANDS AND HELPERS
     // ==========================================
 
-    /** The one-line reminder of what an essence does on weapon / tool / armor, as the pair pages print it. */
-    static String shortHand(TraitAffinity essence, boolean spanish) {
+    /**
+     * The one-line reminder of what an essence does on weapon / tool / armor, as the pair pages print it.
+     *
+     * <p>Curated Spanish wording, so the alloy site reuses it instead of keeping a second copy.</p>
+     */
+    public static String shortHand(TraitAffinity essence, boolean spanish) {
         if (spanish) {
             return switch (essence) {
                 case INFERNAL -> "quema, autofunde, resist. fuego";

@@ -6,6 +6,7 @@ Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a soverei
 
 ## 📑 Wiki Navigation
 
+* **[🌐 Interactive Alloy Explorer](https://drakescraft-labs.github.io/MultiverseTinker/)**: Every material, trait, essence, epithet, legendary recipe and catalyst ultimate in the browser, in English and Spanish — pick any two materials and see exactly what the Alloy Crucible would forge from them.
 * **[Mechanics Overview](Mechanics-Overview.md)**: Start here — one page for "what does that do?": the six-step pipeline, every block, item, GUI tab, tier, perk, catalyst, command and permission at a glance.
 * **[Geological Archaeology](Archaeology.md)**: Prospector brush, brushing mechanics, drop tables, and dimension targets.
 * **[Smeltery & Cauldron Casting](Smeltery-and-Casting.md)**: Operating the Smeltery Crucible over lava/magma, diagnostic GUI, and cooling molten metals in water cauldrons with reusable molds.

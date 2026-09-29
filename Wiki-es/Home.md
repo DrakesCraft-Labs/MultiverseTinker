@@ -6,6 +6,7 @@
 
 ## 📑 Navegación de la Wiki
 
+* **[🌐 Explorador Interactivo de Aleaciones](https://drakescraft-labs.github.io/MultiverseTinker/)**: Todos los materiales, rasgos, esencias, epítetos, recetas legendarias y ultimates de cada catalizador en el navegador, en español e inglés — elige dos materiales cualesquiera y mira exactamente qué forjaría el Crisol de Aleaciones con ellos.
 * **[Resumen de Mecánicas](Resumen-de-Mecanicas.md)**: Empieza aquí — una sola página para "¿y eso para qué sirve?": el proceso en seis pasos, cada bloque, ítem, pestaña de la GUI, tier, perk, catalizador, comando y permiso de un vistazo.
 * **[Arqueología Geológica](Arqueologia.md)**: Brocha de prospector, cepillado de roca, tablas de botín y degradación geológica.
 * **[Crisol de Fundición y Templado en Caldero](Fundicion-y-Caldero.md)**: Operación del crisol sobre lava/magma, diagnósticos visuales y enfriamiento de metales en caldero con moldes.

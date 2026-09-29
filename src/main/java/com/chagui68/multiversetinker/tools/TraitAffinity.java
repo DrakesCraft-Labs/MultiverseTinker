@@ -127,8 +127,12 @@ public enum TraitAffinity {
     /**
      * Priority used when blending the essences of two parent minerals: dimensional origins come
      * first so an alloy never loses the identity of the dimension it was forged from.
+     *
+     * <p>Published because {@link #inherit} is the whole rule: the interactive alloy site reproduces
+     * the inheritance of a freshly fused pair in the browser, and it has to read this order rather
+     * than keep a second copy of it.</p>
      */
-    private static final List<TraitAffinity> INHERITANCE_PRIORITY = List.of(
+    public static final List<TraitAffinity> INHERITANCE_PRIORITY = List.of(
             INFERNAL, VOID, PRIMAL, TERRAIN, TEMPERED, RADIANT, RESONANT, VOLATILE, SWIFT, BRUTAL, BULWARK, ASCENDANT);
 
     /**

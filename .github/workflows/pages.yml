@@ -1,0 +1,53 @@
+name: Deploy the alloy site to GitHub Pages
+
+# The site in `docs/` is generated: `docs/data/alloys.json` is rendered from the plugin registries by
+# `SiteDataTest`, which fails the build when the committed file drifts. This workflow cannot run Maven,
+# so it checks the other half of that contract instead — that the page's own port of the crucible still
+# reproduces the fusions the plugin recorded — and then publishes `docs/`.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Replay the plugin's fusions through the page's mixing math
+        run: node docs/js/selfcheck.mjs
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
