@@ -21,6 +21,11 @@ MultiverseTinker sustituye la generación tradicional de menas en chunks por un 
 | **The Nether** | `NETHERRACK`, `BLACKSTONE`, `BASALT` | 30 Minerales del Nether | **40%** |
 | **The End** | `END_STONE` | 30 Minerales del End | **35%** |
 
+Qué mineral de la dimensión sale lo decide la **rareza**, no una probabilidad plana: un legendario es más o
+menos una extracción de cada cien y uno común, una de cada dos. Esas probabilidades viven en la sección
+`rarity-weights` de `config.yml` — `0` saca una rareza de la geología por completo — y la brocha de
+prospector dobla el peso de los raros, épicos y legendarios. Ver **[Configuración](Configuracion.md#-pesos-del-botín-de-arqueología-rarity-weights)**.
+
 ---
 
 ## 3. Degradación Geológica y Protección Anti-Macros

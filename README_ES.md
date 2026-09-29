@@ -274,7 +274,7 @@ El modo se aplica **antes** que el nodo: con `access.archaeology: op`, incluso u
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
 | `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado y si la armadura defiende con la protección calculada a partir de sus minerales, o con los valores vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumo de lava y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
-| `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). |
+| `rarity-weights` | Pesos por rareza de la tabla de botín de arqueología (`common` … `legendary`). Relativos, así que cualquier número sirve; `0` saca una rareza de la geología por completo, y una sección con todo a 0 vuelve a los valores de fábrica. |
 | `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y el rechazo de cada superficie. |
 
 ---

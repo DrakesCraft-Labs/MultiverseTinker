@@ -231,6 +231,34 @@ la regla, así que el plugin nunca estorba al reparar en un yunque cualquiera.
 
 ---
 
+## 🪨 Pesos del botín de arqueología (`rarity-weights`)
+
+Un mineral se sortea dentro de su propia dimensión, y cada **rareza** lleva un peso: cuanto más alto, más a
+menudo salen sus minerales de la piedra. Con los valores de fábrica un legendario es aproximadamente una
+extracción de cada cien.
+
+```yaml
+rarity-weights:
+  common: 50
+  uncommon: 30
+  rare: 14
+  epic: 5
+  legendary: 1
+```
+
+* Los pesos son **relativos**, así que cualquier conjunto de números sirve: doblar `common` y dejar el resto igual hace el mundo el doble de generoso con los minerales de superficie sin tocar el resto de la tabla.
+* `0` saca una rareza de la geología por completo — `legendary: 0` significa que no cae ni un mineral legendario, en ninguna dimensión.
+* Los valores negativos se leen como `0`, una clave ausente o no numérica conserva su valor de fábrica, y una sección cuyos pesos **todos** acaben a `0` vuelve a los de fábrica: una tabla sin ningún peso repartiría siempre el primer mineral de la dimensión, extracción tras extracción.
+* La brocha de **prospector** sigue doblando la frecuencia de los minerales raros, épicos y legendarios, encima de los pesos que haya configurado el servidor.
+
+Los cambios se aplican con `/mvtink reload` y se anuncian al arrancar:
+
+```
+[MultiverseTinker] Archaeology rarity weights — common 50 · uncommon 30 · rare 14 · epic 5 · legendary 1 (shipped)
+```
+
+---
+
 ## 🧭 Otras secciones
 
 | Sección | Propósito |
@@ -240,7 +268,7 @@ la regla, así que el plugin nunca estorba al reparar en un yunque cualquiera.
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
 | `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado y si la armadura defiende con la protección calculada a partir de sus minerales, o con los valores vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumir la lava fuente y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
-| `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). **Reservado:** hoy la tabla de botín de arqueología usa los pesos internos (común 50, poco común 30, raro 14, épico 5, legendario 1), así que editar esta clave todavía no tiene efecto. |
+| `rarity-weights` | Pesos por rareza de la tabla de botín de arqueología (`common` 50, `uncommon` 30, `rare` 14, `epic` 5, `legendary` 1). Los pesos son relativos, `0` saca una rareza de la geología por completo, los negativos se leen como 0, y una sección con todo a 0 vuelve a los valores de fábrica para que la tabla nunca quede seca. Una clave ausente o no numérica conserva su valor de fábrica. |
 | `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y el rechazo de cada superficie. |
 
 ---

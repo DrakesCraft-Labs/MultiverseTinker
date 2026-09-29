@@ -33,7 +33,7 @@ dimension.
 | **Valid targets** | Overworld: Stone / Cobblestone · Nether: Netherrack / Blackstone · End: End Stone |
 | **Success roll** | `archaeology.success-chance` per dimension (0.45 / 0.40 / 0.35) |
 | **What drops** | A raw mineral, or a nugget (`nugget-chance`), or — with the **prospector** upgrade — a whole storage **block** (`block-chance`) |
-| **Which mineral** | Weighted by rarity (common 50, uncommon 30, rare 14, epic 5, legendary 1). The prospector brush **doubles** the weight of rare, epic and legendary minerals |
+| **Which mineral** | Weighted by rarity, tuned with `rarity-weights` (shipped: common 50, uncommon 30, rare 14, epic 5, legendary 1; `0` takes a rarity off the table). The prospector brush **doubles** the weight of rare, epic and legendary minerals |
 | **Block after** | `archaeology.block-behavior`: `DEGRADE` (stone → cobblestone → gravel → air), `COOLDOWN`, or `NONE` |
 | **Anti-macro** | Every block has a `block-cooldown-seconds` (15s) per-block timer |
 | **Cost** | `brush-durability-cost` durability per extraction; `access.archaeology` decides who may brush at all (**public** by default) |

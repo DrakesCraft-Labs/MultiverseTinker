@@ -275,7 +275,7 @@ The mode applies **before** the permission node: with `access.archaeology: op`, 
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
 | `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage and whether armor defends with the protection rolled from its minerals, or the vanilla material values instead (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: lava consumption chance and the Magma Block heat-source slowdown multiplier. |
-| `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). |
+| `rarity-weights` | Rarity weights of the archaeology drop table (`common` … `legendary`). Relative, so any numbers work; `0` takes a rarity off geology entirely, and an all-zero section falls back to the shipped values. |
 | `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and the refusal of each surface. |
 
 ---

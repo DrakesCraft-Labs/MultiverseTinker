@@ -35,7 +35,7 @@ mineral de esa dimensión.
 | **Objetivos válidos** | Overworld: Stone / Cobblestone · Nether: Netherrack / Blackstone · End: End Stone |
 | **Tirada de éxito** | `archaeology.success-chance` por dimensión (0.45 / 0.40 / 0.35) |
 | **Qué suelta** | Un mineral en bruto, o una pepita (`nugget-chance`), o — con la **brocha de prospector** — un **bloque** de almacenamiento entero (`block-chance`) |
-| **Qué mineral** | Ponderado por rareza (común 50, poco común 30, raro 14, épico 5, legendario 1). La brocha de prospector **duplica** el peso de los raros, épicos y legendarios |
+| **Qué mineral** | Ponderado por rareza, ajustable con `rarity-weights` (de fábrica: común 50, poco común 30, raro 14, épico 5, legendario 1; `0` saca una rareza de la tabla). La brocha de prospector **duplica** el peso de los raros, épicos y legendarios |
 | **Estado del bloque** | `archaeology.block-behavior`: `DEGRADE` (stone → cobblestone → gravel → aire), `COOLDOWN` o `NONE` |
 | **Anti-macro** | Cada bloque tiene su temporizador `block-cooldown-seconds` (15s) |
 | **Coste** | `brush-durability-cost` de durabilidad por extracción; `access.archaeology` decide quién puede cepillar (**public** por defecto) |

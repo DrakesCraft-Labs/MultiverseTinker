@@ -86,6 +86,8 @@ public class MultiverseTinker extends JavaPlugin {
         // Archaeology System
         ArchaeologyLootTable lootTable = new ArchaeologyLootTable(materialRegistry);
         this.archaeologyManager = new ArchaeologyManager(this, lootTable, itemRegistry);
+        // The drop table is weighted by rarity-weights of config.yml, so it is tuned the moment it exists.
+        applyLootSettings();
 
         // Smeltery System
         this.smelteryManager = new SmelteryManager(this, materialRegistry, itemRegistry);
@@ -201,6 +203,22 @@ public class MultiverseTinker extends JavaPlugin {
     public void applyAccessSettings() {
         AccessControl.configure(getConfig());
         getLogger().info("Access control — " + AccessControl.summary());
+    }
+
+    /**
+     * Applies the {@code rarity-weights} section of {@code config.yml} to the archaeology drop table.
+     *
+     * <p>How often a legendary mineral comes out of the stone is a server decision, so the table reads
+     * its weights from the config instead of the built-in ones. Re-read by {@code /mvtink reload}, like
+     * every other setting.</p>
+     */
+    public void applyLootSettings() {
+        if (archaeologyManager == null) return;
+
+        ArchaeologyLootTable lootTable = archaeologyManager.getLootTable();
+        lootTable.configureWeights(getConfig());
+        getLogger().info("Archaeology rarity weights — " + lootTable.weightsSummary()
+                + (lootTable.usesDefaultWeights() ? " (shipped)" : " (configured)"));
     }
 
     private void registerRecipes() {

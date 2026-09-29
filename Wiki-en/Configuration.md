@@ -228,6 +228,34 @@ answers to the rule, so the plugin never gets in the way of ordinary anvil repai
 
 ---
 
+## 🪨 Archaeology drop weights (`rarity-weights`)
+
+A mineral is rolled inside its own dimension, and each **rarity** carries a weight: the higher it is, the more
+often that rarity's minerals come out of the stone. With the shipped values a legendary is roughly one
+extraction in a hundred.
+
+```yaml
+rarity-weights:
+  common: 50
+  uncommon: 30
+  rare: 14
+  epic: 5
+  legendary: 1
+```
+
+* Weights are **relative**, so any set of numbers works: doubling `common` and leaving the rest alone makes the world twice as generous with the shallow minerals without changing the rest of the table.
+* `0` takes a rarity off geology entirely — `legendary: 0` means no legendary ore drops at all, from any dimension.
+* Negative values are read as `0`, a missing or non-numeric key keeps its shipped value, and a section whose weights **all** end at `0` falls back to the shipped ones: a table with no weight at all would otherwise hand out the first mineral of the dimension on every single extraction.
+* The **prospector** brush still rolls rare, epic and legendary minerals twice as often, on top of whatever weights the server configured.
+
+Changes apply on `/mvtink reload` and are echoed on startup:
+
+```
+[MultiverseTinker] Archaeology rarity weights — common 50 · uncommon 30 · rare 14 · epic 5 · legendary 1 (shipped)
+```
+
+---
+
 ## 🧭 Other sections
 
 | Section | Purpose |
@@ -237,7 +265,7 @@ answers to the rule, so the plugin never gets in the way of ordinary anvil repai
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
 | `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage and whether armor defends with the protection rolled from its minerals, or the vanilla material values instead (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: chance to consume the lava source and the Magma Block heat-source slowdown multiplier. |
-| `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). **Reserved:** the archaeology loot table currently rolls on the built-in weights (common 50, uncommon 30, rare 14, epic 5, legendary 1), so editing this key has no effect yet. |
+| `rarity-weights` | Rarity weights of the archaeology drop table (`common` 50, `uncommon` 30, `rare` 14, `epic` 5, `legendary` 1). Weights are relative, `0` takes a rarity off geology entirely, negatives are read as 0, and an all-zero section falls back to the shipped values so the table can never run dry. A missing or non-numeric key keeps its shipped value. |
 | `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and the refusal of each surface. |
 
 ---

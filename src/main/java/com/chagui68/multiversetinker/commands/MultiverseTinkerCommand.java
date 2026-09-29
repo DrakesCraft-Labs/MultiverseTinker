@@ -3,6 +3,7 @@ package com.chagui68.multiversetinker.commands;
 import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.access.AccessControl.Surface;
+import com.chagui68.multiversetinker.archaeology.ArchaeologyLootTable;
 import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
@@ -90,6 +91,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 plugin.applyAnimationSettings();
                 plugin.applyEquipmentSettings();
                 plugin.applyAccessSettings();
+                plugin.applyLootSettings();
                 plugin.getArchaeologyManager().getLootTable().reload();
                 itemRegistry.reload();
                 // Forged alloys are named after their parents, so their words are re-derived on reload.
@@ -130,6 +132,9 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                         + itemRegistry.getAvailableItemIdCount() + "</yellow></gray>"));
                 sender.sendMessage(miniMessage.deserialize("<gray>Material-derived ids checked: <yellow>" + expectedIds
                         + "</yellow> (each material also answers to its bare id, _processed, _handle and _pommel)</gray>"));
+                ArchaeologyLootTable loot = plugin.getArchaeologyManager().getLootTable();
+                sender.sendMessage(miniMessage.deserialize("<gray>Archaeology rarity weights: <yellow>" + loot.weightsSummary()
+                        + "</yellow> <gray>(" + (loot.usesDefaultWeights() ? "shipped" : "configured") + ")</gray>"));
                 if (unresolved.isEmpty()) {
                     sender.sendMessage(miniMessage.deserialize("<green>✔ Every item id resolves correctly. Caches are now warm.</green>"));
                 } else {

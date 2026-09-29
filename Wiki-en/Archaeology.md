@@ -21,6 +21,11 @@ MultiverseTinker replaces traditional chunk-based ore worldgen with an interacti
 | **The Nether** | `NETHERRACK`, `BLACKSTONE`, `BASALT` | 30 Nether Minerals | **40%** |
 | **The End** | `END_STONE` | 30 The End Minerals | **35%** |
 
+Which mineral of the dimension comes out is decided by **rarity**, not by a flat chance: a legendary is
+roughly one extraction in a hundred while a common is one in two. Those odds live in the `rarity-weights`
+section of `config.yml` — `0` takes a rarity off geology entirely — and the prospector brush doubles the
+weight of the rare, epic and legendary ones. See **[Configuration](Configuration.md#-archaeology-drop-weights-rarity-weights)**.
+
 ---
 
 ## 3. Geological Degradation & Anti-Macro Protection
