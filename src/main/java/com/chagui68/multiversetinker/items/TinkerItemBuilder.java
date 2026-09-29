@@ -9,6 +9,7 @@ import com.chagui68.multiversetinker.evolution.EvolutionTier;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
+import com.chagui68.multiversetinker.tools.WeaponPerkProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -543,9 +544,15 @@ public class TinkerItemBuilder {
                     .decoration(TextDecoration.ITALIC, false));
         }
 
+        // Material-driven perk: the essence of the forged minerals names and warps the signature mechanic.
+        WeaponPerkProfile perkProfile = WeaponPerkProfile.of(weaponType, part1, part2, part3);
         lore.add(Component.empty());
         lore.add(Component.text("✦ Weapon Perk: ", NamedTextColor.GOLD)
-                .append(Component.text(getWeaponPerkDescription(weaponType), NamedTextColor.AQUA))
+                .append(Component.text(perkProfile.getDisplayName() + ": ", NamedTextColor.AQUA))
+                .append(Component.text(perkProfile.getDescription(), NamedTextColor.GRAY))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Essence Focus: ", NamedTextColor.DARK_GRAY)
+                .append(Component.text(perkProfile.getFocusLine(), perkProfile.getColor()))
                 .decoration(TextDecoration.ITALIC, false));
 
         Set<String> uniqueMatIds = getUniqueMaterialIds(part1, part2, part3);
@@ -742,19 +749,6 @@ public class TinkerItemBuilder {
             builder.append(affinity.getDisplayName());
         }
         return builder.length() == 0 ? "Primal" : builder.toString();
-    }
-
-    @Nonnull
-    private static String getWeaponPerkDescription(@Nonnull ModularWeaponType type) {
-        return switch (type) {
-            case SWORD -> "Sweeping Cleave: hits multiple adjacent foes and chains elemental traits.";
-            case BOW -> "Infused Volley: arrows inherit limb and string elemental traits.";
-            case CROSSBOW -> "Piercing Velocity: armor-penetrating bolts that trigger explosive impact.";
-            case TRIDENT -> "Hydraulic Surge: releases lightning or geysers on strike in water or rain.";
-            case SPEAR -> "Jousting Reach: extended attack range and +30% damage while sprinting.";
-            case MACE -> "Seismic Smash: fall strikes produce crushing ground shockwaves.";
-            case SHIELD -> "Retaliation Barrier: blocks reflect 35% damage and apply traits to attackers.";
-        };
     }
 
     @Nonnull

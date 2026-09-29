@@ -99,6 +99,7 @@ Haz clic en el **Selector de Armas** (Ranura 13) para alternar entre los 7 tipos
   - **Lanza Cinética (Kinetic Spear)**: *Embestida de Justa* — Posee el modelo y alcance cuerpo a cuerpo extendido de la lanza oficial vanilla 1.21.11; al atacar esprintando o montado sobre un caballo/camello, asesta un golpe crítico con +30% de daño y un fuerte empuje hacia adelante.
   - **Escudo Torre (Tower Shield)**: *Barrera de Represalia* — Bloquear ataques cuerpo a cuerpo o proyectiles (flechas, tridentes) devuelve un 35% del daño al atacante, lo empuja hacia atrás y le aplica los rasgos elementales de la placa frontal y el umbón.
   - **Espada Ancha (Broadsword)**: *Tajo Elemental Enlazado* — Los tajos de barrido causan el 40% de daño a los enemigos adyacentes y propagan todos los rasgos elementales activos a cada uno de ellos.
+- **Perks según los Materiales**: cada ventaja anterior se **nombra e impulsa según el mineral de la cabeza** (una cabeza de Cobalto da *Infernal Piercing Velocity*, una de Piedra del Vacío da *Void Piercing Velocity*), mientras la empuñadura y el pomo fijan el porcentaje de **Essence Focus** del lore. La esencia dominante se canaliza en el golpe primario del perk, por lo que armas del mismo tipo forjadas con minerales distintos combaten de forma diferente.
 
 ---
 

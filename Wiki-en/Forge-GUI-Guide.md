@@ -97,6 +97,7 @@ Click the **Weapon Selector** in **Slot 13** to cycle between all 7 weapon types
   - **Kinetic Spear**: Extended attack reach and +30% sprint charge damage.
   - **Tower Shield**: Reflects 35% of blocked damage back to the attacker.
   - **Broadsword**: Sweeping melee attacks chain elemental traits across adjacent foes.
+- **Material-Driven Perks**: every perk above is **named and powered by the weapon's head mineral** (a Cobalt head yields *Infernal Piercing Velocity*, a Voidstone head yields *Void Piercing Velocity*), while the handle and pommel set the **Essence Focus** percentage shown in the lore. The dominant essence is channelled into the perk's primary strike, so identical weapon types forged from different minerals fight differently.
 
 ---
 

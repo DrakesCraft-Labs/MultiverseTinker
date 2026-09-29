@@ -67,6 +67,23 @@ public final class TraitEffectEngine {
         applyNamedAlloyWeapon(player, target, event, matId, ratio, rnd);
     }
 
+    /**
+     * Signature echo of a weapon's material-driven perk.
+     *
+     * <p>The dominant essence of the forged composition is channelled into the perk's primary
+     * strike on top of the ordinary per-material affinities, scaled by how concentrated that
+     * essence is ({@link WeaponPerkProfile#getPotency()}). This is what makes two weapons of the
+     * same type but different minerals feel different in combat.</p>
+     */
+    public static void applyWeaponPerkEcho(@Nullable Player player,
+                                           @Nonnull LivingEntity target,
+                                           @Nullable EntityDamageByEntityEvent event,
+                                           @Nonnull TraitAffinity affinity,
+                                           double potency) {
+        double ratio = Math.max(0.5, Math.min(1.5, 0.75 + potency));
+        applyWeaponAffinity(affinity, player, target, event, ratio, ThreadLocalRandom.current());
+    }
+
     private static void applyWeaponAffinity(@Nonnull TraitAffinity affinity,
                                             @Nullable Player player,
                                             @Nonnull LivingEntity target,

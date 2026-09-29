@@ -74,3 +74,34 @@ signature trait on top of the inherited affinities.
 
 > 💡 The **Mineral Affinities** line on every forged weapon, tool and armor piece lists exactly
 > which essences that piece carries.
+
+---
+
+## ⚔️ Material-driven weapon perks
+
+Every modular weapon keeps a **signature mechanic** from its type (Sweeping Cleave, Piercing
+Velocity, Hydraulic Surge, …), but the **essence that names and powers that perk comes from the
+minerals it was forged with**:
+
+| Part | Influence over the perk |
+|---|---|
+| **Head** (blade, bow limbs, prongs, mace head, shield plate) | Decides the weapon's **identity essence** — the highest ranking essence its mineral teaches. |
+| **Handle / Pommel** (rod, string, binding, boss) | Decide the **potency**: how much of the forged weapon actually carries that essence. |
+
+The perk therefore reads `<Essence> <Signature>`:
+
+| Head mineral | Resulting perk |
+|---|---|
+| Cobalt (Nether) | **Infernal Piercing Velocity** — the bolts burn what they hit. |
+| Voidstone (The End) | **Void Piercing Velocity** — the impact drags foes off balance. |
+| Diamond (vanilla gem) | **Radiant Sweeping Cleave** — cleaved foes are marked with Glowing. |
+| Iron (vanilla metal) | **Tempered Sweeping Cleave** — hardened edge damage. |
+| Ruby (Overworld gem) | **Terrain Jousting Reach** — earthen blows slow the target. |
+
+Right under the perk you will find `• Essence Focus: <Essence> essence (<n>%)`, the share of the
+weapon's forged mass that carries the identity essence. A weapon built entirely from one mineral is
+100% focused; an exotic head with a common handle lands near 50%.
+
+In combat the dominant essence is channelled into the perk's **primary strike** (the *perk echo*),
+scaled by that focus — so two crossbows of the same tier forged from different minerals genuinely
+fight differently.

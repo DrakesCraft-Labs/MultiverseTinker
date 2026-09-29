@@ -99,6 +99,7 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
   * **Azada**: Cosecha cultivos maduros en 3x3 y replanta automáticamente las semillas de tu inventario.
   * **Caña de Pescar**: Dragado abisal permite pescar minerales raros de las profundidades acuáticas.
   * **Armadura Modular**: Casco con protección de peligros, Peto con amortiguación cinética (25% de impactos fuertes), Grebas con impulso de zancada y Botas que reducen a la mitad el daño de caída.
+  * **Perks según los Materiales**: cada habilidad se **nombra e impulsa según el mineral de la cabeza** (Cobalto → *Infernal Piercing Velocity*, Piedra del Vacío → *Void Piercing Velocity*, Diamante → *Radiant Tajo Enlazado*), mientras la empuñadura y el pomo fijan el **Essence Focus** que se muestra en el lore; la esencia dominante se canaliza en el golpe primario del perk.
 * **Afinidades de Rasgos Deterministas**: Cada mineral y mena vanilla resuelve a hasta 3 de las 12 esencias (Infernal, Void, Primal, Tempered, Radiant, Resonant, Volatile, Terrain, Swift, Brutal, Bulwark, Ascendant). Se comportan de forma **ofensiva en armas, como procs de minería en herramientas y defensivos en armaduras**, y las aleaciones heredan las esencias de ambos progenitores — cada combinación de minerales posee así su propia funcionalidad única. Ver [Afinidades de Rasgos](Wiki-es/Afinidades-de-Rasgos.md).
 
 ---

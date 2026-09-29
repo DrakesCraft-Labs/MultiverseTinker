@@ -128,7 +128,7 @@ public class ModularToolListener implements Listener {
 
         // Specialized Weapon Perks
         if (weaponTypeName != null) {
-            handleSpecializedWeaponCombat(player, target, event, weaponTypeName);
+            handleSpecializedWeaponCombat(player, target, event, weaponTypeName, pdc);
         }
 
         // Specialized Tool Perks (e.g. Axe shield disabler)
@@ -158,7 +158,8 @@ public class ModularToolListener implements Listener {
         }
     }
 
-    private void handleSpecializedWeaponCombat(Player player, LivingEntity target, EntityDamageByEntityEvent event, String weaponType) {
+    private void handleSpecializedWeaponCombat(Player player, LivingEntity target, EntityDamageByEntityEvent event,
+                                              String weaponType, @Nonnull PersistentDataContainer pdc) {
         ModularWeaponType type;
         try {
             type = ModularWeaponType.valueOf(weaponType);
@@ -174,17 +175,12 @@ public class ModularToolListener implements Listener {
                     target.getWorld().spawnParticle(Particle.EXPLOSION, target.getLocation().add(0, 0.5, 0), 3, 0.3, 0.3, 0.3, 0.0);
                     target.getWorld().playSound(target.getLocation(), Sound.ITEM_MACE_SMASH_GROUND, 1.2f, 0.8f);
 
-                    ItemMeta meta = player.getInventory().getItemInMainHand().getItemMeta();
-                    PersistentDataContainer pdc = (meta != null) ? meta.getPersistentDataContainer() : null;
-
                     for (Entity nearby : target.getNearbyEntities(4.0, 2.0, 4.0)) {
                         if (nearby instanceof LivingEntity mob && !nearby.equals(player) && !nearby.equals(target)) {
                             mob.setNoDamageTicks(0);
                             mob.damage(shockDamage, player);
                             mob.setVelocity(mob.getLocation().toVector().subtract(target.getLocation().toVector()).normalize().multiply(0.6).setY(0.4));
-                            if (pdc != null) {
-                                triggerMultiMaterialTraits(player, mob, null, pdc);
-                            }
+                            triggerMultiMaterialTraits(player, mob, null, pdc);
                         }
                     }
                 }
@@ -209,21 +205,49 @@ public class ModularToolListener implements Listener {
             }
             case SWORD -> {
                 // Sweeping elemental cleave
-                ItemMeta meta = player.getInventory().getItemInMainHand().getItemMeta();
-                PersistentDataContainer pdc = (meta != null) ? meta.getPersistentDataContainer() : null;
-
                 for (Entity nearby : target.getNearbyEntities(2.5, 1.5, 2.5)) {
                     if (nearby instanceof LivingEntity mob && !nearby.equals(player) && !nearby.equals(target)) {
                         mob.setNoDamageTicks(0);
                         mob.damage(event.getDamage() * 0.4, player);
                         mob.getWorld().spawnParticle(Particle.SWEEP_ATTACK, mob.getLocation().add(0, 0.8, 0), 1);
-                        if (pdc != null) {
-                            triggerMultiMaterialTraits(player, mob, null, pdc);
-                        }
+                        triggerMultiMaterialTraits(player, mob, null, pdc);
                     }
                 }
             }
             default -> {}
+        }
+
+        // Material-driven signature: the perk channels the essence of the minerals the weapon was forged from.
+        applyWeaponPerkEcho(player, target, event, pdc);
+    }
+
+    /**
+     * Releases the weapon's dominant mineral essence as its signature perk on the primary strike.
+     * Runs inside the trait-chain guard so echo damage can never recurse without bound.
+     */
+    private void applyWeaponPerkEcho(@Nullable Player player, @Nullable LivingEntity target,
+                                     @Nullable EntityDamageByEntityEvent event,
+                                     @Nonnull PersistentDataContainer pdc) {
+        if (target == null) return;
+        String weaponTypeName = pdc.get(TinkerKeys.WEAPON_TYPE, PersistentDataType.STRING);
+        if (weaponTypeName == null) return;
+
+        ModularWeaponType type;
+        try {
+            type = ModularWeaponType.valueOf(weaponTypeName);
+        } catch (IllegalArgumentException e) {
+            return;
+        }
+
+        List<PartComposition> parts = collectCompositions(pdc);
+        if (parts.isEmpty()) return;
+
+        WeaponPerkProfile profile = WeaponPerkProfile.of(type, parts);
+        if (!enterTraitChain()) return;
+        try {
+            TraitEffectEngine.applyWeaponPerkEcho(player, target, event, profile.getAffinity(), profile.getPotency());
+        } finally {
+            exitTraitChain();
         }
     }
 
@@ -398,6 +422,8 @@ public class ModularToolListener implements Listener {
         // 3. Multi-Material Elemental Traits on Direct Target
         if (hitEntity instanceof LivingEntity target) {
             triggerMultiMaterialTraits(shooter, target, null, pdc);
+            // Material-driven weapon perk echo for projectile weapons (bow, crossbow, thrown trident).
+            applyWeaponPerkEcho(shooter, target, null, pdc);
         }
     }
 

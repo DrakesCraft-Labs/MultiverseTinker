@@ -74,3 +74,34 @@ rasgo exclusivo curado por encima de las afinidades heredadas.
 
 > 💡 La línea **Mineral Affinities** de cada arma, herramienta o armadura forjada lista exactamente
 > qué esencias porta esa pieza.
+
+---
+
+## ⚔️ Perks de arma según los materiales
+
+Cada arma modular conserva una **mecánica característica** según su tipo (Tajo Enlazado, Piercing
+Velocity, Oleada Hidráulica, …), pero la **esencia que nombra e impulsa ese perk proviene de los
+materiales con los que fue forjada**:
+
+| Pieza | Influencia sobre el perk |
+|---|---|
+| **Cabeza** (hoja, brazos del arco, dientes, mazo, placa del escudo) | Decide la **esencia de identidad** del arma — la esencia de mayor rango que enseña su mineral. |
+| **Empuñadura / Pomo** (varilla, cuerda, atadura, umbón) | Deciden la **potencia**: cuánta parte del arma forjada porta realmente esa esencia. |
+
+Así, el perk se muestra como `<Esencia> <Mecánica>`:
+
+| Mineral de la cabeza | Perk resultante |
+|---|---|
+| Cobalto (Nether) | **Infernal Piercing Velocity** — los virotes incendian lo que golpean. |
+| Piedra del Vacío (End) | **Void Piercing Velocity** — el impacto arrastra a los enemigos. |
+| Diamante (gema vanilla) | **Radiant Tajo Enlazado** — los enemigos alcanzados quedan marcados con Brillantez. |
+| Hierro (metal vanilla) | **Tempered Tajo Enlazado** — filo endurecido con daño extra. |
+| Rubí (gema del Overworld) | **Terrain Embestida de Justa** — los golpes terrosos ralentizan al objetivo. |
+
+Justo debajo del perk verás `• Essence Focus: <Esencia> essence (<n>%)`, la proporción de la masa
+forjada del arma que porta la esencia de identidad. Un arma hecha íntegramente de un solo mineral
+alcanza el 100%; una cabeza exótica con empuñadura común ronda el 50%.
+
+En combate la esencia dominante se canaliza en el **golpe primario** del perk (el *perk echo*),
+escalado por esa concentración — por lo que dos ballestas del mismo tier forjadas con minerales
+distintos se comportan de forma realmente diferente.

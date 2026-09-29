@@ -99,6 +99,7 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
   * **Scythe (Hoe)**: Harvests 3x3 mature crops and auto-replants seeds from your inventory.
   * **Fishing Rod**: Abyssal Dredge has a 15% chance to hook rare raw Multiverse minerals.
   * **Modular Armor**: Helmet hazard warding, Chestplate kinetic dampening (25% heavy-impact absorption), Leggings stride momentum and Boots fall-damage halving.
+  * **Material-Driven Perks**: every perk above is **named and powered by the weapon's head mineral** (Cobalt → *Infernal Piercing Velocity*, Voidstone → *Void Piercing Velocity*, Diamond → *Radiant Sweeping Cleave*) while the handle and pommel set the **Essence Focus** shown in the lore; the dominant essence is channelled into the perk's primary strike.
 * **Deterministic Trait Affinities**: Every mineral and vanilla ore resolves to up to 3 of the 12 essences (Infernal, Void, Primal, Tempered, Radiant, Resonant, Volatile, Terrain, Swift, Brutal, Bulwark, Ascendant). They behave **offensively on weapons, as mining procs on tools and as defensive procs on armor**, and alloys inherit both parents' essences — so every mineral combination owns its own unique functionality. See [Trait Affinities](Wiki-en/Trait-Affinities.md).
 
 ---

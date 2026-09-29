@@ -9,6 +9,8 @@ import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.TraitAffinity;
+import com.chagui68.multiversetinker.tools.WeaponPerkProfile;
 import net.kyori.adventure.text.Component;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -137,6 +139,97 @@ class WeaponPerkAuditTest {
         String lore = flattenLore(crossbow);
         assertTrue(lore.contains("Piercing Velocity"));
         assertTrue(lore.contains("explosive impact"));
+    }
+
+    @Test
+    @DisplayName("Every weapon perk changes when the head mineral changes")
+    void testWeaponPerkVariesWithHeadMineral() {
+        TinkerMaterial cobalt = registry.get("mvtink_cobalt");   // Nether  -> Infernal
+        TinkerMaterial voidstone = registry.get("mvtink_voidstone"); // The End -> Void
+        TinkerMaterial iron = registry.get("mvtink_iron");
+        assertNotNull(cobalt);
+        assertNotNull(voidstone);
+        assertNotNull(iron);
+
+        PartComposition body = PartComposition.fromMaterials(List.of(iron));
+
+        for (ModularWeaponType type : ModularWeaponType.values()) {
+            ItemStack infernal = TinkerItemBuilder.createModularWeapon(type,
+                    PartComposition.fromMaterials(List.of(cobalt)), body, type.isTwoPart() ? null : body,
+                    EvolutionTier.WOOD, 0);
+            ItemStack voided = TinkerItemBuilder.createModularWeapon(type,
+                    PartComposition.fromMaterials(List.of(voidstone)), body, type.isTwoPart() ? null : body,
+                    EvolutionTier.WOOD, 0);
+
+            String infernalPerk = perkLine(infernal);
+            String voidPerk = perkLine(voided);
+
+            assertTrue(infernalPerk.contains(WeaponPerkProfile.baseName(type)),
+                    type + " must keep its signature perk name, got: " + infernalPerk);
+            assertTrue(voidPerk.contains(WeaponPerkProfile.baseName(type)),
+                    type + " must keep its signature perk name, got: " + voidPerk);
+            assertTrue(infernalPerk.startsWith("Infernal "),
+                    type + " forged from a Nether mineral must read as Infernal, got: " + infernalPerk);
+            assertTrue(voidPerk.startsWith("Void "),
+                    type + " forged from an End mineral must read as Void, got: " + voidPerk);
+            assertNotEquals(infernalPerk, voidPerk,
+                    type + " perk must vary with the minerals it is forged from");
+
+            assertTrue(flattenLore(infernal).contains("Essence Focus"),
+                    type + " must display the dominant essence of its composition");
+        }
+    }
+
+    @Test
+    @DisplayName("Weapon perk profiles are deterministic, blended and stay within bounds")
+    void testWeaponPerkProfileDeterminism() {
+        TinkerMaterial cobalt = registry.get("mvtink_cobalt");
+        TinkerMaterial voidstone = registry.get("mvtink_voidstone");
+        TinkerMaterial iron = registry.get("mvtink_iron");
+
+        PartComposition head = PartComposition.fromMaterials(List.of(cobalt));
+        PartComposition rod = PartComposition.fromMaterials(List.of(iron));
+        PartComposition binding = PartComposition.fromMaterials(List.of(voidstone));
+
+        WeaponPerkProfile first = WeaponPerkProfile.of(ModularWeaponType.SWORD, head, rod, binding);
+        WeaponPerkProfile second = WeaponPerkProfile.of(ModularWeaponType.SWORD, head, rod, binding);
+
+        assertEquals(first.getPerkLine(), second.getPerkLine(), "Profiles must be deterministic");
+        assertEquals(first.getAffinity(), TraitAffinity.INFERNAL,
+                "The head mineral dictates the identity essence");
+        assertTrue(first.getEssenceBlend().contains("Infernal"),
+                "Description must name the head mineral's essence blend, got: " + first.getEssenceBlend());
+        assertTrue(first.getPotency() > 0.0 && first.getPotency() <= 1.0,
+                "Potency must be a positive fraction, got: " + first.getPotency());
+
+        WeaponPerkProfile fullyInfernal = WeaponPerkProfile.of(
+                ModularWeaponType.SWORD, head, head, head);
+        assertEquals(1.0, fullyInfernal.getPotency(), 1e-9,
+                "A weapon forged entirely from one essence' minerals is fully focused");
+        assertTrue(fullyInfernal.getPotency() > first.getPotency(),
+                "Concentrating the essence must raise its potency");
+
+        assertNotEquals(first.getDisplayName(),
+                WeaponPerkProfile.of(ModularWeaponType.SWORD, binding, rod, head).getDisplayName(),
+                "Swapping the head mineral must change the perk name");
+    }
+
+    /** Extracts the rendered perk text out of the component repr, e.g. "Infernal Piercing Velocity: ...". */
+    private String perkLine(ItemStack item) {
+        for (Component line : item.getItemMeta().lore()) {
+            String text = line.toString();
+            int marker = text.indexOf("Weapon Perk: ");
+            if (marker < 0) continue;
+
+            int contentStart = text.indexOf("content=\"", marker);
+            if (contentStart >= 0) {
+                int begin = contentStart + "content=\"".length();
+                int end = text.indexOf('"', begin);
+                if (end > begin) return text.substring(begin, end);
+            }
+            return text.substring(marker + "Weapon Perk: ".length());
+        }
+        return "";
     }
 
     private String flattenLore(ItemStack item) {
