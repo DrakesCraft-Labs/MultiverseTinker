@@ -155,6 +155,19 @@ sections:
 | **Combination Explorer** | Pick any material and see **every** partner the crucible accepts, with the exact result name and id. |
 | **Alloy Space Summary** | Mineral pairs, curated recipes, prime fusion counts and the grand total. |
 
+The catalog has two **scopes**, toggled with the **Scope** button on the bottom row:
+
+* **Materials** — the curated list above, one entry per material, with its trait and essences.
+* **Every item** — the flat registry: all **2,656 registered ids** the server can hand out right now,
+  including tool parts, casts, the smeltery, molten buckets and the legacy `_processed` / `_handle` /
+  `_pommel` aliases. The **Kind** button cycles that list through every item kind (raw, ingot, nugget,
+  block, molten bucket and the ten part types) so you can jump straight to, say, every raw ore.
+
+Clicking a material in the **Materials** scope **drills into** that material and lists every id it owns,
+so you can see at a glance that copper is not one item but its raw ore, ingot, nugget, block, bucket and
+parts. Every registry entry spells out its own id in its lore, and clicking it prints the matching
+`/mvtink give <player> <id>` line in chat — the catalog is a lookup tool, not a forge.
+
 > 🔍 The explorer has no side effects: it previews the resulting id, name and essences without forging
 > anything, so you can plan a build before spending a single ingot. Prime alloys never appear as
 > partners, because they cannot be reforged.

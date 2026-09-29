@@ -158,6 +158,19 @@ administración — y solo apuntarlo a otro jugador con `/mvtink codex <jugador>
 | **Explorador de Combinaciones** | Elige cualquier material y ve **todos** los socios que acepta el crisol, con el nombre e id exactos del resultado. |
 | **Resumen del Espacio de Aleaciones** | Pares de minerales, recetas legendarias, conteo de fusiones primordiales y el gran total. |
 
+El catálogo tiene dos **alcances**, que se cambian con el botón **Scope** de la fila inferior:
+
+* **Materiales** — la lista curada de arriba, una entrada por material, con su rasgo y sus esencias.
+* **Todos los ítems** — el registro plano: los **2.656 ids registrados** que el servidor puede entregar ahora mismo,
+  incluidas piezas de herramienta, moldes, el crisol, baldes fundidos y los alias heredados `_processed` /
+  `_handle` / `_pommel`. El botón **Kind** recorre esa lista por tipo de ítem (en bruto, lingote, pepita,
+  bloque, balde fundido y los diez tipos de pieza) para saltar directo, por ejemplo, a todos los minerales en bruto.
+
+Al hacer clic en un material del alcance **Materiales** se **despliega** ese material y se listan todos los ids
+que posee, así compruebas de un vistazo que el cobre no es un solo ítem sino su mineral en bruto, lingote, pepita,
+bloque, balde y piezas. Cada entrada del registro escribe su propio id en el lore, y al hacer clic imprime en el
+chat la línea `/mvtink give <jugador> <id>` correspondiente — el catálogo es una herramienta de consulta, no una forja.
+
 > 🔍 El explorador no tiene efectos secundarios: previsualiza el id, el nombre y las esencias del
 > resultado sin forjar nada, así puedes planificar una build antes de gastar un solo lingote. Las
 > aleaciones primordiales nunca aparecen como socias, porque no se pueden refundir.
