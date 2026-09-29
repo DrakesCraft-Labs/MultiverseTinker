@@ -177,10 +177,16 @@ public class MultiverseTinker extends JavaPlugin {
     public void applyEquipmentSettings() {
         TinkerItemBuilder.configureEquipment(
                 getConfig().getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ATTACK_DAMAGE, true));
+        TinkerItemBuilder.configureArmorDefense(
+                getConfig().getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE, true));
 
         getLogger().info("Modular equipment: vanilla durability disabled, attack damage "
                 + (TinkerItemBuilder.isModularAttackDamage() ? "taken from the forged materials."
                         : "left at the vanilla material value."));
+        getLogger().info("Modular armor: protection "
+                + (TinkerItemBuilder.isModularArmorDefense()
+                        ? "rolled from the forged minerals (Defense, Toughness, knockback)."
+                        : "left at the vanilla values of the tier material."));
     }
 
     private void registerRecipes() {

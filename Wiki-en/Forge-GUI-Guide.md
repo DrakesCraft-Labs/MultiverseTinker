@@ -142,11 +142,13 @@ Click the **Armor Selector** in **Slot 13** to cycle between all 4 armor types:
 - **Armor Lining**: Flexible interior chainmail mesh and padding. Determines armor toughness and secondary defense traits.
 - **Armor Trim**: Reinforced fasteners, rivets, and joint buckles. Determines knockback resistance and passive utility traits.
 
+Those three numbers are not cosmetic: the piece's armor modifiers are replaced by the rolled **Defense**, **Toughness** and knockback resistance, bound to the slot it is worn in (see [Configuration](Configuration.md#how-modular-armor-protects)).
+
 ### Armor Tier Evolution & Perks
 - Every armor piece starts at **Wood Tier** (`0` damage absorbed).
 - Absorbing incoming damage advances the armor piece through tiers:
   `Wood → Stone (50 dmg) → Copper (150) → Iron (350) → Gold (750) → Diamond (1500) → Netherite (3000)`.
-- As armor evolves, its vanilla material transforms (Leather → Chainmail → Iron → Gold → Diamond → Netherite), enhancing baseline armor stats, toughness, and durability!
+- As armor evolves, its vanilla material transforms (Leather → Chainmail → Iron → Gold → Diamond → Netherite) and the piece **re-rolls its own protection**: the Defense (base slot + plate + tier) and Toughness (base slot + lining + tier) printed in its lore grow with every tier, and those rolled numbers — not the vanilla material's — are what the server applies. A diamond-plated piece does not defend like diamond just because it is built on one.
 - **Specialized Armor Perks** — the slot owns the defense, the plate mineral owns its essence:
   - **Helmet** (*Cranium Ward*): reduces critical headshot damage and grants hazard immunity.
   - **Chestplate** (*Kinetic Dampener*): absorbs 25% of heavy impacts and releases protective energy.

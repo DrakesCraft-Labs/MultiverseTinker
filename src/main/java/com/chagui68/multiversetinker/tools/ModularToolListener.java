@@ -1488,11 +1488,18 @@ public class ModularToolListener implements Listener {
         if (meta == null) return;
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
 
+        // The three armor parts are read before the material is swapped, so the piece's protection can
+        // be recomputed even if changing the item type rebuilt its data container.
+        String plateRaw = pdc.get(TinkerKeys.ARMOR_PLATE_COMP, PersistentDataType.STRING);
+        String liningRaw = pdc.get(TinkerKeys.ARMOR_LINING_COMP, PersistentDataType.STRING);
+        String trimRaw = pdc.get(TinkerKeys.ARMOR_TRIM_COMP, PersistentDataType.STRING);
+
         String aType = pdc.get(TinkerKeys.ARMOR_TYPE, PersistentDataType.STRING);
+        ModularArmorType modularType = null;
         if (aType != null) {
             try {
-                ModularArmorType mat = ModularArmorType.valueOf(aType);
-                switch (mat) {
+                modularType = ModularArmorType.valueOf(aType);
+                switch (modularType) {
                     case HELMET -> item.setType(newTier.getMatchingHelmetMaterial());
                     case CHESTPLATE -> item.setType(newTier.getMatchingChestplateMaterial());
                     case LEGGINGS -> item.setType(newTier.getMatchingLeggingsMaterial());
@@ -1515,6 +1522,10 @@ public class ModularToolListener implements Listener {
         int absorbed = pdc.getOrDefault(TinkerKeys.DAMAGE_ABSORBED, PersistentDataType.INTEGER, 0);
         TinkerItemBuilder.updateArmorProgress(item, newTier, absorbed);
 
+        // The tier raises the rolled Defense and Toughness too, so the piece is re-armored with the
+        // numbers its new lore prints instead of keeping the protection of the tier it was forged at.
+        refreshArmorDefense(item, modularType, plateRaw, liningRaw, trimRaw, newTier);
+
         player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.2f, 1.1f);
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.2f);
         player.spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1.2, 0), 40, 0.4, 0.4, 0.4, 0.15);
@@ -1525,6 +1536,24 @@ public class ModularToolListener implements Listener {
                 Title.Times.times(Duration.ofMillis(300), Duration.ofMillis(2500), Duration.ofMillis(600))
         );
         player.showTitle(title);
+    }
+
+    /**
+     * Re-applies a piece's rolled protection after its evolution tier changed.
+     *
+     * <p>The three armor parts come from the piece's own data container, so the stats can be recomputed
+     * from them without the piece having to be forged again.</p>
+     */
+    private void refreshArmorDefense(@Nonnull ItemStack item, @Nullable ModularArmorType type,
+                                     @Nullable String plateRaw, @Nullable String liningRaw,
+                                     @Nullable String trimRaw, @Nonnull EvolutionTier tier) {
+        if (type == null || plateRaw == null || liningRaw == null || trimRaw == null) return;
+
+        TinkerItemBuilder.applyArmorDefense(item, type,
+                PartComposition.deserialize(plateRaw, materialRegistry),
+                PartComposition.deserialize(liningRaw, materialRegistry),
+                PartComposition.deserialize(trimRaw, materialRegistry),
+                tier);
     }
 
     private void damageArmorPiece(Player player, ItemStack item, int armorSlotIndex) {

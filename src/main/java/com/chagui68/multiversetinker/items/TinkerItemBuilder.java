@@ -15,6 +15,8 @@ import com.chagui68.multiversetinker.tools.PrimeUltimate;
 import com.chagui68.multiversetinker.tools.ToolPerkProfile;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.tools.WeaponPerkProfile;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -22,6 +24,10 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -48,10 +54,17 @@ public class TinkerItemBuilder {
     /** Config key that decides whether the rolled attack damage replaces the vanilla one. */
     public static final String CONFIG_MODULAR_ATTACK_DAMAGE = "equipment.modular-attack-damage";
 
+    /** Config key that decides whether the rolled armor protection replaces the vanilla one. */
+    public static final String CONFIG_MODULAR_ARMOR_DEFENSE = "equipment.modular-armor-defense";
+
+    /** Namespace of the armor modifiers the plugin writes in place of the vanilla ones. */
+    private static final String ARMOR_MODIFIER_NAMESPACE = "multiversetinker";
+
     private static volatile boolean modularAttackDamage = true;
+    private static volatile boolean modularArmorDefense = true;
 
     /**
-     * Applies the equipment rules of {@code config.yml}.
+     * Applies the offensive half of the equipment rules of {@code config.yml}.
      *
      * @param replaceVanillaDamage whether the mineral-rolled attack damage replaces the base
      *                             material's vanilla damage; {@code false} keeps vanilla combat
@@ -61,14 +74,31 @@ public class TinkerItemBuilder {
         modularAttackDamage = replaceVanillaDamage;
     }
 
-    /** Restores the shipped default (modular attack damage applied). */
+    /**
+     * Applies the defensive half of the equipment rules of {@code config.yml}.
+     *
+     * @param replaceVanillaDefense whether the mineral-rolled Defense, Toughness and knockback
+     *                              resistance replace the base material's vanilla armor values;
+     *                              {@code false} keeps the protection of the tier's own material
+     */
+    public static void configureArmorDefense(boolean replaceVanillaDefense) {
+        modularArmorDefense = replaceVanillaDefense;
+    }
+
+    /** Restores the shipped defaults (rolled damage and rolled armor protection both applied). */
     public static void resetEquipment() {
         configureEquipment(true);
+        configureArmorDefense(true);
     }
 
     /** Whether forged equipment fights with the damage printed in its own lore. */
     public static boolean isModularAttackDamage() {
         return modularAttackDamage;
+    }
+
+    /** Whether forged armor defends with the protection printed in its own lore. */
+    public static boolean isModularArmorDefense() {
+        return modularArmorDefense;
     }
 
     @Nonnull
@@ -891,6 +921,125 @@ public class TinkerItemBuilder {
         };
     }
 
+    /**
+     * The defensive profile a forged armor piece rolls from its three minerals and its tier.
+     *
+     * <p>This is the single source of truth for the armor's numbers: the lore rows and the attribute
+     * modifiers the server applies are both built from it, so the tooltip can never promise protection
+     * the piece does not have. The plate's attack damage becomes Defense, the lining's Toughness, and
+     * the trim's material count knockback resistance; the evolution tier adds its ordinal to Defense
+     * and half of it to Toughness, which is why a piece defends harder as it levels up.</p>
+     */
+    public record ArmorStats(int defense, double toughness, double knockbackResistance) {}
+
+    @Nonnull
+    public static ArmorStats armorStats(@Nonnull ModularArmorType armorType,
+                                        @Nonnull PartComposition plate,
+                                        @Nonnull PartComposition lining,
+                                        @Nonnull PartComposition trim,
+                                        @Nonnull EvolutionTier tier) {
+        int defense = armorType.getBaseDefense() + (int) Math.round(plate.getAttackDamage() / 3.0) + tier.ordinal();
+        double toughness = armorType.getBaseToughness() + (lining.getAttackDamage() / 4.0) + (tier.ordinal() * 0.5);
+        double knockback = (trim.getEntries().size() * 0.05) + (tier.ordinal() * 0.02);
+        return new ArmorStats(defense, toughness, knockback);
+    }
+
+    /**
+     * Gives a forged armor piece the protection its own minerals rolled.
+     *
+     * <p>Vanilla decides how hard armor defends from the base material's default attribute modifiers,
+     * so a piece forged from a tin plate but built on a netherite chestplate used to protect exactly
+     * like netherite. Replacing those modifiers with the rolled Defense, Toughness and knockback
+     * resistance makes the stats printed in the lore the ones the server actually applies. The vanilla
+     * attribute tooltip is hidden as well, so the same numbers are not printed twice.</p>
+     *
+     * <p>Safe to call again on the same piece: it re-applies the modifiers and rewrites the three
+     * armor rows of the lore in place, which is how an evolution tier refresh makes a piece that has
+     * just grown stronger defend with its new numbers.</p>
+     */
+    public static void applyArmorDefense(@Nonnull ItemStack item,
+                                         @Nonnull ModularArmorType armorType,
+                                         @Nonnull PartComposition plate,
+                                         @Nonnull PartComposition lining,
+                                         @Nonnull PartComposition trim,
+                                         @Nonnull EvolutionTier tier) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+
+        ArmorStats stats = armorStats(armorType, plate, lining, trim, tier);
+        if (modularArmorDefense) {
+            meta.setAttributeModifiers(armorModifiers(armorType, stats));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        }
+
+        List<Component> lore = meta.lore();
+        if (lore != null && !lore.isEmpty()) {
+            List<Component> rebuilt = new ArrayList<>(lore);
+            setLoreRow(rebuilt, "  • Defense: ",
+                    Component.text("  • Defense: +" + stats.defense() + " Armor Points", NamedTextColor.AQUA)
+                            .decoration(TextDecoration.ITALIC, false),
+                    "  • Durability: ");
+            setLoreRow(rebuilt, "  • Toughness: ",
+                    Component.text("  • Toughness: +" + String.format(Locale.US, "%.1f", stats.toughness()), NamedTextColor.BLUE)
+                            .decoration(TextDecoration.ITALIC, false),
+                    "  • Defense: ");
+            setLoreRow(rebuilt, "  • Knockback Resistance: ",
+                    Component.text("  • Knockback Resistance: +" + String.format(Locale.US, "%.0f%%", stats.knockbackResistance() * 100), NamedTextColor.LIGHT_PURPLE)
+                            .decoration(TextDecoration.ITALIC, false),
+                    "  • Toughness: ");
+            meta.lore(rebuilt);
+        }
+
+        item.setItemMeta(meta);
+    }
+
+    /**
+     * Builds the armor modifiers of a piece: its Defense, Toughness and knockback resistance, all
+     * bound to the equipment slot the piece is worn in.
+     */
+    @Nonnull
+    private static Multimap<Attribute, AttributeModifier> armorModifiers(@Nonnull ModularArmorType armorType,
+                                                                        @Nonnull ArmorStats stats) {
+        EquipmentSlotGroup group = switch (armorType) {
+            case HELMET -> EquipmentSlotGroup.HEAD;
+            case CHESTPLATE -> EquipmentSlotGroup.CHEST;
+            case LEGGINGS -> EquipmentSlotGroup.LEGS;
+            case BOOTS -> EquipmentSlotGroup.FEET;
+        };
+
+        Multimap<Attribute, AttributeModifier> modifiers = ArrayListMultimap.create();
+        modifiers.put(Attribute.ARMOR, new AttributeModifier(
+                new NamespacedKey(ARMOR_MODIFIER_NAMESPACE, "modular_armor"), stats.defense(),
+                AttributeModifier.Operation.ADD_NUMBER, group));
+        modifiers.put(Attribute.ARMOR_TOUGHNESS, new AttributeModifier(
+                new NamespacedKey(ARMOR_MODIFIER_NAMESPACE, "modular_armor_toughness"), stats.toughness(),
+                AttributeModifier.Operation.ADD_NUMBER, group));
+        if (stats.knockbackResistance() > 0) {
+            modifiers.put(Attribute.KNOCKBACK_RESISTANCE, new AttributeModifier(
+                    new NamespacedKey(ARMOR_MODIFIER_NAMESPACE, "modular_armor_knockback"),
+                    stats.knockbackResistance(), AttributeModifier.Operation.ADD_NUMBER, group));
+        }
+        return modifiers;
+    }
+
+    /**
+     * Replaces the lore row carrying {@code label}, or inserts it after {@code anchorLabel} when the
+     * piece does not have it yet, so a tier upgrade can add a row an earlier tier never printed.
+     */
+    private static void setLoreRow(@Nonnull List<Component> lore, @Nonnull String label,
+                                   @Nonnull Component value, @Nonnull String anchorLabel) {
+        int anchor = -1;
+        for (int i = 0; i < lore.size(); i++) {
+            String row = PLAIN.serialize(lore.get(i));
+            if (row.startsWith(label)) {
+                lore.set(i, value);
+                return;
+            }
+            if (row.startsWith(anchorLabel)) anchor = i;
+        }
+        lore.add(Math.min(lore.size(), anchor + 1), value);
+    }
+
     @Nonnull
     public static ItemStack createModularArmor(@Nonnull ModularArmorType armorType,
                                                @Nonnull PartComposition plate,
@@ -914,9 +1063,7 @@ public class TinkerItemBuilder {
         TinkerMaterial tMat = trim.getPrimaryMaterial();
 
         int totalDurability = armorType.getBaseDurability() + plate.getDurability() + lining.getDurability() + (trim.getDurability() / 2) + tier.getBonusDurability();
-        int defensePoints = armorType.getBaseDefense() + (int) Math.round(plate.getAttackDamage() / 3.0) + tier.ordinal();
-        double toughness = armorType.getBaseToughness() + (lining.getAttackDamage() / 4.0) + (tier.ordinal() * 0.5);
-        double knockbackRes = (trim.getEntries().size() * 0.05) + (tier.ordinal() * 0.02);
+        ArmorStats stats = armorStats(armorType, plate, lining, trim, tier);
 
         String displayNameMini = "<gradient:" + pMat.getColorHex() + ":" + lMat.getColorHex() + ">"
                 + tier.getArmorDisplayName() + " " + pMat.getName() + " " + armorType.getDisplayName() + "</gradient>";
@@ -949,10 +1096,10 @@ public class TinkerItemBuilder {
         lore.add(Component.empty());
         lore.add(Component.text("✦ Modular Attributes:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
         lore.add(Component.text("  • Durability: " + totalDurability + " / " + totalDurability, NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • Defense: +" + defensePoints + " Armor Points", NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • Toughness: +" + String.format(Locale.US, "%.1f", toughness), NamedTextColor.BLUE).decoration(TextDecoration.ITALIC, false));
-        if (knockbackRes > 0) {
-            lore.add(Component.text("  • Knockback Resistance: +" + String.format(Locale.US, "%.0f%%", knockbackRes * 100), NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Defense: +" + stats.defense() + " Armor Points", NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Toughness: +" + String.format(Locale.US, "%.1f", stats.toughness()), NamedTextColor.BLUE).decoration(TextDecoration.ITALIC, false));
+        if (stats.knockbackResistance() > 0) {
+            lore.add(Component.text("  • Knockback Resistance: +" + String.format(Locale.US, "%.0f%%", stats.knockbackResistance() * 100), NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
         }
 
         lore.add(Component.empty());
@@ -1010,10 +1157,11 @@ public class TinkerItemBuilder {
         pdc.set(TinkerKeys.TOOL_MAX_DURABILITY, PersistentDataType.INTEGER, totalDurability);
         pdc.set(TinkerKeys.TOOL_CURRENT_DURABILITY, PersistentDataType.INTEGER, totalDurability);
 
-        // Armor keeps its vanilla defensive attributes, but its wear belongs to the modular counter.
         applyUnbreakable(meta);
 
         item.setItemMeta(meta);
+        // The piece defends with the numbers it just printed, not with the base material's vanilla ones.
+        applyArmorDefense(item, armorType, plate, lining, trim, tier);
         return item;
     }
 

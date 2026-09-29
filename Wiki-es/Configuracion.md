@@ -135,10 +135,12 @@ golpe y una espada se rompería con el calendario vanilla mientras su contador m
 | Clave | Tipo | Por defecto | Qué hace |
 | --- | --- | --- | --- |
 | `equipment.modular-attack-damage` | booleano | `true` | `true` hace que el arma golpee con el daño de ataque calculado a partir de sus minerales — el valor que imprime su lore. `false` conserva el daño del material vanilla base. La durabilidad sigue siendo modular en ambos casos. |
+| `equipment.modular-armor-defense` | booleano | `true` | `true` hace que la armadura defienda con la **Defensa**, la **Dureza** y la resistencia al empuje calculadas a partir de sus minerales y su tier de evolución — los valores que imprime su lore. `false` conserva la protección vanilla del material del tier. Las piezas ya forjadas se refrescan cuando evoluciona su tier. |
 
 ```yaml
 equipment:
   modular-attack-damage: true
+  modular-armor-defense: true
 ```
 
 ### Cómo se calcula un golpe modular
@@ -152,6 +154,23 @@ en lugar de perderse.
 Poner `modular-attack-damage: false` restaura los valores de combate vanilla puros (útil para servidores con sus
 propios plugins de daño), mientras que el desgaste vanilla sigue desactivado en ambos casos.
 
+### Cómo protege la armadura modular
+
+La armadura tiene el mismo problema en el lado defensivo: una pieza forjada es por debajo un ítem de armadura
+vanilla, así que el servidor otorgaría la protección de ese material base — un casco con placa de diamante defendía
+exactamente igual que el tier del que estuviera construido, sin importar qué minerales llevara dentro. Con
+`modular-armor-defense: true` los modificadores de armadura de la pieza se **sustituyen** por los números calculados
+en lugar de dejarlos como están:
+
+* **Defensa** — de la placa, más el ordinal del tier de evolución.
+* **Dureza** — del forro, más la mitad del ordinal del tier.
+* **Resistencia al empuje** — del número de materiales del ribete, más un pequeño bonus de tier.
+
+Cada modificador va atado al hueco en el que se lleva la pieza, así que la protección solo se aplica donde
+toce, y el tooltip vanilla de atributos se oculta para no imprimir los mismos números dos veces. Como el tier forma
+parte del cálculo, una armadura que evoluciona **se re-arma con sus nuevos números** en el mismo momento en que se
+reescribe su lore.
+
 ---
 
 ## 🧭 Otras secciones
@@ -160,7 +179,7 @@ propios plugins de daño), mientras que el desgaste vanilla sigue desactivado en
 | --- | --- |
 | `archaeology` | Sistema de cepillado: interruptor, duración del cepillado, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque (`DEGRADE` / `COOLDOWN` / `NONE`), enfriamiento anti-macro y rendimientos de la brocha. |
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
-| `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado o con el del material vanilla (el desgaste vanilla siempre está desactivado). |
+| `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado y si la armadura defiende con la protección calculada a partir de sus minerales, o con los valores vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumir la lava fuente y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
 | `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). **Reservado:** hoy la tabla de botín de arqueología usa los pesos internos (común 50, poco común 30, raro 14, épico 5, legendario 1), así que editar esta clave todavía no tiene efecto. |
 | `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |

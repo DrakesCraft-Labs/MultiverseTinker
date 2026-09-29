@@ -10,8 +10,12 @@ import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import com.chagui68.multiversetinker.tools.ModularToolListener;
+import com.google.common.collect.Multimap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -26,6 +30,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -150,6 +155,108 @@ class EquipmentVanillaRulesTest {
         assertNotNull(loreRow, "The weapon must announce its attack damage");
         assertTrue(loreRow.contains(String.format(java.util.Locale.US, "%.1f", rolled)),
                 "The lore row '" + loreRow + "' must match the recorded damage " + rolled);
+    }
+
+    @Test
+    @DisplayName("armor defends with the Defense and Toughness rolled from its minerals")
+    void armorDefendsWithItsRolledStats() {
+        PartComposition plate = PartComposition.fromMaterials(List.of(diamond));
+        PartComposition lining = PartComposition.fromMaterials(List.of(iron));
+        PartComposition trim = PartComposition.fromMaterials(List.of(gold));
+        ItemStack chestplate = TinkerItemBuilder.createModularArmor(
+                ModularArmorType.CHESTPLATE, plate, lining, trim, EvolutionTier.WOOD, 0);
+
+        TinkerItemBuilder.ArmorStats stats = TinkerItemBuilder.armorStats(
+                ModularArmorType.CHESTPLATE, plate, lining, trim, EvolutionTier.WOOD);
+
+        // The piece is built on a leather chestplate, which protects for 3: a diamond plate must not be
+        // silently worth the vanilla base it happens to be made of.
+        assertTrue(stats.defense() > ModularArmorType.CHESTPLATE.getBaseDefense(),
+                "A diamond-plated chestplate must roll more Defense than the vanilla base material");
+
+        assertEquals((double) stats.defense(), modularAmount(chestplate, "modular_armor"), 0.001,
+                "The server must apply the Defense the armor lore prints");
+        assertEquals(stats.toughness(), modularAmount(chestplate, "modular_armor_toughness"), 0.001,
+                "The server must apply the Toughness the armor lore prints");
+        assertEquals(stats.knockbackResistance(), modularAmount(chestplate, "modular_armor_knockback"), 0.001,
+                "The server must apply the knockback resistance the armor lore prints");
+
+        assertEquals(EquipmentSlotGroup.CHEST, modularModifier(chestplate, "modular_armor").getSlotGroup(),
+                "The protection must only apply while the piece is worn in its own slot");
+        assertTrue(chestplate.getItemMeta().hasItemFlag(ItemFlag.HIDE_ATTRIBUTES),
+                "Vanilla must not print the same protection a second time");
+
+        String defenseRow = chestplate.getItemMeta().lore().stream()
+                .map(PLAIN::serialize)
+                .filter(row -> row.startsWith("  • Defense: "))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(defenseRow, "The armor must announce its Defense");
+        assertTrue(defenseRow.contains("+" + stats.defense() + " "),
+                "The lore row '" + defenseRow + "' must match the applied Defense " + stats.defense());
+    }
+
+    @Test
+    @DisplayName("evolving the armor tier grows the real protection and rewrites the lore rows")
+    void evolvingTheTierGrowsTheProtection() {
+        PartComposition plate = PartComposition.fromMaterials(List.of(diamond));
+        PartComposition lining = PartComposition.fromMaterials(List.of(iron));
+        PartComposition trim = PartComposition.fromMaterials(List.of(gold));
+        ItemStack chestplate = TinkerItemBuilder.createModularArmor(
+                ModularArmorType.CHESTPLATE, plate, lining, trim, EvolutionTier.WOOD, 0);
+        int rows = chestplate.getItemMeta().lore().size();
+        double before = modularAmount(chestplate, "modular_armor");
+
+        TinkerItemBuilder.applyArmorDefense(chestplate, ModularArmorType.CHESTPLATE,
+                plate, lining, trim, EvolutionTier.NETHERITE);
+
+        TinkerItemBuilder.ArmorStats upgraded = TinkerItemBuilder.armorStats(
+                ModularArmorType.CHESTPLATE, plate, lining, trim, EvolutionTier.NETHERITE);
+        assertEquals((double) upgraded.defense(), modularAmount(chestplate, "modular_armor"), 0.001,
+                "A tier upgrade must raise the protection the server applies");
+        assertTrue(upgraded.defense() > before,
+                "A netherite-tier piece must defend harder than the same piece at wood tier");
+        assertEquals(rows, chestplate.getItemMeta().lore().size(),
+                "Refreshing the armor rows must rewrite them, not add or drop one");
+        assertNotNull(chestplate.getItemMeta().lore().stream()
+                        .map(PLAIN::serialize)
+                        .filter(row -> row.contains("+" + upgraded.toughness()))
+                        .findFirst()
+                        .orElse(null),
+                "The refreshed Toughness must be printed in the lore");
+    }
+
+    @Test
+    @DisplayName("a server can keep the vanilla armor values")
+    void armorDefenseCanBeTurnedOff() {
+        TinkerItemBuilder.configureArmorDefense(false);
+        assertFalse(TinkerItemBuilder.isModularArmorDefense(),
+                "Servers that prefer vanilla protection must be able to turn the rule off");
+
+        ItemStack chestplate = TinkerItemBuilder.createModularArmor(
+                ModularArmorType.CHESTPLATE,
+                PartComposition.fromMaterials(List.of(diamond)),
+                PartComposition.fromMaterials(List.of(iron)),
+                PartComposition.fromMaterials(List.of(gold)),
+                EvolutionTier.WOOD, 0);
+
+        assertNull(modularAmount(chestplate, "modular_armor"),
+                "With the rule off the piece must keep the protection of its tier material");
+    }
+
+    /** Amount of one of the armor modifiers this plugin writes, or {@code null} when it is absent. */
+    private static Double modularAmount(ItemStack item, String modifierName) {
+        AttributeModifier modifier = modularModifier(item, modifierName);
+        return modifier == null ? null : modifier.getAmount();
+    }
+
+    private static AttributeModifier modularModifier(ItemStack item, String modifierName) {
+        Multimap<Attribute, AttributeModifier> modifiers = item.getItemMeta().getAttributeModifiers();
+        if (modifiers == null) return null;
+        for (AttributeModifier modifier : modifiers.values()) {
+            if (modifier.getKey().getKey().equals(modifierName)) return modifier;
+        }
+        return null;
     }
 
     private ItemStack forgeSword() {

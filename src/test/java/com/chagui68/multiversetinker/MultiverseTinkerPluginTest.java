@@ -113,6 +113,11 @@ class MultiverseTinkerPluginTest {
                 TinkerItemBuilder.CONFIG_MODULAR_ATTACK_DAMAGE + " must be a boolean");
         assertEquals(config.getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ATTACK_DAMAGE),
                 TinkerItemBuilder.isModularAttackDamage());
+
+        assertTrue(config.isBoolean(TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE),
+                TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE + " must be a boolean");
+        assertEquals(config.getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE),
+                TinkerItemBuilder.isModularArmorDefense());
     }
 
     /** Reads a packaged resource such as plugin.yml or config.yml. */

@@ -222,13 +222,17 @@ Forged weapons, tools and armor carry their **own durability counter**, so vanil
 | Key | Type | Default | What it does |
 | --- | --- | --- | --- |
 | `equipment.modular-attack-damage` | boolean | `true` | `true` makes a weapon hit for the attack damage rolled from its minerals (the value printed in its lore). `false` keeps the base vanilla material's damage; durability stays modular either way. |
+| `equipment.modular-armor-defense` | boolean | `true` | `true` makes armor defend with the **Defense**, **Toughness** and knockback resistance rolled from its minerals and its evolution tier (the values printed in its lore). `false` keeps the vanilla protection of the tier material. Already-forged pieces are refreshed when their tier evolves. |
 
 ```yaml
 equipment:
   modular-attack-damage: true
+  modular-armor-defense: true
 ```
 
 When the rule is on, the strike keeps its critical hits, strength and enchantments: the vanilla contribution is measured from the player's live attack-damage attribute and only the base is swapped, so the multipliers still scale the forged damage.
+
+**Armor** works the same way. The piece is built on a vanilla armor item, so the server would otherwise grant the protection of that base material — a diamond-plated helmet used to defend exactly like the tier it happened to be made of. With the rule on, those modifiers are replaced by the rolled **Defense** (from the plate), **Toughness** (from the lining) and **knockback resistance** (from the trim), bound to the slot the piece is worn in, and the vanilla attribute tooltip is hidden so the numbers are not printed twice. The evolution tier is part of the roll, so a piece re-arms with stronger numbers as it levels up.
 
 ### 🧭 Other sections
 
@@ -236,7 +240,7 @@ When the rule is on, the strike keeps its critical hits, strength and enchantmen
 | --- | --- |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour, anti-macro cooldown and brush yields. |
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
-| `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage or the vanilla material value (vanilla wear is always disabled). |
+| `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage and whether armor defends with the protection rolled from its minerals, or the vanilla material values instead (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: lava consumption chance and the Magma Block heat-source slowdown multiplier. |
 | `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). |
 | `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |

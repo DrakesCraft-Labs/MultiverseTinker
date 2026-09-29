@@ -142,11 +142,13 @@ Haz clic en el **Selector de Armaduras** (Ranura 13) para alternar entre las 4 p
 - **Malla Interior (Armor Lining)**: Malla de cota de malla y acolchado flexible. Determina la dureza de armadura (toughness) y rasgos secundarios.
 - **Ribete de Armadura (Armor Trim)**: Refuerzos, remaches y hebillas. Determina la resistencia al empuje (knockback resistance) y rasgos de utilidad pasiva.
 
+Esos tres números no son decorativos: los modificadores de armadura de la pieza se sustituyen por la **Defensa**, la **Dureza** y la resistencia al empuje calculadas, atadas al hueco en el que se lleva (ver [Configuración](Configuracion.md#cómo-protege-la-armadura-modular)).
+
 ### Evolución de Tiers de Armaduras
 - Cada pieza inicia en **Tier Cuero (Leather Tier)** (`0` daño absorbido).
 - Al absorber daño en combate, la armadura acumula progreso y evoluciona en este orden exacto:
   `Cuero (0 daño) → Cobre (50 daño) → Malla (150 daño) → Hierro (350 daño) → Oro (750 daño) → Diamante (1500 daño) → Netherite (3000 daño)`.
-- Conforme evoluciona, el material base de Minecraft se transforma automáticamente, aumentando drásticamente los puntos de armadura, durabilidad y dureza.
+- Conforme evoluciona, el material base de Minecraft se transforma automáticamente (Cuero → Malla → Hierro → Oro → Diamante → Netherite) y la pieza **recalcula su propia protección**: la Defensa (ranura base + placa + tier) y la Dureza (ranura base + forro + tier) que imprime su lore crecen con cada tier, y esos números calculados — no los del material vanilla — son los que aplica el servidor. Una pieza con placa de diamante no defiende como el diamante solo por estar construida sobre él.
 - **Ventajas Especiales de Armadura**: la ranura posee la defensa, el mineral de la placa posee su esencia:
   - **Casco** (*Cranium Ward*): Reduce el daño crítico a la cabeza e inmunidad a peligros ambientales.
   - **Pechera** (*Kinetic Dampener*): Absorbe el 25% de impactos fuertes y libera energía defensiva.

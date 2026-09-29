@@ -221,13 +221,17 @@ Las armas, herramientas y armaduras forjadas llevan su **propio contador de dura
 | Clave | Tipo | Por defecto | Qué hace |
 | --- | --- | --- | --- |
 | `equipment.modular-attack-damage` | booleano | `true` | `true` hace que el arma golpee con el daño de ataque calculado a partir de sus minerales (el valor que imprime su lore). `false` conserva el daño del material vanilla base; la durabilidad sigue siendo modular en ambos casos. |
+| `equipment.modular-armor-defense` | booleano | `true` | `true` hace que la armadura defienda con la **Defensa**, la **Dureza** y la resistencia al empuje calculadas a partir de sus minerales y su tier de evolución (los valores que imprime su lore). `false` conserva la protección vanilla del material del tier. Las piezas ya forjadas se refrescan cuando evoluciona su tier. |
 
 ```yaml
 equipment:
   modular-attack-damage: true
+  modular-armor-defense: true
 ```
 
 Con la regla activa, el golpe conserva críticos, fuerza y encantamientos: la contribución vanilla se mide desde el atributo de daño de ataque en vivo del jugador y solo se sustituye la base, de modo que los multiplicadores siguen escalando el daño forjado.
+
+La **armadura** funciona igual. La pieza está construida sobre un ítem de armadura vanilla, así que el servidor otorgaría la protección de ese material base: un casco con placa de diamante defendía exactamente igual que el tier del que estuviera hecho. Con la regla activa, esos modificadores se sustituyen por la **Defensa** calculada (de la placa), la **Dureza** (del forro) y la **resistencia al empuje** (del ribete), atados al hueco en el que se lleva la pieza, y el tooltip vanilla de atributos se oculta para no imprimir los mismos números dos veces. El tier de evolución forma parte del cálculo, así que la pieza se re-arma con números más fuertes a medida que sube de nivel.
 
 ### 🧭 Otras secciones
 
@@ -235,7 +239,7 @@ Con la regla activa, el golpe conserva críticos, fuerza y encantamientos: la co
 | --- | --- |
 | `archaeology` | Sistema de cepillado: interruptor, duración, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque, enfriamiento anti-macro y rendimientos de la brocha. |
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
-| `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado o con el del material vanilla (el desgaste vanilla siempre está desactivado). |
+| `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado y si la armadura defiende con la protección calculada a partir de sus minerales, o con los valores vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumo de lava y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
 | `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). |
 | `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |

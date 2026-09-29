@@ -135,10 +135,12 @@ the same swing and a sword would break on a vanilla schedule while its modular c
 | Key | Type | Default | What it does |
 | --- | --- | --- | --- |
 | `equipment.modular-attack-damage` | boolean | `true` | `true` makes a weapon hit for the attack damage rolled from its minerals — the value printed in its lore. `false` keeps the base vanilla material's damage. Durability stays modular either way. |
+| `equipment.modular-armor-defense` | boolean | `true` | `true` makes armor defend with the **Defense**, **Toughness** and knockback resistance rolled from its minerals and its evolution tier — the values printed in its lore. `false` keeps the vanilla protection of the tier material. Already-forged pieces are refreshed when their tier evolves. |
 
 ```yaml
 equipment:
   modular-attack-damage: true
+  modular-armor-defense: true
 ```
 
 ### How a modular strike is calculated
@@ -151,6 +153,21 @@ critical hits, strength potions and enchantments keep multiplying the forged dam
 Setting `modular-attack-damage: false` restores pure vanilla combat values (handy for servers that use their own
 damage plugins), while vanilla wear stays disabled in both cases.
 
+### How modular armor protects
+
+Armor has the same problem on the defensive side: a forged piece is a vanilla armor item underneath, so the server
+would grant the protection of that base material — a helmet with a diamond plate used to defend exactly like the tier
+it happened to be built from, no matter which minerals went into it. With `modular-armor-defense: true` the piece's
+armor modifiers are **replaced** by the rolled numbers instead of being left alone:
+
+* **Defense** — from the plate, plus the evolution tier's ordinal.
+* **Toughness** — from the lining, plus half the tier's ordinal.
+* **Knockback resistance** — from the trim's material count, plus a small tier bonus.
+
+Each modifier is bound to the slot the piece is worn in, so the protection only applies where it belongs, and the
+vanilla attribute tooltip is hidden so the same numbers are not printed twice. Because the tier is part of the roll,
+an armor piece that evolves **re-arms with its new numbers** at the same moment its lore is rewritten.
+
 ---
 
 ## 🧭 Other sections
@@ -159,7 +176,7 @@ damage plugins), while vanilla wear stays disabled in both cases.
 | --- | --- |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour (`DEGRADE` / `COOLDOWN` / `NONE`), anti-macro cooldown and brush yields. |
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
-| `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage or the vanilla material value (vanilla wear is always disabled). |
+| `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage and whether armor defends with the protection rolled from its minerals, or the vanilla material values instead (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: chance to consume the lava source and the Magma Block heat-source slowdown multiplier. |
 | `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). **Reserved:** the archaeology loot table currently rolls on the built-in weights (common 50, uncommon 30, rare 14, epic 5, legendary 1), so editing this key has no effect yet. |
 | `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |
