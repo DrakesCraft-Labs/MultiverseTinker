@@ -133,10 +133,12 @@ mismo golpe.
 
 | Pieza | Perk característico | Animación exclusiva |
 |---|---|---|
-| **Casco** | **Cranium Ward** — reduce daño a la cabeza y filtra peligros ambientales | Cranium Halo |
-| **Pechera** | **Kinetic Dampener** — absorbe el 25% de los impactos fuertes | Kinetic Dome |
+| **Casco** | **Cranium Ward** — bloquea el impacto a la cabeza y filtra peligros ambientales | Cranium Halo |
+| **Pechera** | **Kinetic Dampener** — absorbe los impactos fuertes | Kinetic Dome |
 | **Perneras** | **Stride Momentum** — mitiga el desgaste al esprintar | Stride Coil |
-| **Botas** | **Feathered Grounding** — anula hasta el 50% del daño por caída y mantiene tracción | Grounding Puff |
+| **Botas** | **Feathered Grounding** — anula el daño por caída y mantiene tracción | Grounding Puff |
+
+Cada porcentaje se forja con la pieza en vez de ser fijo: 30% / 25% / 50% en la ranura desnuda, y crece con la Defensa y la Dureza de la pieza hasta 65% / 60% / 75%.
 
 ### Las 10 piezas
 

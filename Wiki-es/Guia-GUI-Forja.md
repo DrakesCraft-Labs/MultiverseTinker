@@ -150,10 +150,11 @@ Esos tres números no son decorativos: los modificadores de armadura de la pieza
   `Cuero (0 daño) → Cobre (50 daño) → Malla (150 daño) → Hierro (350 daño) → Oro (750 daño) → Diamante (1500 daño) → Netherite (3000 daño)`.
 - Conforme evoluciona, el material base de Minecraft se transforma automáticamente (Cuero → Malla → Hierro → Oro → Diamante → Netherite) y la pieza **recalcula su propia protección**: la Defensa (ranura base + placa + tier) y la Dureza (ranura base + forro + tier) que imprime su lore crecen con cada tier, y esos números calculados — no los del material vanilla — son los que aplica el servidor. Una pieza con placa de diamante no defiende como el diamante solo por estar construida sobre él.
 - **Ventajas Especiales de Armadura**: la ranura posee la defensa, el mineral de la placa posee su esencia:
-  - **Casco** (*Cranium Ward*): Reduce el daño crítico a la cabeza e inmunidad a peligros ambientales.
-  - **Pechera** (*Kinetic Dampener*): Absorbe el 25% de impactos fuertes y libera energía defensiva.
+  - **Casco** (*Cranium Ward*): Bloquea el impacto a la cabeza y filtra peligros ambientales.
+  - **Pechera** (*Kinetic Dampener*): Absorbe impactos fuertes y libera energía defensiva.
   - **Pantalones** (*Stride Momentum*): Reduce el agotamiento al correr y acelera la recuperación de movimiento.
-  - **Botas** (*Feathered Grounding*): Anula hasta el 50% del daño por caída y previene resbalones.
+  - **Botas** (*Feathered Grounding*): Anula el daño por caída y previene resbalones.
+  - Cada porcentaje se forja con la pieza en vez de ser fijo: arranca en 30% / 25% / 50% en una ranura desnuda y crece con la Defensa y la Dureza que saque, hasta 65% / 60% / 75%. Una pieza con placa primordial bloquea mucho más que una de estaño, y su lore imprime el porcentaje que realmente aplica.
   - Una placa de Piedra del Vacío imprime *Warping Kinetic Dampener* y una de Cobalto *Lightfooted Kinetic Dampener*: mismo mecanismo de ranura, minerales distintos en el nombre, esencia y reacción distintas, y **Essence Focus** distinto. Cambiar solo el ribete también cambia el nombre: Borax / Amatista / Oro lee *Fluxforged Resonant Auric Kinetic Dampener*. Las filas de rasgo de armadura se etiquetan `when struck`, porque la armadura siempre responde a un golpe.
 
 ---

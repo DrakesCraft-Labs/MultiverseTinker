@@ -341,10 +341,11 @@ public class ForgeGUI implements InventoryHolder {
         inventory.setItem(33, createGuideItem(Material.NETHERITE_CHESTPLATE,
                 "<gradient:#9b59b6:#8e44ad><b>Modular Armor & Defensive Traits</b></gradient>",
                 List.of(
-                        "• Helmet: Reduces headshot impact & grants hazard warding.",
-                        "• Chestplate: Kinetic Dampener absorbs 25% heavy blows.",
+                        "• Helmet: Cranium Ward blunts headshots & filters hazards.",
+                        "• Chestplate: Kinetic Dampener soaks heavy blows.",
                         "• Leggings: Stride Momentum mitigates sprint fatigue.",
-                        "• Boots: Negates up to 50% fall damage with ground traction.",
+                        "• Boots: Feathered Grounding negates fall damage.",
+                        "• Each share scales with the piece's rolled Defense & Toughness.",
                         "• Assembled from Plate, Lining, and Trim parts."
                 )));
 

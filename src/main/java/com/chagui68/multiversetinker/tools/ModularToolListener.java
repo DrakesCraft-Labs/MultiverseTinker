@@ -79,6 +79,18 @@ public class ModularToolListener implements Listener {
     private static final ThreadLocal<Integer> TRAIT_CHAIN = ThreadLocal.withInitial(() -> 0);
     private static final int MAX_TRAIT_CHAIN = 3;
 
+    /** How hard a blow has to be before the Kinetic Dampener reaches for it. */
+    private static final double HEAVY_BLOW = 6.0;
+
+    /**
+     * How far above the wearer's eyes an attacker has to strike for the blow to count as a headshot.
+     *
+     * <p>Vanilla gives a struck player no head hitbox to ask about, so a helmet can only ward what the
+     * event shows. The margin keeps two actors standing on the same ground from counting while still
+     * catching a jumping, descending or ranged attacker.</p>
+     */
+    private static final double HEADSHOT_MARGIN = 0.4;
+
     /**
      * Weapon perks deal area damage (sweeps, shockwaves, kinetic blasts), and because damage
      * immunity is cleared before every hit those hits always land and fire nested combat events.
@@ -728,11 +740,27 @@ public class ModularToolListener implements Listener {
             if (!pdc.has(TinkerKeys.IS_MODULAR_ARMOR, PersistentDataType.BYTE)) continue;
             if (!ModularArmorType.BOOTS.name().equalsIgnoreCase(pdc.get(TinkerKeys.ARMOR_TYPE, PersistentDataType.STRING))) continue;
 
-            event.setDamage(event.getDamage() * 0.5);
+            // Feathered Grounding: the boots negate the share their own Defense and Toughness produce.
+            event.setDamage(event.getDamage() * (1.0 - TinkerItemBuilder.mitigationOf(piece, materialRegistry)));
             player.getWorld().spawnParticle(Particle.CLOUD, player.getLocation(), 8, 0.3, 0.1, 0.3, 0.02);
             PerkAnimationEngine.playArmor(ModularArmorType.BOOTS, player, animationTint(pdc));
             break;
         }
+    }
+
+    /**
+     * Whether a blow lands on the head, which is what a helmet can ward.
+     *
+     * <p>Vanilla gives a struck player no head hitbox to ask about, so a headshot is what the event can
+     * show from here: a projectile, or a blow from an attacker whose eyes are above the wearer's. The
+     * margin keeps a same-level swing from counting without missing a jumping or descending one.</p>
+     */
+    private static boolean isHeadshot(@Nonnull Entity damager, @Nonnull Player wearer) {
+        if (damager instanceof Projectile) return true;
+        if (damager instanceof LivingEntity attacker) {
+            return attacker.getEyeLocation().getY() > wearer.getEyeLocation().getY() + HEADSHOT_MARGIN;
+        }
+        return false;
     }
 
     // ==========================================
@@ -1427,13 +1455,24 @@ public class ModularToolListener implements Listener {
             PersistentDataContainer pdc = meta.getPersistentDataContainer();
             if (!pdc.has(TinkerKeys.IS_MODULAR_ARMOR, PersistentDataType.BYTE)) continue;
 
-            // Chestplate: Kinetic Dampener - absorbs 25% of heavy impacts
+            // Chestplate: Kinetic Dampener - absorbs the share its own Defense and Toughness produce,
+            // read back from the piece instead of a fixed 25%, so a prime plate dampens more than tin.
             String armorKind = pdc.get(TinkerKeys.ARMOR_TYPE, PersistentDataType.STRING);
             if (armorKind != null && armorKind.equalsIgnoreCase(ModularArmorType.CHESTPLATE.name())
-                    && event.getDamage() >= 6.0) {
-                event.setDamage(event.getDamage() * 0.75);
+                    && event.getDamage() >= HEAVY_BLOW) {
+                event.setDamage(event.getDamage() * (1.0 - TinkerItemBuilder.mitigationOf(piece, materialRegistry)));
                 player.getWorld().spawnParticle(Particle.ENCHANTED_HIT, player.getLocation().add(0, 1, 0), 6, 0.3, 0.3, 0.3, 0.05);
                 PerkAnimationEngine.playArmor(ModularArmorType.CHESTPLATE, player, animationTint(pdc));
+            }
+
+            // Helmet: Cranium Ward - the head, at the share the piece's own stats ward.
+            if (armorKind != null && armorKind.equalsIgnoreCase(ModularArmorType.HELMET.name())
+                    && isHeadshot(event.getDamager(), player)) {
+                double ward = TinkerItemBuilder.mitigationOf(piece, materialRegistry);
+                if (ward > 0.0) {
+                    event.setDamage(event.getDamage() * (1.0 - ward));
+                    player.getWorld().spawnParticle(Particle.ENCHANT, player.getEyeLocation(), 10, 0.35, 0.25, 0.35, 0.02);
+                }
             }
 
             // Every armor piece answers a hit with its own choreography: the halo wards the head,

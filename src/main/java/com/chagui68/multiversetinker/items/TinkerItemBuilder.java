@@ -7,6 +7,7 @@ import com.chagui68.multiversetinker.api.ModularToolType;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
 import com.chagui68.multiversetinker.api.ToolPartType;
 import com.chagui68.multiversetinker.evolution.EvolutionTier;
+import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import com.chagui68.multiversetinker.tools.ArmorPerkProfile;
@@ -56,6 +57,18 @@ public class TinkerItemBuilder {
 
     /** Config key that decides whether the rolled armor protection replaces the vanilla one. */
     public static final String CONFIG_MODULAR_ARMOR_DEFENSE = "equipment.modular-armor-defense";
+
+    /** Label of the lore row that promises an armor piece's mitigation, wrapped over several rows. */
+    private static final String ARMOR_PERK_LABEL = "✦ Armor Perk: ";
+
+    /**
+     * What one extra point of rolled Defense and Toughness buys a slot's mitigation.
+     *
+     * <p>Two percent is deliberate: a piece rolls the bulk of its surplus on a prime plate at
+     * netherite tier, where the sum lands around 16 points, so a strong build climbs about a third of
+     * the way from its floor to its ceiling instead of pinning it.</p>
+     */
+    private static final double PERK_SCALE_PER_POINT = 0.02;
 
     /** Namespace of the armor modifiers the plugin writes in place of the vanilla ones. */
     private static final String ARMOR_MODIFIER_NAMESPACE = "multiversetinker";
@@ -945,6 +958,99 @@ public class TinkerItemBuilder {
     }
 
     /**
+     * How much of its signature threat the slot mitigates, as a fraction: {@code 0.25} is "absorbs 25%".
+     *
+     * <p>These used to be fixed numbers, so a tin chestplate dampened a hammer blow exactly like a
+     * prime-alloy one and the piece's own Defense and Toughness only mattered for the damage vanilla
+     * already subtracted. The share now grows with the piece's roll: every point of Defense and
+     * Toughness above what the bare slot rolls buys {@value #PERK_SCALE_PER_POINT} more, and each
+     * floor is the percentage the perk shipped with, so no build that existed got weaker.</p>
+     *
+     * <p>Every value stays a two-digit percentage, which is what keeps the perk sentence the same
+     * width at every tier — and therefore its wrapped lore the same number of rows.</p>
+     *
+     * <p>Leggings answer a hit with mobility (Stride Momentum) rather than mitigation, so their share
+     * is zero and only the other three slots have a number worth printing.</p>
+     */
+    public static double signatureMitigation(@Nonnull ModularArmorType armorType, @Nonnull ArmorStats stats) {
+        double surplus = Math.max(0.0, stats.defense() - armorType.getBaseDefense())
+                + Math.max(0.0, stats.toughness() - armorType.getBaseToughness());
+        return switch (armorType) {
+            case HELMET -> Math.min(0.65, 0.30 + PERK_SCALE_PER_POINT * surplus);
+            case CHESTPLATE -> Math.min(0.60, 0.25 + PERK_SCALE_PER_POINT * surplus);
+            case BOOTS -> Math.min(0.75, 0.50 + PERK_SCALE_PER_POINT * surplus);
+            case LEGGINGS -> 0.0;
+        };
+    }
+
+    /**
+     * The stats a forged armor piece rolled, read back from the piece itself.
+     *
+     * <p>The three parts and the tier live on the item, so its protection can be recomputed wherever
+     * it is worn instead of being cached somewhere that could drift away from the lore.</p>
+     *
+     * @return the piece's stats, or {@code null} when the item is not a forged armor piece
+     */
+    @Nullable
+    public static ArmorStats armorStatsOf(@Nonnull ItemStack item, @Nonnull MaterialRegistry registry) {
+        ItemMeta meta = item.getItemMeta();
+        return meta == null ? null : armorStatsOf(meta.getPersistentDataContainer(), registry);
+    }
+
+    @Nullable
+    private static ArmorStats armorStatsOf(@Nonnull PersistentDataContainer pdc,
+                                           @Nonnull MaterialRegistry registry) {
+        if (!pdc.has(TinkerKeys.IS_MODULAR_ARMOR, PersistentDataType.BYTE)) return null;
+        ModularArmorType armorType = armorTypeOf(pdc);
+        if (armorType == null) return null;
+
+        PartComposition plate = composition(pdc, TinkerKeys.ARMOR_PLATE_COMP, registry);
+        PartComposition lining = composition(pdc, TinkerKeys.ARMOR_LINING_COMP, registry);
+        PartComposition trim = composition(pdc, TinkerKeys.ARMOR_TRIM_COMP, registry);
+        if (plate == null || lining == null || trim == null) return null;
+
+        EvolutionTier tier = EvolutionTier.fromString(pdc.getOrDefault(TinkerKeys.EVOLUTION_TIER,
+                PersistentDataType.STRING, EvolutionTier.WOOD.name()));
+        return armorStats(armorType, plate, lining, trim, tier);
+    }
+
+    /**
+     * The fraction of its signature threat a forged armor piece mitigates, read back from the piece.
+     *
+     * <p>Combat asks the piece instead of carrying its own copy of the numbers, so what a player feels
+     * when the hit lands is what the tooltip promised.</p>
+     *
+     * @return the fraction, or {@code 0} when the item is not a forged armor piece
+     */
+    public static double mitigationOf(@Nonnull ItemStack item, @Nonnull MaterialRegistry registry) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return 0.0;
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        ModularArmorType armorType = armorTypeOf(pdc);
+        ArmorStats stats = armorStatsOf(pdc, registry);
+        return armorType == null || stats == null ? 0.0 : signatureMitigation(armorType, stats);
+    }
+
+    @Nullable
+    private static ModularArmorType armorTypeOf(@Nonnull PersistentDataContainer pdc) {
+        String kind = pdc.get(TinkerKeys.ARMOR_TYPE, PersistentDataType.STRING);
+        if (kind == null) return null;
+        try {
+            return ModularArmorType.valueOf(kind);
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static PartComposition composition(@Nonnull PersistentDataContainer pdc,
+                                               @Nonnull NamespacedKey key,
+                                               @Nonnull MaterialRegistry registry) {
+        String raw = pdc.get(key, PersistentDataType.STRING);
+        return raw == null ? null : PartComposition.deserialize(raw, registry);
+    }
+
+    /**
      * Gives a forged armor piece the protection its own minerals rolled.
      *
      * <p>Vanilla decides how hard armor defends from the base material's default attribute modifiers,
@@ -953,9 +1059,9 @@ public class TinkerItemBuilder {
      * resistance makes the stats printed in the lore the ones the server actually applies. The vanilla
      * attribute tooltip is hidden as well, so the same numbers are not printed twice.</p>
      *
-     * <p>Safe to call again on the same piece: it re-applies the modifiers and rewrites the three
-     * armor rows of the lore in place, which is how an evolution tier refresh makes a piece that has
-     * just grown stronger defend with its new numbers.</p>
+     * <p>Safe to call again on the same piece: it re-applies the modifiers and rewrites the armor rows
+     * and the perk sentence of the lore in place, which is how an evolution tier refresh makes a piece
+     * that has just grown stronger defend — and promise — with its new numbers.</p>
      */
     public static void applyArmorDefense(@Nonnull ItemStack item,
                                          @Nonnull ModularArmorType armorType,
@@ -967,6 +1073,10 @@ public class TinkerItemBuilder {
         if (meta == null) return;
 
         ArmorStats stats = armorStats(armorType, plate, lining, trim, tier);
+        // Record the tier the piece is being armed for as well. Combat recomputes the perk share from the
+        // piece's own data, so a lore and a modifier set that grew at a new tier must not sit next to a
+        // stale tier, or the piece would print one promise and apply another.
+        meta.getPersistentDataContainer().set(TinkerKeys.EVOLUTION_TIER, PersistentDataType.STRING, tier.name());
         if (modularArmorDefense) {
             meta.setAttributeModifiers(armorModifiers(armorType, stats));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
@@ -987,6 +1097,8 @@ public class TinkerItemBuilder {
                     Component.text("  • Knockback Resistance: +" + String.format(Locale.US, "%.0f%%", stats.knockbackResistance() * 100), NamedTextColor.LIGHT_PURPLE)
                             .decoration(TextDecoration.ITALIC, false),
                     "  • Toughness: ");
+            setLoreBlock(rebuilt, ARMOR_PERK_LABEL, armorPerkRow(ArmorPerkProfile.of(armorType,
+                    signatureMitigation(armorType, stats), plate, lining, trim)));
             meta.lore(rebuilt);
         }
 
@@ -1038,6 +1150,47 @@ public class TinkerItemBuilder {
             if (row.startsWith(anchorLabel)) anchor = i;
         }
         lore.add(Math.min(lore.size(), anchor + 1), value);
+    }
+
+    /**
+     * Replaces a lore block that word-wrapping may have spread over several rows.
+     *
+     * <p>A row longer than the line budget is stored as the rows it wrapped into, so rewriting it in
+     * place means finding the row that opens the block and dropping the continuation rows after it. The
+     * block ends at the next row that opens something of its own — a blank separator, a {@code ✦}
+     * section or a {@code •} bullet — which is what stops a refresh from eating the rows below it.</p>
+     */
+    private static void setLoreBlock(@Nonnull List<Component> lore, @Nonnull String label,
+                                     @Nonnull Component value) {
+        int start = -1;
+        for (int i = 0; i < lore.size(); i++) {
+            if (PLAIN.serialize(lore.get(i)).startsWith(label)) {
+                start = i;
+                break;
+            }
+        }
+        if (start < 0) return;
+
+        int end = start + 1;
+        while (end < lore.size() && isContinuationRow(PLAIN.serialize(lore.get(end)))) {
+            end++;
+        }
+        lore.subList(start, end).clear();
+        lore.addAll(start, LoreWrap.wrap(value));
+    }
+
+    /** A wrapped continuation row: body text that neither opens a section nor starts a bullet. */
+    private static boolean isContinuationRow(@Nonnull String row) {
+        return !row.isEmpty() && !row.startsWith("✦") && !row.startsWith("  • ");
+    }
+
+    /** The one lore row that announces an armor piece's perk and the share it now mitigates. */
+    @Nonnull
+    private static Component armorPerkRow(@Nonnull ArmorPerkProfile perk) {
+        return Component.text(ARMOR_PERK_LABEL, NamedTextColor.GOLD)
+                .append(Component.text(perk.getDisplayName() + ": ", NamedTextColor.AQUA))
+                .append(Component.text(perk.getDescription(), NamedTextColor.GRAY))
+                .decoration(TextDecoration.ITALIC, false);
     }
 
     @Nonnull
@@ -1108,13 +1261,12 @@ public class TinkerItemBuilder {
         lore.add(Component.text("  • Armor Lining: ", NamedTextColor.GRAY).append(Component.text(lMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
         lore.add(Component.text("  • Armor Trim: ", NamedTextColor.GRAY).append(Component.text(tMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
 
-        // Material-driven armor perk: the plate mineral's essence colours the slot's defense.
-        ArmorPerkProfile armorPerk = ArmorPerkProfile.of(armorType, plate, lining, trim);
+        // Material-driven armor perk: the plate mineral's essence colours the slot's defense, and the
+        // piece's own rolled protection decides how much of the threat it actually mitigates.
+        ArmorPerkProfile armorPerk = ArmorPerkProfile.of(armorType, signatureMitigation(armorType, stats),
+                plate, lining, trim);
         lore.add(Component.empty());
-        lore.add(Component.text("✦ Armor Perk: ", NamedTextColor.GOLD)
-                .append(Component.text(armorPerk.getDisplayName() + ": ", NamedTextColor.AQUA))
-                .append(Component.text(armorPerk.getDescription(), NamedTextColor.GRAY))
-                .decoration(TextDecoration.ITALIC, false));
+        lore.add(armorPerkRow(armorPerk));
         lore.add(Component.text("  • Essence Focus: ", NamedTextColor.DARK_GRAY)
                 .append(Component.text(armorPerk.getFocusLine(), armorPerk.getColor()))
                 .decoration(TextDecoration.ITALIC, false));

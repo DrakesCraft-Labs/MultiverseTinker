@@ -127,10 +127,12 @@ the minerals) so the plugin and Minecraft never spend durability on the same swi
 
 | Piece | Signature perk | Exclusive animation |
 |---|---|---|
-| **Helmet** | **Cranium Ward** — reduces headshot damage, filters hazards | Cranium Halo |
-| **Chestplate** | **Kinetic Dampener** — absorbs 25% of heavy impacts | Kinetic Dome |
+| **Helmet** | **Cranium Ward** — wards headshot impact, filters hazards | Cranium Halo |
+| **Chestplate** | **Kinetic Dampener** — absorbs heavy impacts | Kinetic Dome |
 | **Leggings** | **Stride Momentum** — mitigates sprint drain | Stride Coil |
-| **Boots** | **Feathered Grounding** — negates up to 50% fall damage, keeps traction | Grounding Puff |
+| **Boots** | **Feathered Grounding** — negates fall damage, keeps traction | Grounding Puff |
+
+Each share is rolled with the piece rather than fixed: 30% / 25% / 50% at the bare slot, growing with the piece's rolled Defense and Toughness up to 65% / 60% / 75%.
 
 ### The 10 parts
 

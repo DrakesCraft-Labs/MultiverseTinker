@@ -150,10 +150,11 @@ Those three numbers are not cosmetic: the piece's armor modifiers are replaced b
   `Wood → Stone (50 dmg) → Copper (150) → Iron (350) → Gold (750) → Diamond (1500) → Netherite (3000)`.
 - As armor evolves, its vanilla material transforms (Leather → Chainmail → Iron → Gold → Diamond → Netherite) and the piece **re-rolls its own protection**: the Defense (base slot + plate + tier) and Toughness (base slot + lining + tier) printed in its lore grow with every tier, and those rolled numbers — not the vanilla material's — are what the server applies. A diamond-plated piece does not defend like diamond just because it is built on one.
 - **Specialized Armor Perks** — the slot owns the defense, the plate mineral owns its essence:
-  - **Helmet** (*Cranium Ward*): reduces critical headshot damage and grants hazard immunity.
-  - **Chestplate** (*Kinetic Dampener*): absorbs 25% of heavy impacts and releases protective energy.
+  - **Helmet** (*Cranium Ward*): wards headshot impact and filters environmental hazards.
+  - **Chestplate** (*Kinetic Dampener*): absorbs heavy impacts and releases protective energy.
   - **Leggings** (*Stride Momentum*): mitigates sprint stamina drain and boosts movement recovery.
-  - **Boots** (*Feathered Grounding*): negates up to 50% fall damage and provides anti-slip traction.
+  - **Boots** (*Feathered Grounding*): negates fall damage and provides anti-slip traction.
+  - Every share is rolled with the piece instead of being fixed: it starts at 30% / 25% / 50% on a bare slot and grows with the Defense and Toughness the piece rolls, up to 65% / 60% / 75%. A prime-plated piece wards far more than a tin one, and its lore prints the share it actually applies.
   - A Voidstone plate prints *Warping Kinetic Dampener* while a Cobalt one prints *Lightfooted Kinetic Dampener*: same slot mechanic, different minerals in the name, different essence reaction, different Essence Focus. Changing only the trim changes the name too — Borax / Amethyst / Gold reads *Fluxforged Resonant Auric Kinetic Dampener*. Armor trait rows are labelled `when struck`, because armor always answers a hit.
 
 ---

@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Material-driven armor perk.
@@ -22,27 +23,36 @@ import java.util.List;
 public final class ArmorPerkProfile {
 
     private final ModularArmorType armorType;
+    private final double mitigation;
     private final PerkFocus focus;
 
-    private ArmorPerkProfile(@Nonnull ModularArmorType armorType, @Nonnull PerkFocus focus) {
+    private ArmorPerkProfile(@Nonnull ModularArmorType armorType, double mitigation, @Nonnull PerkFocus focus) {
         this.armorType = armorType;
+        this.mitigation = mitigation;
         this.focus = focus;
     }
 
+    /**
+     * @param mitigation the share of its signature threat the slot mitigates, rolled from the piece's
+     *                   own Defense and Toughness (see {@code TinkerItemBuilder.signatureMitigation}), so
+     *                   the sentence this profile prints matches the damage the server will subtract
+     */
     @Nonnull
-    public static ArmorPerkProfile of(@Nonnull ModularArmorType type, @Nonnull List<PartComposition> parts) {
-        return new ArmorPerkProfile(type, PerkFocus.of(parts));
+    public static ArmorPerkProfile of(@Nonnull ModularArmorType type, double mitigation,
+                                      @Nonnull List<PartComposition> parts) {
+        return new ArmorPerkProfile(type, mitigation, PerkFocus.of(parts));
     }
 
     @Nonnull
-    public static ArmorPerkProfile of(@Nonnull ModularArmorType type, @Nonnull PartComposition... parts) {
+    public static ArmorPerkProfile of(@Nonnull ModularArmorType type, double mitigation,
+                                      @Nonnull PartComposition... parts) {
         List<PartComposition> list = new ArrayList<>();
         if (parts != null) {
             for (PartComposition part : parts) {
                 list.add(part);
             }
         }
-        return of(type, list);
+        return of(type, mitigation, list);
     }
 
     /** Signature defense name of the armor type, independent of materials. */
@@ -56,15 +66,27 @@ public final class ArmorPerkProfile {
         };
     }
 
-    /** Signature defense mechanic of the armor type, independent of materials. */
+    /**
+     * Signature defense mechanic of the armor type, quoting the share this piece actually mitigates.
+     *
+     * <p>Independent of materials, but not of the forge: the percentage is the one the piece's rolled
+     * Defense and Toughness produce, so a prime-alloy helmet promises a wider ward than a tin one.</p>
+     */
     @Nonnull
-    public static String baseDescription(@Nonnull ModularArmorType type) {
+    public static String baseDescription(@Nonnull ModularArmorType type, double mitigation) {
+        String share = percent(mitigation);
         return switch (type) {
-            case HELMET -> "reduces incoming headshot damage and filters environmental hazards.";
-            case CHESTPLATE -> "absorbs 25% of heavy impacts and releases the stored energy.";
+            case HELMET -> "wards " + share + " of a headshot's impact and filters environmental hazards.";
+            case CHESTPLATE -> "absorbs " + share + " of heavy impacts and releases the stored energy.";
             case LEGGINGS -> "mitigates sprint stamina drain and speeds up movement recovery.";
-            case BOOTS -> "negates up to 50% of fall damage and keeps traction on any terrain.";
+            case BOOTS -> "negates " + share + " of fall damage and keeps traction on any terrain.";
         };
+    }
+
+    /** A share the way the lore prints it: {@code 0.38} becomes {@code 38%}. */
+    @Nonnull
+    private static String percent(double fraction) {
+        return String.format(Locale.US, "%.0f%%", fraction * 100);
     }
 
     /**
@@ -83,7 +105,7 @@ public final class ArmorPerkProfile {
         if (!effect.isEmpty()) {
             effect = Character.toLowerCase(effect.charAt(0)) + effect.substring(1);
         }
-        return baseDescription(armorType) + " Imbued with " + focus.blend() + " essence: " + effect;
+        return baseDescription(armorType, mitigation) + " Imbued with " + focus.blend() + " essence: " + effect;
     }
 
     /** One-line perk rendered in the armor lore. */
@@ -108,6 +130,11 @@ public final class ArmorPerkProfile {
 
     public int getPotencyPercent() {
         return focus.potencyPercent();
+    }
+
+    /** The share of its signature threat this piece mitigates, as a fraction. */
+    public double getMitigation() {
+        return mitigation;
     }
 
     @Nonnull
