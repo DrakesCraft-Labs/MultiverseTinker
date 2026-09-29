@@ -490,6 +490,15 @@ public class ModularToolListener implements Listener {
             }
         }
 
+        // 2b. BOW: Infused Volley — a focused longbow looses a follow-up arrow at the same target.
+        if (wType != null && wType.equalsIgnoreCase(ModularWeaponType.BOW.name())
+                && shooter != null && hitEntity instanceof LivingEntity volleyTarget) {
+            WeaponPerkProfile bowProfile = WeaponPerkProfile.of(ModularWeaponType.BOW, collectCompositions(pdc));
+            if (random.nextDouble() < 0.25 + 0.35 * bowProfile.getPotency()) {
+                launchVolleyArrow(shooter, volleyTarget);
+            }
+        }
+
         // 3. Multi-Material Elemental Traits on Direct Target
         if (hitEntity instanceof LivingEntity target) {
             triggerMultiMaterialTraits(shooter, target, null, pdc);
@@ -497,6 +506,26 @@ public class ModularToolListener implements Listener {
             WeaponPerkProfile profile = applyWeaponPerkEcho(shooter, target, null, pdc);
             triggerWeaponUltimate(shooter, target, profile, pdc, 6.0);
         }
+    }
+
+    /**
+     * Looses one extra arrow at the target from a focused longbow.
+     *
+     * <p>The volley arrow carries no composition data, so it can neither echo the bow's traits a
+     * second time nor chain into another volley — the perk fires exactly once per shot.</p>
+     */
+    private void launchVolleyArrow(@Nonnull Player shooter, @Nonnull LivingEntity target) {
+        Location from = shooter.getEyeLocation();
+        Vector direction = target.getEyeLocation().toVector().subtract(from.toVector());
+        if (direction.lengthSquared() < 1.0E-4) return;
+
+        Vector velocity = direction.normalize().multiply(2.6).add(new Vector(0.0, 0.15, 0.0));
+        Arrow volley = shooter.launchProjectile(Arrow.class, velocity);
+        volley.setDamage(Math.max(2.0, volley.getDamage()));
+
+        World world = shooter.getWorld();
+        world.playSound(from, Sound.ENTITY_ARROW_SHOOT, 0.9f, 1.35f);
+        world.spawnParticle(Particle.CRIT, from, 8, 0.2, 0.2, 0.2, 0.05);
     }
 
     // ==========================================

@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.commands;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
@@ -25,6 +26,8 @@ import javax.annotation.Nonnull;
 import java.util.*;
 
 public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
+
+    private static final int LIST_PAGE_SIZE = 20;
 
     private final MultiverseTinker plugin;
     private final MaterialRegistry materialRegistry;
@@ -130,26 +133,48 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
             case "list" -> {
                 MineralOrigin filter = null;
-                if (args.length >= 2) {
+                int page = 1;
+                for (int i = 1; i < Math.min(args.length, 3); i++) {
+                    String arg = args[i];
                     try {
-                        filter = MineralOrigin.valueOf(args[1].toUpperCase(Locale.ROOT));
+                        filter = MineralOrigin.valueOf(arg.toUpperCase(Locale.ROOT));
+                        continue;
                     } catch (IllegalArgumentException ignored) {
+                        // not an origin: it may be a page number
+                    }
+                    try {
+                        page = Integer.parseInt(arg);
+                    } catch (NumberFormatException ignored) {
+                        // neither an origin nor a page: ignore it
                     }
                 }
 
-                sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker Materials (Chagui68) ===</gold>"));
                 Collection<TinkerMaterial> list = filter != null
                         ? materialRegistry.getByOrigin(filter)
                         : materialRegistry.getAll();
+                List<TinkerMaterial> ordered = new ArrayList<>(list);
 
-                for (TinkerMaterial mat : list) {
+                // The list is paged: dumping every material at once floods the chat and pushes the
+                // first entries out of the client's history, which looks like materials going missing.
+                int pages = Math.max(1, (int) Math.ceil(ordered.size() / (double) LIST_PAGE_SIZE));
+                page = Math.max(1, Math.min(page, pages));
+                int from = (page - 1) * LIST_PAGE_SIZE;
+                int to = Math.min(from + LIST_PAGE_SIZE, ordered.size());
+
+                sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker Materials (Chagui68) "
+                        + (filter != null ? "· " + filter.name() : "· all dimensions")
+                        + " · page " + page + "/" + pages + " ===</gold>"));
+                for (int i = from; i < to; i++) {
+                    TinkerMaterial mat = ordered.get(i);
                     String line = "<gray>• </gray><gradient:" + mat.getColorHex() + ":#ffffff>" + mat.getName() + "</gradient> "
                             + "<dark_gray>(" + mat.getId() + ")</dark_gray> "
                             + "<yellow>[" + mat.getOrigin().name() + "]</yellow> "
                             + "<aqua>Trait: " + mat.getTraitName() + "</aqua>";
                     sender.sendMessage(miniMessage.deserialize(line));
                 }
-                sender.sendMessage(miniMessage.deserialize("<gray>Total: " + list.size() + " registered materials.</gray>"));
+                sender.sendMessage(miniMessage.deserialize("<gray>Showing <yellow>" + from + "-" + to
+                        + "</yellow> of <yellow>" + ordered.size() + "</yellow> materials · next page: <yellow>/"
+                        + label + " list " + (filter != null ? filter.name() + " " : "") + (page + 1) + "</yellow></gray>"));
                 return true;
             }
 
@@ -444,14 +469,10 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length >= 4 && args.length <= 6 && args[0].equalsIgnoreCase("craft")) {
+            // Only materials here: the tier has its own argument at position 7.
             List<String> mats = new ArrayList<>();
             for (TinkerMaterial tm : materialRegistry.getAll()) {
                 mats.add(tm.getId().replace("mvtink_", ""));
-            }
-            if (args.length >= 5) {
-                for (EvolutionTier et : EvolutionTier.values()) {
-                    mats.add(et.name());
-                }
             }
             return filter(mats, args[args.length - 1]);
         }
@@ -477,10 +498,52 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
-            return filter(new ArrayList<>(itemRegistry.getAllItemIds()), args[2]);
+            return filter(giveCandidates(args[2]), args[2]);
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Ids offered by {@code /mvtink give}.
+     *
+     * <p>A flat list of every item id is more than two thousand entries long, far more than a
+     * suggestion popup can show — which is why only some materials used to appear. The suggestions
+     * stay hierarchical instead: the base id of every registered material is offered first, and once
+     * a material id is complete its item kinds (raw, ingot, nugget, block, molten bucket and the ten
+     * part types) are offered too. Typing any prefix filters this whole set, so every material this
+     * server knows — catalogued, alloy, forged composite or prime — stays reachable.</p>
+     */
+    @Nonnull
+    private List<String> giveCandidates(@Nonnull String typed) {
+        String partial = typed.toLowerCase(Locale.ROOT);
+        List<String> candidates = new ArrayList<>(specialItemIds());
+
+        for (TinkerMaterial material : materialRegistry.getAll()) {
+            String baseId = material.getId().toLowerCase(Locale.ROOT);
+            candidates.add(baseId);
+            if (!partial.equals(baseId)) continue;
+
+            for (TinkerItemRegistry.ItemKind kind : TinkerItemRegistry.ItemKind.values()) {
+                candidates.add(baseId + kind.getSuffix());
+            }
+            candidates.add(baseId + "_processed");
+            candidates.add(baseId + "_handle");
+            candidates.add(baseId + "_pommel");
+        }
+        return candidates;
+    }
+
+    /** The hand-built items that are not derived from a material. */
+    @Nonnull
+    private List<String> specialItemIds() {
+        List<String> ids = new ArrayList<>();
+        ids.add("mvtink_smeltery");
+        ids.add("mvtink_brush_prospector");
+        for (CastType cast : CastType.values()) {
+            ids.add(cast.getId().toLowerCase(Locale.ROOT));
+        }
+        return ids;
     }
 
     /** Up to five registered ids that start with (or contain) what the sender typed. */

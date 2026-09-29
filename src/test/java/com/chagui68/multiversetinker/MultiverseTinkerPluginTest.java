@@ -45,11 +45,16 @@ class MultiverseTinkerPluginTest {
         assertEquals("com.chagui68.multiversetinker.MultiverseTinker", descriptor.getString("main"));
         assertNotNull(descriptor.getString("version"), "The maven filter must fill the version");
         assertEquals("1.21", descriptor.getString("api-version"));
-        assertTrue(descriptor.getStringList("commands.multiversetinker.aliases").contains("mvtink"));
-        assertEquals("multiversetinker.admin", descriptor.getString("commands.multiversetinker.permission"));
+
+        // /mvtink is the only command name: no /mvt and no /multiversetinker alias may come back.
+        assertNull(descriptor.getConfigurationSection("commands.multiversetinker"),
+                "The long command name must be gone");
+        assertNotNull(descriptor.getConfigurationSection("commands.mvtink"), "/mvtink must be declared");
+        assertTrue(descriptor.getStringList("commands.mvtink.aliases").isEmpty(), "No aliases are allowed");
+        assertEquals("multiversetinker.admin", descriptor.getString("commands.mvtink.permission"));
         assertNotNull(descriptor.getConfigurationSection("permissions"), "Permissions must stay documented");
 
-        String usage = descriptor.getString("commands.multiversetinker.usage");
+        String usage = descriptor.getString("commands.mvtink.usage");
         assertNotNull(usage);
         for (String sub : List.of("craft", "give", "forge", "codex", "list", "verify", "reload")) {
             assertTrue(usage.contains(sub), "plugin.yml usage is missing /mvtink " + sub);

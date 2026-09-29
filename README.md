@@ -89,24 +89,25 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
   * **[5. Tool Assembly]**: Assemble 5 tool types (Pickaxe, Battleaxe, Excavator/Shovel, Scythe/Hoe, Fishing Rod) starting at **Wood Tier** and leveling up through **Blocks Broken**!
   * **[6. Armor Assembly]**: Assemble 4 armor types (Helmet, Chestplate, Leggings, Boots) from Plate, Lining and Trim parts, leveling up through **Damage Absorbed**.
 * **Specialized Weapon & Tool Perks**:
-  * **War Mace**: Downward fall strikes trigger seismic ground shockwaves dealing AOE damage.
-  * **Longbow**: Arrows inherit limb and string elemental traits.
-  * **Heavy Crossbow**: Bolts trigger a real, block-safe kinetic explosion that damages and knocks back every creature in a 4-block radius, plus +6.0 armor-piercing direct damage.
+  * **War Mace (Seismic Smash)**: Downward fall strikes trigger seismic ground shockwaves dealing AOE damage.
+  * **Longbow (Infused Volley)**: Arrows inherit limb and string elemental traits, and a focused bow looses a **follow-up volley arrow** at the same target (25% base chance, up to 60% at full essence focus).
+  * **Heavy Crossbow (Piercing Velocity)**: Bolts trigger a real, block-safe kinetic explosion that damages and knocks back every creature in a 4-block radius, plus +6.0 armor-piercing direct damage.
 * **Cinematic Attack Spectacles**:
   * **12 essence ultimates** triggered by a focused weapon, each with its own particles, sounds, root and damage multiplier.
   * **7 prime ultimates**: **Absolute Zero** and **Glacier Tomb** erupt **ten ice spikes** in a ring and freeze the victim for **300–400 freeze ticks**, while **Meteor Cascade** spirals **8 meteors** down in flame and lava. Supernova, Event Horizon, Tectonic Rift and Prismatic Ascension complete the set.
 * **New Armor States (9)**: Frostbound, Meteor Ward, Gravitic Anchor, Prime Aegis, Stormcall, Ember Veil, Void Shell, Prism Bulwark and Tectonic Guard — prime armor answers every hit with its own reaction (freezing blasts, meteor wards, lightning, reflected damage…).
-  * **Elder Trident**: Water/rain strikes summon hydraulic lightning (+5.0 damage).
-  * **Kinetic Spear**: Extended attack reach and +30% charge damage while sprinting.
-  * **Tower Shield**: Reflects 35% blocked damage back to attackers.
-  * **Battleaxe (Axe)**: Lumber Cleave fells the whole connected tree trunk and shatters enemy shields.
-  * **Pickaxe**: Vein Resonance grants bonus ores and Haste I.
-  * **Excavator (Shovel)**: Sneak-digging excavates a 3x3 area of soil/sand/gravel.
-  * **Scythe (Hoe)**: Harvests 3x3 mature crops and auto-replants seeds from your inventory.
-  * **Fishing Rod**: Abyssal Dredge has a 15% chance to hook rare raw Multiverse minerals.
-  * **Modular Armor**: Helmet hazard warding, Chestplate kinetic dampening (25% heavy-impact absorption), Leggings stride momentum and Boots fall-damage halving.
+  * **Elder Trident (Hydraulic Surge)**: Water/rain strikes summon hydraulic lightning (+5.0 damage).
+  * **Kinetic Spear (Jousting Reach)**: Extended attack reach and +30% charge damage while sprinting.
+  * **Tower Shield (Retaliation Barrier)**: Reflects 35% blocked damage back to attackers.
+  * **Broadsword (Sweeping Cleave)**: Sweeping strikes hit multiple adjacent foes and chain elemental traits.
+  * **Battleaxe (Lumber Cleave)**: Fells the whole connected tree trunk and shatters enemy shields.
+  * **Pickaxe (Vein Resonance)**: Grants bonus ores and Haste I on resonating seams.
+  * **Excavator (Seismic Tremor)**: Sneak-digging excavates a 3x3 area of soil/sand/gravel.
+  * **Scythe (Harvest Scythe)**: Harvests 3x3 mature crops and auto-replants seeds from your inventory.
+  * **Fishing Rod (Abyssal Dredge)**: 15% chance to hook rare raw Multiverse minerals.
+  * **Modular Armor**: four distinct slot defenses — Helmet (**Cranium Ward**) headshot mitigation and hazard immunity, Chestplate (**Kinetic Dampener**) 25% heavy-impact absorption, Leggings (**Stride Momentum**) sprint recovery and Boots (**Feathered Grounding**) fall-damage halving.
   * **Essence Ultimates**: a weapon with **≥80% essence focus** unleashes a cinematic ultimate tied to its essence — meteor showers, singularities, light pillars or bastion cages — pinning the enemy in place for 2-3s while the animation plays (20s cooldown). See [Essence Ultimates](Wiki-en/Essence-Ultimates.md).
-  * **Material-Driven Perks**: every perk above is **named and powered by the weapon's head mineral** (Cobalt → *Infernal Piercing Velocity*, Voidstone → *Void Piercing Velocity*, Diamond → *Radiant Sweeping Cleave*) while the handle and pommel set the **Essence Focus** shown in the lore; the dominant essence is channelled into the perk's primary strike.
+  * **Material-Driven Perks**: every perk above — weapons, tools and armor alike — is **named and powered by the mineral of its head / plate part** (Cobalt → *Infernal Piercing Velocity*, Voidstone → *Void Piercing Velocity*, Diamond → *Radiant Sweeping Cleave*, Cobalt pickaxe → *Infernal Vein Resonance*, Voidstone chestplate → *Void Kinetic Dampener*) while the handle and pommel (or lining and trim) set the **Essence Focus** shown in the lore; the dominant essence is channelled into the perk's primary strike. Each material trait row is also labelled with the moment it fires — `on sweep`, `on arrow hit`, `on bolt impact`, `on surge`, `on thrust`, `on smash`, `on block`, `while mining`, `while chopping`, `while digging`, `while harvesting`, `while fishing` or `when struck` for armor — so a broadsword, a longbow and a pair of boots never print the same trait block.
 * **Deterministic Trait Affinities**: Every mineral and vanilla ore resolves to up to 3 of the 12 essences (Infernal, Void, Primal, Tempered, Radiant, Resonant, Volatile, Terrain, Swift, Brutal, Bulwark, Ascendant). They behave **offensively on weapons, as mining procs on tools and as defensive procs on armor**, and alloys inherit both parents' essences — so every mineral combination owns its own unique functionality. See [Trait Affinities](Wiki-en/Trait-Affinities.md).
 
 ---
@@ -131,11 +132,13 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 * `/mvtink forge build [0|90|180|270]` — Construct the complete multiblock Forge structure at your location.
 * `/mvtink forge check` — Validate the targeted anvil and display structure match percentage and diagnostics.
 * `/mvtink forge gui` — Open the custom Multiverse Forge GUI directly.
-* `/mvtink give <player> <mvtink_id> [amount]` — Give any item (raw, ingot, nugget, block, molten bucket, tool parts, casts, smeltery, prospector brush). The `mvtink_` prefix is optional, ids are resolved on demand, and composite/prime alloys forged after startup are givable too.
+* `/mvtink give <player> <mvtink_id> [amount]` — Give any item (raw, ingot, nugget, block, molten bucket, tool parts, casts, smeltery, prospector brush). The `mvtink_` prefix is optional, ids are resolved on demand, and composite/prime alloys forged after startup are givable too. Tab completion is **hierarchical**: it offers the id of every registered material first and, once a material id is complete, its item kinds, so no material is ever missing from the list.
 * `/mvtink codex [player]` — Open the browsable **Alloy Codex GUI**: legendary recipes, prime catalysts, forged composites and primes, a combination explorer and the totals (also reachable in-game from the book button in the Alloy Crucible tab; sneak-click that button for the old chat listing).
 * `/mvtink verify` — Diagnose the item registry: registered materials, item kinds per material, distinct ids and a full resolvability check (every material × every kind).
-* `/mvtink list [OVERWORLD|NETHER|THE_END]` — Inspect every registered material (97 geological + 14 vanilla), colors, origins, and traits.
+* `/mvtink list [OVERWORLD|NETHER|THE_END] [page]` — Inspect every registered material (97 geological + 14 vanilla), colors, origins, and traits, **20 per page** (the footer tells you the next page; out-of-range pages clamp to the last one).
 * `/mvtink reload` — Reload configuration, items, and loot tables.
+
+> `/mvtink` is the plugin's only command name and it registers **no aliases** — nothing else will ever respond to it.
 
 **Permissions:**
 * `multiversetinker.admin` — Access to `/mvtink` administrative commands (default: `op`).

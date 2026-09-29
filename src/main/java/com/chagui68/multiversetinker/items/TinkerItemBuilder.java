@@ -9,8 +9,10 @@ import com.chagui68.multiversetinker.api.ToolPartType;
 import com.chagui68.multiversetinker.evolution.EvolutionTier;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.ArmorPerkProfile;
 import com.chagui68.multiversetinker.tools.PrimeArmorState;
 import com.chagui68.multiversetinker.tools.PrimeUltimate;
+import com.chagui68.multiversetinker.tools.ToolPerkProfile;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.tools.WeaponPerkProfile;
 import net.kyori.adventure.text.Component;
@@ -39,6 +41,9 @@ public class TinkerItemBuilder {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+
+    /** Armor always answers hits, so every armor trait block is labelled the same way. */
+    private static final String ARMOR_TRAIT_CHANNEL = "when struck";
 
     @Nonnull
     public static ItemStack createRawMineral(@Nonnull TinkerMaterial material) {
@@ -586,12 +591,13 @@ public class TinkerItemBuilder {
 
         lore.add(Component.empty());
         lore.add(Component.text("✦ Active Combat Traits:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • " + p1.getTraitName() + ": " + p1.getWeaponTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+        String weaponChannel = weaponTraitChannel(weaponType);
+        lore.add(traitLine(p1, p1.getWeaponTraitDescription(), weaponChannel));
         if (!p2.getId().equals(p1.getId())) {
-            lore.add(Component.text("  • " + p2.getTraitName() + ": " + p2.getWeaponTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(traitLine(p2, p2.getWeaponTraitDescription(), weaponChannel));
         }
         if (part3 != null && !part3.getPrimaryMaterial().getId().equals(p1.getId()) && !part3.getPrimaryMaterial().getId().equals(p2.getId())) {
-            lore.add(Component.text("  • " + part3.getPrimaryMaterial().getTraitName() + ": " + part3.getPrimaryMaterial().getWeaponTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(traitLine(part3.getPrimaryMaterial(), part3.getPrimaryMaterial().getWeaponTraitDescription(), weaponChannel));
         }
 
         lore.add(Component.empty());
@@ -691,19 +697,26 @@ public class TinkerItemBuilder {
         lore.add(Component.text("  • Handle: ", NamedTextColor.GRAY).append(Component.text(rMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
         lore.add(Component.text("  • Pommel: ", NamedTextColor.GRAY).append(Component.text(bMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
 
+        // Material-driven tool perk: the head mineral's essence names and warps the signature mechanic.
+        ToolPerkProfile toolPerk = ToolPerkProfile.of(toolType, head, rod, binding);
         lore.add(Component.empty());
         lore.add(Component.text("✦ Tool Perk: ", NamedTextColor.GOLD)
-                .append(Component.text(getToolPerkDescription(toolType), NamedTextColor.AQUA))
+                .append(Component.text(toolPerk.getDisplayName() + ": ", NamedTextColor.AQUA))
+                .append(Component.text(toolPerk.getDescription(), NamedTextColor.GRAY))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Essence Focus: ", NamedTextColor.DARK_GRAY)
+                .append(Component.text(toolPerk.getFocusLine(), toolPerk.getColor()))
                 .decoration(TextDecoration.ITALIC, false));
 
         lore.add(Component.empty());
         lore.add(Component.text("✦ Active Mining Traits:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • " + hMat.getTraitName() + ": " + hMat.getToolTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+        String toolChannel = toolTraitChannel(toolType);
+        lore.add(traitLine(hMat, hMat.getToolTraitDescription(), toolChannel));
         if (!rMat.getId().equals(hMat.getId())) {
-            lore.add(Component.text("  • " + rMat.getTraitName() + ": " + rMat.getToolTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(traitLine(rMat, rMat.getToolTraitDescription(), toolChannel));
         }
         if (!bMat.getId().equals(hMat.getId()) && !bMat.getId().equals(rMat.getId())) {
-            lore.add(Component.text("  • " + bMat.getTraitName() + ": " + bMat.getToolTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(traitLine(bMat, bMat.getToolTraitDescription(), toolChannel));
         }
 
         lore.add(Component.empty());
@@ -805,15 +818,43 @@ public class TinkerItemBuilder {
         return builder.length() == 0 ? "Primal" : builder.toString();
     }
 
+    /**
+     * One material trait row, labelled with the moment this equipment type actually fires it, so a
+     * sword, a bow and a pair of boots never print the same trait block.
+     */
     @Nonnull
-    private static String getToolPerkDescription(@Nonnull ModularToolType type) {
+    private static Component traitLine(@Nonnull TinkerMaterial material, @Nonnull String description,
+                                       @Nonnull String channel) {
+        return Component.text("  • " + material.getTraitName() + " ", NamedTextColor.DARK_AQUA)
+                .append(Component.text("(" + channel + ") ", NamedTextColor.DARK_GRAY))
+                .append(Component.text(description, NamedTextColor.DARK_AQUA))
+                .decoration(TextDecoration.ITALIC, false);
+    }
+
+    /** When a weapon's material traits fire, per weapon type. */
+    @Nonnull
+    private static String weaponTraitChannel(@Nonnull ModularWeaponType type) {
         return switch (type) {
-            case PICKAXE -> "Deep Vein Resonance: 15% chance for bonus ores and temporary mining haste.";
-            case AXE -> "Lumber Cleave: fells whole logs and shatters enemy shields on critical hits.";
-            case SHOVEL -> "Seismic Tremor: sneak-digging excavates a 3x3 area of loose blocks.";
-            case HOE -> "Harvest Scythe: harvests 3x3 crops and replants seeds automatically.";
-            case FISHING_ROD -> "Abyssal Dredge: deep water fishing has a 15% chance to hook rare minerals.";
-            default -> "Elemental Utility";
+            case SWORD -> "on sweep";
+            case BOW -> "on arrow hit";
+            case CROSSBOW -> "on bolt impact";
+            case TRIDENT -> "on surge";
+            case SPEAR -> "on thrust";
+            case MACE -> "on smash";
+            case SHIELD -> "on block";
+        };
+    }
+
+    /** When a tool's material traits fire, per tool type. */
+    @Nonnull
+    private static String toolTraitChannel(@Nonnull ModularToolType type) {
+        return switch (type) {
+            case PICKAXE -> "while mining";
+            case AXE -> "while chopping";
+            case SHOVEL -> "while digging";
+            case HOE -> "while harvesting";
+            case FISHING_ROD -> "while fishing";
+            case SWORD -> "on sweep";
         };
     }
 
@@ -887,19 +928,25 @@ public class TinkerItemBuilder {
         lore.add(Component.text("  • Armor Lining: ", NamedTextColor.GRAY).append(Component.text(lMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
         lore.add(Component.text("  • Armor Trim: ", NamedTextColor.GRAY).append(Component.text(tMat.getName(), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
 
+        // Material-driven armor perk: the plate mineral's essence colours the slot's defense.
+        ArmorPerkProfile armorPerk = ArmorPerkProfile.of(armorType, plate, lining, trim);
         lore.add(Component.empty());
         lore.add(Component.text("✦ Armor Perk: ", NamedTextColor.GOLD)
-                .append(Component.text(getArmorPerkDescription(armorType), NamedTextColor.AQUA))
+                .append(Component.text(armorPerk.getDisplayName() + ": ", NamedTextColor.AQUA))
+                .append(Component.text(armorPerk.getDescription(), NamedTextColor.GRAY))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • Essence Focus: ", NamedTextColor.DARK_GRAY)
+                .append(Component.text(armorPerk.getFocusLine(), armorPerk.getColor()))
                 .decoration(TextDecoration.ITALIC, false));
 
         lore.add(Component.empty());
         lore.add(Component.text("✦ Active Defensive Traits:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • " + pMat.getTraitName() + ": " + pMat.getArmorTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+        lore.add(traitLine(pMat, pMat.getArmorTraitDescription(), ARMOR_TRAIT_CHANNEL));
         if (!lMat.getId().equals(pMat.getId())) {
-            lore.add(Component.text("  • " + lMat.getTraitName() + ": " + lMat.getArmorTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(traitLine(lMat, lMat.getArmorTraitDescription(), ARMOR_TRAIT_CHANNEL));
         }
         if (!tMat.getId().equals(pMat.getId()) && !tMat.getId().equals(lMat.getId())) {
-            lore.add(Component.text("  • " + tMat.getTraitName() + ": " + tMat.getArmorTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(traitLine(tMat, tMat.getArmorTraitDescription(), ARMOR_TRAIT_CHANNEL));
         }
 
         lore.add(Component.empty());
@@ -934,15 +981,7 @@ public class TinkerItemBuilder {
         return item;
     }
 
-    @Nonnull
-    private static String getArmorPerkDescription(@Nonnull ModularArmorType type) {
-        return switch (type) {
-            case HELMET -> "Cranium Ward: reduces incoming headshot damage and grants hazard immunity.";
-            case CHESTPLATE -> "Kinetic Dampener: absorbs 25% of heavy impacts and releases protective energy.";
-            case LEGGINGS -> "Stride Momentum: mitigates sprint stamina drain and boosts movement recovery.";
-            case BOOTS -> "Feathered Grounding: negates up to 50% fall damage and grants anti-slip traction.";
-        };
-    }
+
 
     public static void updateWeaponProgress(@Nonnull ItemStack weapon, @Nonnull EvolutionTier tier, int killCount) {
         ItemMeta meta = weapon.getItemMeta();

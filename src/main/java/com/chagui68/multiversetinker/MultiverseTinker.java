@@ -97,8 +97,8 @@ public class MultiverseTinker extends JavaPlugin {
         modularToolListener.startAuraTask();
         getServer().getPluginManager().registerEvents(modularToolListener, this);
 
-        // Register Commands
-        PluginCommand cmd = getCommand("multiversetinker");
+        // Register Commands — /mvtink is the only command name, with no aliases.
+        PluginCommand cmd = getCommand("mvtink");
         if (cmd != null) {
             MultiverseTinkerCommand executor = new MultiverseTinkerCommand(this, materialRegistry, itemRegistry);
             cmd.setExecutor(executor);

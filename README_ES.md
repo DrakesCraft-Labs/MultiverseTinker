@@ -89,24 +89,25 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
   * **[5. Tool Assembly]**: Ensamblado de 5 tipos de herramientas (Pico, Hacha, Pala, Azada, Caña de pescar) que comienzan en **Rareza de Madera** y evolucionan mediante **Bloques Rotos**.
   * **[6. Armor Assembly]**: Ensamblado de 4 tipos de armaduras (Casco, Peto, Grebas, Botas) a partir de piezas de Placa, Forro y Ribete, que evolucionan mediante **Daño Absorbido**.
 * **Habilidades Especiales en Armas y Herramientas**:
-  * **Mazo de Guerra**: Golpes en caída desatan una onda sísmica en el suelo con daño en área.
-  * **Arco**: Las flechas heredan los rasgos elementales de los brazos y de la cuerda.
-  * **Ballesta Pesada**: Los virotes detonan una explosión cinética real y sin dañar bloques que daña y empuja a todas las criaturas en 4 bloques, más +6.0 de daño directo perforante.
+  * **Mazo de Guerra (Seismic Smash)**: Golpes en caída desatan una onda sísmica en el suelo con daño en área.
+  * **Arco (Infused Volley)**: Las flechas heredan los rasgos elementales de los brazos y de la cuerda, y un arco enfocado dispara una **flecha de réplica** contra el mismo objetivo (25% base, hasta 60% con enfoque de esencia completo).
+  * **Ballesta Pesada (Piercing Velocity)**: Los virotes detonan una explosión cinética real y sin dañar bloques que daña y empuja a todas las criaturas en 4 bloques, más +6.0 de daño directo perforante.
 * **Espectáculos de Ataque Cinematográficos**:
   * **12 ultimates de esencia** que se activan con un arma enfocada, cada uno con sus propias partículas, sonidos, retención y multiplicador de daño.
   * **7 ultimates primordiales**: **Absolute Zero** y **Glacier Tomb** hacen brotar **diez pinchos de hielo** en anillo y congelan a la víctima **300–400 ticks**, mientras **Meteor Cascade** hace caer **8 meteoritos** en espiral con fuego y lava. Supernova, Event Horizon, Tectonic Rift y Prismatic Ascension completan el set.
 * **Nuevos Estados de Armadura (9)**: Frostbound, Meteor Ward, Gravitic Anchor, Prime Aegis, Stormcall, Ember Veil, Void Shell, Prism Bulwark y Tectonic Guard — la armadura primordial responde a cada golpe con su propia reacción (ráfagas congelantes, guardias meteóricos, rayos, daño reflejado…).
-  * **Tridente**: Rayos y oleadas hidráulicas bajo el agua o lluvia (+5.0 daño).
-  * **Lanza Cinética**: Alcance de ataque extendido y +30% de daño en embestida al esprintar.
-  * **Escudo Torre**: Refleja el 35% del daño bloqueado de vuelta al atacante.
-  * **Hacha de Guerra**: Tala Ígnea derriba todo el tronco conectado y quiebra los escudos enemigos.
-  * **Pico**: Resonancia de Vetas otorga minerales adicionales y Prisa minera I.
-  * **Pala Excavadora**: Minar agachado rompe un área de 3x3 de tierra, arena o grava.
-  * **Azada**: Cosecha cultivos maduros en 3x3 y replanta automáticamente las semillas de tu inventario.
-  * **Caña de Pescar**: Dragado abisal permite pescar minerales raros de las profundidades acuáticas.
-  * **Armadura Modular**: Casco con protección de peligros, Peto con amortiguación cinética (25% de impactos fuertes), Grebas con impulso de zancada y Botas que reducen a la mitad el daño de caída.
+  * **Tridente (Hydraulic Surge)**: Rayos y oleadas hidráulicas bajo el agua o lluvia (+5.0 daño).
+  * **Lanza Cinética (Jousting Reach)**: Alcance de ataque extendido y +30% de daño en embestida al esprintar.
+  * **Escudo Torre (Retaliation Barrier)**: Refleja el 35% del daño bloqueado de vuelta al atacante.
+  * **Espada Ancha (Sweeping Cleave)**: Los tajos de barrido golpean a varios enemigos adyacentes y propagan los rasgos elementales.
+  * **Hacha de Guerra (Lumber Cleave)**: Derriba todo el tronco conectado y quiebra los escudos enemigos.
+  * **Pico (Vein Resonance)**: Otorga minerales adicionales y Prisa minera I en vetas resonantes.
+  * **Pala Excavadora (Seismic Tremor)**: Minar agachado rompe un área de 3x3 de tierra, arena o grava.
+  * **Guadaña (Harvest Scythe)**: Cosecha cultivos maduros en 3x3 y replanta automáticamente las semillas de tu inventario.
+  * **Caña de Pescar (Abyssal Dredge)**: 15% de probabilidad de pescar minerales raros de las profundidades.
+  * **Armadura Modular**: cuatro defensas de ranura distintas — Casco (**Cranium Ward**) mitigación de disparos a la cabeza e inmunidad a peligros, Peto (**Kinetic Dampener**) absorción del 25% de impactos fuertes, Grebas (**Stride Momentum**) recuperación al esprintar y Botas (**Feathered Grounding**) daño de caída reducido a la mitad.
   * **Ultimates de Esencia**: un arma con **≥80% de enfoque de esencia** desata un ultimate cinematográfico ligado a su esencia — lluvia de meteoritos, singularidades, pilares de luz o jaulas del bastión — que inmoviliza al enemigo 2-3 s mientras se reproduce la animación (20 s de enfriamiento). Ver [Ultimates de Esencia](Wiki-es/Ultimates-de-Esencia.md).
-  * **Perks según los Materiales**: cada habilidad se **nombra e impulsa según el mineral de la cabeza** (Cobalto → *Infernal Piercing Velocity*, Piedra del Vacío → *Void Piercing Velocity*, Diamante → *Radiant Tajo Enlazado*), mientras la empuñadura y el pomo fijan el **Essence Focus** que se muestra en el lore; la esencia dominante se canaliza en el golpe primario del perk.
+  * **Perks según los Materiales**: cada habilidad anterior — tanto de armas como de herramientas y armaduras — se **nombra e impulsa según el mineral de la cabeza o de la placa** (Cobalto → *Infernal Piercing Velocity*, Piedra del Vacío → *Void Piercing Velocity*, Diamante → *Radiant Tajo Enlazado*, pico de Cobalto → *Infernal Vein Resonance*, peto de Piedra del Vacío → *Void Kinetic Dampener*), mientras la empuñadura y el pomo (o el forro y el ribete) fijan el **Essence Focus** que se muestra en el lore; la esencia dominante se canaliza en el golpe primario del perk. Además, cada fila de rasgo de material indica **cuándo** se dispara — `on sweep`, `on arrow hit`, `on bolt impact`, `on surge`, `on thrust`, `on smash`, `on block`, `while mining`, `while chopping`, `while digging`, `while harvesting`, `while fishing` o `when struck` para armaduras —, así que una espada ancha, un arco y unas botas nunca imprimen el mismo bloque de rasgos.
 * **Afinidades de Rasgos Deterministas**: Cada mineral y mena vanilla resuelve a hasta 3 de las 12 esencias (Infernal, Void, Primal, Tempered, Radiant, Resonant, Volatile, Terrain, Swift, Brutal, Bulwark, Ascendant). Se comportan de forma **ofensiva en armas, como procs de minería en herramientas y defensivos en armaduras**, y las aleaciones heredan las esencias de ambos progenitores — cada combinación de minerales posee así su propia funcionalidad única. Ver [Afinidades de Rasgos](Wiki-es/Afinidades-de-Rasgos.md).
 
 ---
@@ -131,11 +132,17 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 * `/mvtink forge build [0|90|180|270]` — Construye la estructura completa de la forja en la ubicación del jugador.
 * `/mvtink forge check` — Valida el yunque al que estás apuntando y muestra el porcentaje de coincidencia.
 * `/mvtink forge gui` — Abre directamente la interfaz gráfica de la Forja Multiverse.
-* `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha). El prefijo `mvtink_` es opcional, los ids se resuelven bajo demanda y las aleaciones compuestas/primordiales forjadas después del arranque también se pueden entregar.
+* `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha). El prefijo `mvtink_` es opcional, los ids se resuelven bajo demanda y las aleaciones compuestas/primordiales forjadas después del arranque también se pueden entregar. El autocompletado es **jerárquico**: primero ofrece el id de todos los materiales registrados y, cuando el id está completo, sus tipos de ítem, así que ningún material desaparece de la lista.
 * `/mvtink codex [jugador]` — Abre el **Codex de Aleaciones** navegable: recetas legendarias, catalizadores primordiales, compuestas y primordiales forjadas, un explorador de combinaciones y los totales (también disponible in-game desde el botón del libro en la pestaña del Crisol; shift-clic en ese botón imprime el listado antiguo en el chat).
 * `/mvtink verify` — Diagnostica el registro de ítems: materiales registrados, tipos de ítem por material, ids distintos y una comprobación completa de resolubilidad (cada material × cada tipo).
-* `/mvtink list [OVERWORLD|NETHER|THE_END]` — Lista todos los materiales registrados (97 geológicos + 14 vanilla) con sus rasgos, rarezas y colores.
+* `/mvtink list [OVERWORLD|NETHER|THE_END] [página]` — Lista todos los materiales registrados (97 geológicos + 14 vanilla) con sus rasgos, rarezas y colores, **20 por página** (el pie indica la página siguiente y una página fuera de rango se ajusta a la última).
 * `/mvtink reload` — Recarga la configuración y las tablas de arqueología.
+
+> `/mvtink` es el único nombre de comando del plugin y **no registra alias** — ningún otro nombre responderá.
+
+**Permisos:**
+* `multiversetinker.admin` — Acceso a los comandos administrativos de `/mvtink` (por defecto: `op`).
+* `multiversetinker.archaeology` — Permite usar la brocha para extracción geológica (por defecto: `true`).
 
 ---
 

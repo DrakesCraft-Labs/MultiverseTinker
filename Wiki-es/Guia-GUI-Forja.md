@@ -95,13 +95,14 @@ Haz clic en el **Selector de Armas** (Ranura 13) para alternar entre los 7 tipos
   `Madera → Piedra (15 bajas) → Cobre (40) → Hierro (80) → Oro (150) → Diamante (300) → Netherite (600)`.
 - **Ventajas de Combate Únicas**:
   - **Mazo de Guerra (War Mace)**: *Golpe Sísmico* — Al atacar cayendo/saltando o agachado, libera una onda expansiva que inflige el 65% de daño a todos los enemigos en 4 bloques, los lanza por el aire y les transmite los rasgos elementales.
-  - **Arco Largo (Longbow)**: *Andanada Imbuida* — Las flechas disparadas heredan íntegramente los rasgos elementales de las extremidades y cuerda tensora (quemando, envenenando, ralentizando, etc.).
+  - **Arco Largo (Longbow)**: *Andanada Imbuida* — Las flechas disparadas heredan íntegramente los rasgos elementales de las extremidades y cuerda tensora (quemando, envenenando, ralentizando, etc.), y un arco **enfocado** dispara una **flecha de réplica** contra el mismo objetivo: 25% de probabilidad base que sube hasta el 60% con el 100% de enfoque de esencia. La flecha de réplica no lleva datos de composición, así que el perk salta una sola vez por disparo.
   - **Ballesta Pesada (Heavy Crossbow)**: *Piercing Velocity* — Los virotes perforan armaduras (+6.0 daño directo) y provocan una explosión cinética abrasiva (al impactar a un enemigo o a un bloque), dañando en 5.0 y empujando a todas las criaturas en 4 bloques.
   - **Tridente Anciano (Elder Trident)**: *Oleada Hidráulica* — Tanto cuerpo a cuerpo como al ser arrojado, si el objetivo o el lanzador se encuentran en agua o bajo la lluvia, invoca un relámpago con trueno, partículas de agua y un estallido de +5.0 de daño hidráulico adicional.
   - **Lanza Cinética (Kinetic Spear)**: *Embestida de Justa* — Posee el modelo y alcance cuerpo a cuerpo extendido de la lanza oficial vanilla 1.21.11; al atacar esprintando o montado sobre un caballo/camello, asesta un golpe crítico con +30% de daño y un fuerte empuje hacia adelante.
   - **Escudo Torre (Tower Shield)**: *Barrera de Represalia* — Bloquear ataques cuerpo a cuerpo o proyectiles (flechas, tridentes) devuelve un 35% del daño al atacante, lo empuja hacia atrás y le aplica los rasgos elementales de la placa frontal y el umbón.
   - **Espada Ancha (Broadsword)**: *Tajo Elemental Enlazado* — Los tajos de barrido causan el 40% de daño a los enemigos adyacentes y propagan todos los rasgos elementales activos a cada uno de ellos.
 - **Perks según los Materiales**: cada ventaja anterior se **nombra e impulsa según el mineral de la cabeza** (una cabeza de Cobalto da *Infernal Piercing Velocity*, una de Piedra del Vacío da *Void Piercing Velocity*), mientras la empuñadura y el pomo fijan el porcentaje de **Essence Focus** del lore. La esencia dominante se canaliza en el golpe primario del perk, por lo que armas del mismo tipo forjadas con minerales distintos combaten de forma diferente.
+- **Cuándo salta cada rasgo**: cada fila de rasgo del lore indica el momento exacto en que esa arma lo dispara — `on sweep`, `on arrow hit` (arco), `on bolt impact`, `on surge`, `on thrust`, `on smash` y `on block` —, así que una espada ancha, un arco y un escudo torre nunca muestran el mismo bloque de rasgos.
 
 ---
 
@@ -118,12 +119,13 @@ Haz clic en el **Selector de Herramientas** (Ranura 13) para alternar entre los 
 - Inicia en **Tier Madera** (`0` bloques rotos).
 - Minar bloques avanza la herramienta:
   `Madera → Piedra (50 bloques) → Cobre (150) → Hierro (350) → Oro (750) → Diamante (1500) → Netherite (3000)`.
-- **Ventajas de Minería**:
-  - **Pico**: Resonancia de Veta Profunda (15% probabilidad de minerales extra y Prisa).
-  - **Hacha**: Tala leños completos y desactiva escudos en golpes críticos.
-  - **Pala**: Temblor Sísmico excava áreas de 3x3 al agacharse.
-  - **Guadaña**: Cosecha cultivos en 3x3 y replanta automáticamente desde el inventario.
-  - **Caña de Pescar**: Dragado Abisal (15% de pescar minerales geológicos raros).
+- **Ventajas de Minería**: el mecanismo pertenece al tipo de herramienta, la esencia a sus minerales. La cabeza fija la identidad elemental (y por tanto el nombre del perk y su efecto extra), el mango y el pomo fijan el Essence Focus:
+  - **Pico** (*Vein Resonance*): 15% de probabilidad de minerales extra y Prisa minera. Una cabeza de Cobalto imprime *Infernal Vein Resonance*; una de Piedra del Vacío, *Void Vein Resonance*.
+  - **Hacha de Batalla** (*Lumber Cleave*): Derriba el tronco completo y desactiva escudos en golpes críticos.
+  - **Pala Excavadora** (*Seismic Tremor*): Excava un área de 3x3 de tierra, arena y grava al agacharse.
+  - **Guadaña** (*Harvest Scythe*): Cosecha cultivos maduros en 3x3 y replanta automáticamente desde el inventario.
+  - **Caña de Pescar** (*Abyssal Dredge*): 15% de probabilidad de pescar minerales geológicos raros.
+  - Cada herramienta imprime `✦ Tool Perk: <Esencia> <Mecánica>` más su propia línea `• Essence Focus: <Esencia> essence (<n>%)`, y sus filas de rasgo indican cuándo saltan: `while mining`, `while chopping`, `while digging`, `while harvesting` o `while fishing`.
 
 ---
 
@@ -145,11 +147,12 @@ Haz clic en el **Selector de Armaduras** (Ranura 13) para alternar entre las 4 p
 - Al absorber daño en combate, la armadura acumula progreso y evoluciona en este orden exacto:
   `Cuero (0 daño) → Cobre (50 daño) → Malla (150 daño) → Hierro (350 daño) → Oro (750 daño) → Diamante (1500 daño) → Netherite (3000 daño)`.
 - Conforme evoluciona, el material base de Minecraft se transforma automáticamente, aumentando drásticamente los puntos de armadura, durabilidad y dureza.
-- **Ventajas Especiales de Armadura**:
-  - **Casco (Cranium Ward)**: Reduce el daño crítico a la cabeza e inmunidad a peligros ambientales.
-  - **Pechera (Kinetic Dampener)**: Absorbe el 25% de impactos fuertes y libera energía defensiva.
-  - **Pantalones (Stride Momentum)**: Reduce el agotamiento al correr y acelera la recuperación de movimiento.
-  - **Botas (Feathered Grounding)**: Anula hasta el 50% del daño por caída y previene resbalones.
+- **Ventajas Especiales de Armadura**: la ranura posee la defensa, el mineral de la placa posee su esencia:
+  - **Casco** (*Cranium Ward*): Reduce el daño crítico a la cabeza e inmunidad a peligros ambientales.
+  - **Pechera** (*Kinetic Dampener*): Absorbe el 25% de impactos fuertes y libera energía defensiva.
+  - **Pantalones** (*Stride Momentum*): Reduce el agotamiento al correr y acelera la recuperación de movimiento.
+  - **Botas** (*Feathered Grounding*): Anula hasta el 50% del daño por caída y previene resbalones.
+  - Una pechera de Piedra del Vacío imprime *Void Kinetic Dampener* y una Infernal *Infernal Kinetic Dampener*: mismo mecanismo de ranura, esencia y reacción distintas, y **Essence Focus** distinto. Las filas de rasgo de armadura se etiquetan `when struck`, porque la armadura siempre responde a un golpe.
 
 ---
 
