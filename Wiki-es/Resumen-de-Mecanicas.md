@@ -217,6 +217,11 @@ de un material, con la línea `/mvtink give <jugador> <id>` lista para copiar.
 Permisos: `multiversetinker.admin` (op) · `multiversetinker.codex` (todos) ·
 `multiversetinker.archaeology` (todos).
 
+El autocompletado ofrece **todos los ids de ítem registrados** en una sola lista y la filtra según
+escribes, y el prefijo `mvtink_` es opcional en todos sitios: escribiendo `tin` aparecen `mvtink_tin`,
+`mvtink_tin_ingot` y el resto. En `/mvtink craft` las casillas de material aceptan también esos ids
+de ítem, así que un id copiado del codex se puede pegar directamente.
+
 ---
 
 ## ⚙️ Configuración

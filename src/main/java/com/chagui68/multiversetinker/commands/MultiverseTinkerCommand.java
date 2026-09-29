@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
@@ -31,6 +32,12 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
     /** Opens the Alloy Codex; granted to everyone by default, because it is reference material. */
     public static final String CODEX_PERMISSION = "multiversetinker.codex";
+
+    /** Item-id suffixes that are not item kinds but still resolve to the same material. */
+    private static final List<String> LEGACY_ALIASES = List.of("_processed", "_handle", "_pommel");
+
+    /** Prefix every registered id carries, optional in every command argument. */
+    private static final String ID_PREFIX = "mvtink_";
 
     private final MultiverseTinker plugin;
     private final MaterialRegistry materialRegistry;
@@ -252,14 +259,47 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private TinkerMaterial parseMaterial(String id) {
+    /**
+     * Resolves any id the command understands to the material it is made of.
+     *
+     * <p>Besides a material's own id ({@code tin}, {@code mvtink_tin}), the item kinds and legacy
+     * aliases that belong to it resolve to the same material: {@code tin_ingot}, {@code tin_head},
+     * {@code tin_processed}… all mean Tin. That is what lets {@code /mvtink craft} accept an id copied
+     * straight out of the codex instead of forcing the player to strip it first.</p>
+     */
+    @Nullable
+    private TinkerMaterial parseMaterial(@Nullable String id) {
         if (id == null) return null;
-        String clean = id.toLowerCase(Locale.ROOT);
-        if (!clean.startsWith("mvtink_")) {
-            TinkerMaterial tm = materialRegistry.get("mvtink_" + clean);
-            if (tm != null) return tm;
+        String clean = id.toLowerCase(Locale.ROOT).trim();
+        if (clean.isEmpty()) return null;
+
+        TinkerMaterial direct = resolveMaterial(clean);
+        if (direct != null) return direct;
+
+        // Strip the kind suffix the registry itself appends (raw, ingot, head, molten bucket…).
+        for (TinkerItemRegistry.ItemKind kind : TinkerItemRegistry.ItemKind.values()) {
+            String suffix = kind.getSuffix();
+            if (!clean.endsWith(suffix)) continue;
+            TinkerMaterial stripped = resolveMaterial(clean.substring(0, clean.length() - suffix.length()));
+            if (stripped != null) return stripped;
         }
-        return materialRegistry.get(clean);
+
+        // And the three legacy aliases that still resolve in the registry.
+        for (String alias : LEGACY_ALIASES) {
+            if (!clean.endsWith(alias)) continue;
+            TinkerMaterial stripped = resolveMaterial(clean.substring(0, clean.length() - alias.length()));
+            if (stripped != null) return stripped;
+        }
+        return null;
+    }
+
+    /** Looks a material up by exact id, tolerating a missing {@code mvtink_} prefix. */
+    @Nullable
+    private TinkerMaterial resolveMaterial(@Nonnull String id) {
+        TinkerMaterial byId = materialRegistry.get(id);
+        if (byId != null) return byId;
+        if (id.startsWith("mvtink_")) return null;
+        return materialRegistry.get("mvtink_" + id);
     }
 
     private void handleCraftWeapon(Player player, String[] args) {
@@ -468,17 +508,16 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
             }
         }
 
-        if (args.length >= 4 && args.length <= 6 && args[0].equalsIgnoreCase("craft")) {
-            // Only materials here: the tier has its own argument at position 7.
-            List<String> mats = new ArrayList<>();
-            for (TinkerMaterial tm : materialRegistry.getAll()) {
-                mats.add(tm.getId().replace("mvtink_", ""));
+        if (args[0].equalsIgnoreCase("craft")) {
+            // Only materials in the part slots: the tier has its own argument, and two-part weapons
+            // reach it one slot earlier than everything else.
+            int tierSlot = craftTierSlot(args);
+            if (args.length == tierSlot) {
+                return filter(Arrays.stream(EvolutionTier.values()).map(Enum::name).toList(), args[tierSlot - 1]);
             }
-            return filter(mats, args[args.length - 1]);
-        }
-
-        if (args.length == 7 && args[0].equalsIgnoreCase("craft")) {
-            return filter(Arrays.stream(EvolutionTier.values()).map(Enum::name).toList(), args[6]);
+            if (args.length >= 4 && args.length < tierSlot) {
+                return filterIds(craftCandidates(), args[args.length - 1]);
+            }
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("forge")) {
@@ -494,51 +533,57 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
-            return filter(giveCandidates(args[2]), args[2]);
+            return filterIds(itemIds(), args[2]);
         }
 
         return Collections.emptyList();
     }
 
     /**
-     * Ids offered by {@code /mvtink give}.
+     * Argument count at which {@code /mvtink craft} expects the tier.
      *
-     * <p>A flat list of every item id is more than two thousand entries long, far more than a
-     * suggestion popup can show — which is why only some materials used to appear. The suggestions
-     * stay hierarchical instead: the base id of every registered material is offered first, and once
-     * a material id is complete its item kinds (raw, ingot, nugget, block, molten bucket and the ten
-     * part types) are offered too. Typing any prefix filters this whole set, so every material this
-     * server knows — catalogued, alloy, forged composite or prime — stays reachable.</p>
+     * <p>A three-part weapon, every tool and every armor piece take three materials and then the
+     * tier, so the tier is argument 7. A two-part weapon (bow, shield) takes two materials, which
+     * moves the tier to argument 6 — without this the material list used to shadow the tier slot and
+     * silently forged the weapon at Wood tier.</p>
      */
-    @Nonnull
-    private List<String> giveCandidates(@Nonnull String typed) {
-        String partial = typed.toLowerCase(Locale.ROOT);
-        List<String> candidates = new ArrayList<>(specialItemIds());
-
-        for (TinkerMaterial material : materialRegistry.getAll()) {
-            String baseId = material.getId().toLowerCase(Locale.ROOT);
-            candidates.add(baseId);
-            if (!partial.equals(baseId)) continue;
-
-            for (TinkerItemRegistry.ItemKind kind : TinkerItemRegistry.ItemKind.values()) {
-                candidates.add(baseId + kind.getSuffix());
-            }
-            candidates.add(baseId + "_processed");
-            candidates.add(baseId + "_handle");
-            candidates.add(baseId + "_pommel");
+    private int craftTierSlot(@Nonnull String[] args) {
+        if (args.length < 3 || !args[1].equalsIgnoreCase("weapon")) return 7;
+        try {
+            return ModularWeaponType.valueOf(args[2].toUpperCase(Locale.ROOT)).isTwoPart() ? 6 : 7;
+        } catch (IllegalArgumentException e) {
+            return 7;
         }
-        return candidates;
     }
 
-    /** The hand-built items that are not derived from a material. */
+    /**
+     * Every id {@code /mvtink give} can hand out, sorted so the list never reshuffles while typing.
+     *
+     * <p>The whole registry is offered in one flat list — every material, its raw, ingot, nugget,
+     * block, molten bucket and ten part kinds, the legacy aliases, the smeltery, the brush and every
+     * cast. Players asked to browse the registry from the command line instead of having to know a
+     * material id before its kinds appeared, so nothing is hidden any more; the client filters and
+     * scrolls the popup.</p>
+     */
     @Nonnull
-    private List<String> specialItemIds() {
+    private List<String> itemIds() {
+        List<String> ids = new ArrayList<>(itemRegistry.getAllItemIds());
+        Collections.sort(ids);
+        return ids;
+    }
+
+    /**
+     * Ids offered in the material slots of {@code /mvtink craft}: every material plus the item kinds
+     * and aliases that {@link #parseMaterial(String)} resolves back to it. Special tools and casts
+     * are left out because they name no forgeable material.
+     */
+    @Nonnull
+    private List<String> craftCandidates() {
         List<String> ids = new ArrayList<>();
-        ids.add("mvtink_smeltery");
-        ids.add("mvtink_brush_prospector");
-        for (CastType cast : CastType.values()) {
-            ids.add(cast.getId().toLowerCase(Locale.ROOT));
+        for (String id : itemRegistry.getAllItemIds()) {
+            if (parseMaterial(id) != null) ids.add(id);
         }
+        Collections.sort(ids);
         return ids;
     }
 
@@ -559,6 +604,30 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         for (String s : list) {
             if (s.toLowerCase(Locale.ROOT).startsWith(lower)) {
                 result.add(s);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Filters item ids, ignoring the optional {@code mvtink_} prefix on both sides.
+     *
+     * <p>The registry always spells ids out in full, so a player typing {@code tin} would otherwise
+     * match nothing at all — the {@code mvtink_} prefix is optional in every command argument, and
+     * the suggestion list has to be just as forgiving.</p>
+     */
+    @Nonnull
+    private List<String> filterIds(@Nonnull List<String> ids, @Nonnull String typed) {
+        String lower = typed.toLowerCase(Locale.ROOT);
+        String bare = lower.startsWith(ID_PREFIX) ? lower.substring(ID_PREFIX.length()) : lower;
+        List<String> result = new ArrayList<>();
+        for (String id : ids) {
+            String candidate = id.toLowerCase(Locale.ROOT);
+            String candidateBare = candidate.startsWith(ID_PREFIX)
+                    ? candidate.substring(ID_PREFIX.length())
+                    : candidate;
+            if (candidate.startsWith(lower) || candidateBare.startsWith(bare)) {
+                result.add(id);
             }
         }
         return result;

@@ -210,6 +210,11 @@ material owns, each entry spelling out the `/mvtink give <player> <id>` line.
 Permissions: `multiversetinker.admin` (op) · `multiversetinker.codex` (everyone) ·
 `multiversetinker.archaeology` (everyone).
 
+Tab completion offers **every registered item id** in one list and filters it as you type, and the
+`mvtink_` prefix is optional everywhere — typing `tin` finds `mvtink_tin`, `mvtink_tin_ingot` and the
+rest. In `/mvtink craft` the material slots accept those item ids too, so an id copied out of the
+codex can be pasted straight in.
+
 ---
 
 ## ⚙️ Configuration
