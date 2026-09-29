@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.archaeology;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
@@ -51,9 +52,10 @@ public class ArchaeologyManager {
             return;
         }
 
-        if (!player.hasPermission("multiversetinker.archaeology")) {
-            player.sendActionBar(miniMessage.deserialize(plugin.getConfig().getString(
-                    "messages.no-permission", "<red>You do not have permission to perform geological archaeology.</red>")));
+        // Who may brush is a server decision: config.yml first ("public", "op" or "permission"), and
+        // the permission node only while it is set to "permission".
+        if (!AccessControl.allows(player, AccessControl.Surface.ARCHAEOLOGY)) {
+            player.sendActionBar(AccessControl.denial(AccessControl.Surface.ARCHAEOLOGY));
             return;
         }
 

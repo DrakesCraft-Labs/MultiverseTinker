@@ -104,6 +104,32 @@ equipment:
   # false -> modular armor keeps the vanilla protection of its tier material
   modular-armor-defense: true
 
+# Who may use each part of the plugin
+#
+# Every surface can be ruled on here, so a server decides with this file alone and needs no
+# permissions plugin:
+#
+#   public     -> every player, no permission node involved
+#   op         -> server operators only
+#   permission -> the node declared in plugin.yml (multiversetinker.codex, .forge, .archaeology,
+#                 .admin), so LuckPerms, PermissionsEx or a permissions.yml can still narrow it
+#
+# Anything unrecognised falls back to the default, so a typo can never lock a server out of its own
+# forge. Changing a value applies on /mvtink reload, no restart.
+access:
+  # Browse the Alloy Codex (/mvtink codex, and the book button in the Alloy Crucible tab)
+  codex: public
+
+  # Use the multiblock Forge, its GUI, the Alloy Crucible and the casting cauldron
+  forge: public
+
+  # Brush minerals out of valid geological blocks
+  archaeology: public
+
+  # The administrative /mvtink subcommands (craft, give, forge, verify, reload) and aiming the
+  # codex at another player
+  admin-commands: permission
+
 # Relative rarity weights for mineral drops
 rarity-weights:
   common: 50
@@ -118,4 +144,10 @@ messages:
   brushing-completed-success: "<gradient:#00ffaa:#00aaff>You discovered a mineral fragment!</gradient>"
   brushing-completed-fail: "<gray>You found only loose rubble and stone dust.</gray>"
   block-in-cooldown: "<red>This geological surface was investigated recently.</red>"
-  no-permission: "<red>You do not have permission to perform geological archaeology.</red>"
+
+  # Refusal shown when access.<surface> is not "public" and the player does not qualify.
+  access-denied:
+    codex: "<red>You do not have permission to open the Alloy Codex.</red>"
+    forge: "<red>You do not have permission to use the Forge and the Alloy Crucible.</red>"
+    archaeology: "<red>You do not have permission to perform geological archaeology.</red>"
+    admin-commands: "<red>You do not have permission to execute this command.</red>"

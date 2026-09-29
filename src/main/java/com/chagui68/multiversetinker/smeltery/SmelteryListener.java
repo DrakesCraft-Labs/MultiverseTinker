@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker.smeltery;
 
+import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import org.bukkit.Material;
@@ -64,7 +65,13 @@ public class SmelteryListener implements Listener {
 
         if (smelteryManager.isSmeltery(block)) {
             event.setCancelled(true);
-            smelteryManager.openGUI(event.getPlayer(), block);
+            Player player = event.getPlayer();
+            // The crucible is the melting half of the Forge, so it follows the same access rule.
+            if (!AccessControl.allows(player, AccessControl.Surface.FORGE)) {
+                player.sendActionBar(AccessControl.denial(AccessControl.Surface.FORGE));
+                return;
+            }
+            smelteryManager.openGUI(player, block);
         }
     }
 

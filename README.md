@@ -143,9 +143,12 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 > `/mvtink` is the plugin's only command name and it registers **no aliases** — nothing else will ever respond to it.
 
 **Permissions:**
-* `multiversetinker.admin` — Access to the administrative `/mvtink` subcommands (`craft`, `give`, `forge`, `verify`, `reload`) (default: `op`).
+* `multiversetinker.admin` — Access to the administrative `/mvtink` subcommands (`craft`, `give`, `forge`, `verify`, `reload`) and to aiming the codex at another player (default: `op`).
+* `multiversetinker.forge` — Allows using the multiverse Forge, its GUI, the Alloy Crucible and the casting cauldron (default: `true`).
 * `multiversetinker.codex` — Allows opening the Alloy Codex, the public reference menu (default: `true`).
 * `multiversetinker.archaeology` — Allows using brushes for geological extraction (default: `true`).
+
+Every one of those surfaces can also be opened to everyone or restricted to operators **from `config.yml`**, so a server never has to install a permissions plugin just to decide who may forge. See [Access control](#-who-may-use-what-access).
 
 ---
 
@@ -234,16 +237,46 @@ When the rule is on, the strike keeps its critical hits, strength and enchantmen
 
 **Armor** works the same way. The piece is built on a vanilla armor item, so the server would otherwise grant the protection of that base material — a diamond-plated helmet used to defend exactly like the tier it happened to be made of. With the rule on, those modifiers are replaced by the rolled **Defense** (from the plate), **Toughness** (from the lining) and **knockback resistance** (from the trim), bound to the slot the piece is worn in, and the vanilla attribute tooltip is hidden so the numbers are not printed twice. The evolution tier is part of the roll, so a piece re-arms with stronger numbers as it levels up.
 
+### 🔐 Who may use what (`access`)
+
+Whether the codex, the forge or the brush is open to everyone is a server decision, not necessarily a permissions-plugin one. Each surface carries a **mode**, and the plugin reads it from `config.yml`, so a server with no permissions plugin still decides who may forge:
+
+| Mode | Who gets in |
+| --- | --- |
+| `public` | **Everyone**, without consulting any permission node. |
+| `op` | **Server operators only** — for a server that runs without a permissions plugin. |
+| `permission` | The node declared in `plugin.yml`, so LuckPerms, PermissionsEx or a vanilla `permissions.yml` can narrow it further. |
+
+| Key | Type | Default | What it controls |
+| --- | --- | --- | --- |
+| `access.codex` | string | `public` | Opening the Alloy Codex — both `/mvtink codex` and the book button in the crucible tab. |
+| `access.forge` | string | `public` | The multiblock Forge, its GUI, the Alloy Crucible and the casting cauldron. |
+| `access.archaeology` | string | `public` | Brushing a valid geological block for minerals. |
+| `access.admin-commands` | string | `permission` | The administrative `/mvtink` subcommands, and aiming the codex at another player. |
+
+```yaml
+access:
+  codex: public
+  forge: public
+  archaeology: public
+  admin-commands: permission
+```
+
+Anything unrecognised (a typo such as `flase`) **falls back to the default** instead of locking the server out of its own forge, and the values a server owner is likely to write are accepted: `everyone` and `all` mean `public`, `ops` and `admin` mean `op`, `node` means `permission`. Refusals are configurable too — `messages.access-denied.codex`, `.forge`, `.archaeology` and `.admin-commands` are MiniMessage strings, so a Spanish server can word them its own way.
+
+The mode applies **before** the permission node: with `access.archaeology: op`, even a player holding `multiversetinker.archaeology` is turned away, and the refusal is the configured message. The opposite is equally true: `access.archaeology: public` never consults the node at all. A plain vanilla anvil is left untouched for players who are not allowed to use the Forge — only the recognised multiblock answers to the rule.
+
 ### 🧭 Other sections
 
 | Section | Purpose |
 | --- | --- |
+| `access` | Who may use each surface: the codex, the forge (GUI, crucible and casting), archaeology and the admin commands, as `public`, `op` or `permission`. |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour, anti-macro cooldown and brush yields. |
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
 | `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage and whether armor defends with the protection rolled from its minerals, or the vanilla material values instead (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: lava consumption chance and the Magma Block heat-source slowdown multiplier. |
 | `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). |
-| `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |
+| `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and the refusal of each surface. |
 
 ---
 

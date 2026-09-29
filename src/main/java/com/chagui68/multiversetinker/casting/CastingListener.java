@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker.casting;
 
+import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.api.ToolPartType;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
@@ -55,6 +56,13 @@ public class CastingListener implements Listener {
 
         // Check if holding a molten liquid bucket
         if (!isMoltenBucket(handItem)) {
+            return;
+        }
+
+        // Casting is the last step of the Forge chain, so it follows access.forge too.
+        if (!AccessControl.allows(player, AccessControl.Surface.FORGE)) {
+            event.setCancelled(true);
+            player.sendActionBar(AccessControl.denial(AccessControl.Surface.FORGE));
             return;
         }
 

@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.forge.gui;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.alloys.TinkerAlloy;
 import com.chagui68.multiversetinker.api.CastType;
@@ -879,6 +880,11 @@ public class ForgeGUI implements InventoryHolder {
         }
         if (rawSlot == SLOT_ALLOY_RECIPES) {
             event.setCancelled(true);
+            // Opening the codex is a decision of its own, so the book button honours access.codex too.
+            if (!AccessControl.allows(player, AccessControl.Surface.CODEX)) {
+                player.sendActionBar(AccessControl.denial(AccessControl.Surface.CODEX));
+                return;
+            }
             if (player.isSneaking()) {
                 // Sneak-click keeps the old chat dump for screenshots and logs.
                 displayAlloyRecipes(player);

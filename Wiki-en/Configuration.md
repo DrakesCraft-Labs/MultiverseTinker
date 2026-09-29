@@ -171,16 +171,74 @@ an armor piece that evolves **re-arms with its new numbers** at the same moment 
 
 ---
 
+## 🔐 Who may use what (`access`)
+
+Whether the codex, the forge or the brush is open to everyone is a server decision, not necessarily a
+permissions-plugin one. Each surface carries a **mode**, read from `config.yml`, so a server that runs no
+permissions plugin still decides who may forge:
+
+| Mode | Who gets in |
+| --- | --- |
+| `public` | **Everyone**, without consulting any permission node. |
+| `op` | **Server operators only** — for a server with no permissions plugin. |
+| `permission` | The node declared in `plugin.yml`, so LuckPerms, PermissionsEx or a vanilla `permissions.yml` can narrow it further. |
+
+| Key | Type | Default | What it controls |
+| --- | --- | --- | --- |
+| `access.codex` | string | `public` | Opening the Alloy Codex — `/mvtink codex` and the book button in the crucible tab alike. |
+| `access.forge` | string | `public` | The multiblock Forge, its GUI, the Alloy Crucible and the casting cauldron. |
+| `access.archaeology` | string | `public` | Brushing a valid geological block for minerals. |
+| `access.admin-commands` | string | `permission` | The administrative `/mvtink` subcommands, and aiming the codex at another player. |
+
+```yaml
+access:
+  codex: public
+  forge: public
+  archaeology: public
+  admin-commands: permission
+```
+
+```yaml
+messages:
+  access-denied:
+    codex: "<red>You do not have permission to open the Alloy Codex.</red>"
+    forge: "<red>You do not have permission to use the Forge and the Alloy Crucible.</red>"
+    archaeology: "<red>You do not have permission to perform geological archaeology.</red>"
+    admin-commands: "<red>You do not have permission to execute this command.</red>"
+```
+
+### Which one wins
+
+The mode is applied **before** the node, and both directions hold:
+
+* `access.archaeology: op` turns away even a player holding `multiversetinker.archaeology`.
+* `access.archaeology: public` never consults the node at all.
+* `access.archaeology: permission` is the classic behaviour: the node decides, and its `default` in `plugin.yml` says who gets it out of the box.
+
+Anything unrecognised falls back to the default, so a typo can never lock a server out of its own forge, and the words a
+server owner is likely to write are accepted: `everyone` and `all` mean `public`, `ops` and `admin` mean `op`, `node`
+means `permission`. Every decision is reported on startup and on `/mvtink reload`:
+
+```
+[MultiverseTinker] Access control — codex: public · forge: public · archaeology: public · admin-commands: permission
+```
+
+A plain vanilla **anvil** is left untouched for a player who may not use the Forge: only a recognised multiblock
+answers to the rule, so the plugin never gets in the way of ordinary anvil repairs.
+
+---
+
 ## 🧭 Other sections
 
 | Section | Purpose |
 | --- | --- |
+| `access` | Who may use the codex, the forge (GUI, crucible and casting), archaeology and the admin commands, as `public`, `op` or `permission`. |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour (`DEGRADE` / `COOLDOWN` / `NONE`), anti-macro cooldown and brush yields. |
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
 | `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage and whether armor defends with the protection rolled from its minerals, or the vanilla material values instead (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: chance to consume the lava source and the Magma Block heat-source slowdown multiplier. |
 | `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). **Reserved:** the archaeology loot table currently rolls on the built-in weights (common 50, uncommon 30, rare 14, epic 5, legendary 1), so editing this key has no effect yet. |
-| `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |
+| `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and the refusal of each surface. |
 
 ---
 

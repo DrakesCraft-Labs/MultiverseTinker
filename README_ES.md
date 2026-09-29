@@ -141,9 +141,12 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 > `/mvtink` es el único nombre de comando del plugin y **no registra alias** — ningún otro nombre responderá.
 
 **Permisos:**
-* `multiversetinker.admin` — Acceso a los subcomandos administrativos de `/mvtink` (`craft`, `give`, `forge`, `verify`, `reload`) (por defecto: `op`).
+* `multiversetinker.admin` — Acceso a los subcomandos administrativos de `/mvtink` (`craft`, `give`, `forge`, `verify`, `reload`) y a apuntar el codex a otro jugador (por defecto: `op`).
+* `multiversetinker.forge` — Permite usar la Forja multibloque, su GUI, el Crisol de Aleaciones y el caldero de moldeo (por defecto: `true`).
 * `multiversetinker.codex` — Permite abrir el Codex de Aleaciones, el menú público de referencia (por defecto: `true`).
 * `multiversetinker.archaeology` — Permite usar la brocha para extracción geológica (por defecto: `true`).
+
+Todas esas superficies se pueden abrir a todos o restringir a operadores **desde `config.yml`**, así que un servidor nunca necesita instalar un plugin de permisos solo para decidir quién puede forjar. Ver [Control de acceso](#-quién-puede-usar-qué-access).
 
 ---
 
@@ -233,16 +236,46 @@ Con la regla activa, el golpe conserva críticos, fuerza y encantamientos: la co
 
 La **armadura** funciona igual. La pieza está construida sobre un ítem de armadura vanilla, así que el servidor otorgaría la protección de ese material base: un casco con placa de diamante defendía exactamente igual que el tier del que estuviera hecho. Con la regla activa, esos modificadores se sustituyen por la **Defensa** calculada (de la placa), la **Dureza** (del forro) y la **resistencia al empuje** (del ribete), atados al hueco en el que se lleva la pieza, y el tooltip vanilla de atributos se oculta para no imprimir los mismos números dos veces. El tier de evolución forma parte del cálculo, así que la pieza se re-arma con números más fuertes a medida que sube de nivel.
 
+### 🔐 Quién puede usar qué (`access`)
+
+Que el codex, la forja o la brocha estén abiertos a todos es una decisión del servidor, no necesariamente de un plugin de permisos. Cada superficie lleva un **modo** y el plugin lo lee de `config.yml`, así que un servidor sin plugin de permisos decide igualmente quién puede forjar:
+
+| Modo | Quién entra |
+| --- | --- |
+| `public` | **Todos**, sin consultar ningún nodo de permiso. |
+| `op` | **Solo operadores** — para un servidor que funciona sin plugin de permisos. |
+| `permission` | El nodo declarado en `plugin.yml`, para que LuckPerms, PermissionsEx o un `permissions.yml` vanilla lo restrinjan más. |
+
+| Clave | Tipo | Por defecto | Qué controla |
+| --- | --- | --- | --- |
+| `access.codex` | string | `public` | Abrir el Codex de Aleaciones — tanto `/mvtink codex` como el botón del libro en la pestaña del Crisol. |
+| `access.forge` | string | `public` | La Forja multibloque, su GUI, el Crisol de Aleaciones y el caldero de moldeo. |
+| `access.archaeology` | string | `public` | Cepillar un bloque geológico válido para extraer minerales. |
+| `access.admin-commands` | string | `permission` | Los subcomandos administrativos de `/mvtink`, y apuntar el codex a otro jugador. |
+
+```yaml
+access:
+  codex: public
+  forge: public
+  archaeology: public
+  admin-commands: permission
+```
+
+Cualquier valor no reconocido (una errata como `flase`) **vuelve al valor por defecto** en lugar de dejarte sin forja, y se aceptan las palabras que un dueño de servidor escribiría: `everyone` y `all` significan `public`, `ops` y `admin` significan `op`, `node` significa `permission`. Los rechazos también son configurables — `messages.access-denied.codex`, `.forge`, `.archaeology` y `.admin-commands` son cadenas MiniMessage, así que cada servidor los redacta a su manera.
+
+El modo se aplica **antes** que el nodo: con `access.archaeology: op`, incluso un jugador con `multiversetinker.archaeology` es rechazado, con el mensaje configurado. Lo contrario también vale: `access.archaeology: public` nunca consulta el nodo. Un yunque vanilla normal no se toca para quien no puede usar la Forja — solo el multibloque reconocido responde a la regla.
+
 ### 🧭 Otras secciones
 
 | Sección | Propósito |
 | --- | --- |
+| `access` | Quién puede usar cada superficie: el codex, la forja (GUI, crisol y moldeo), la arqueología y los comandos de admin, como `public`, `op` o `permission`. |
 | `archaeology` | Sistema de cepillado: interruptor, duración, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque, enfriamiento anti-macro y rendimientos de la brocha. |
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
 | `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado y si la armadura defiende con la protección calculada a partir de sus minerales, o con los valores vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumo de lava y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
 | `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). |
-| `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |
+| `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y el rechazo de cada superficie. |
 
 ---
 

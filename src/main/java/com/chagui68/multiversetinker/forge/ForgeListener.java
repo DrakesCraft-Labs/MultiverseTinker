@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.forge;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI;
 import com.chagui68.multiversetinker.forge.gui.ForgeGUI;
 import com.chagui68.multiversetinker.forge.structure.ForgeStructure;
@@ -54,10 +55,16 @@ public class ForgeListener implements Listener {
         }
 
         Player player = event.getPlayer();
+        // A plain anvil stays vanilla for everyone; only the multiblock Forge answers to access.forge.
+        boolean allowed = AccessControl.allows(player, AccessControl.Surface.FORGE);
 
         // 1. If already recognized as active forge anvil
         if (forgeManager.isForge(block.getLocation())) {
             event.setCancelled(true);
+            if (!allowed) {
+                player.sendActionBar(AccessControl.denial(AccessControl.Surface.FORGE));
+                return;
+            }
             ForgeGUI gui = new ForgeGUI(plugin, itemRegistry, materialRegistry);
             player.openInventory(gui.getInventory());
             return;
@@ -67,6 +74,10 @@ public class ForgeListener implements Listener {
         ForgeStructure.ValidationResult res = forgeManager.checkForge(block.getLocation());
         if (res.isValid()) {
             event.setCancelled(true);
+            if (!allowed) {
+                player.sendActionBar(AccessControl.denial(AccessControl.Surface.FORGE));
+                return;
+            }
             forgeManager.activateForge(block.getLocation(), player);
             ForgeGUI gui = new ForgeGUI(plugin, itemRegistry, materialRegistry);
             player.openInventory(gui.getInventory());

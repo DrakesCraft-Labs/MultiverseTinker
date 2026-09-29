@@ -1,0 +1,204 @@
+package com.chagui68.multiversetinker.access;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.EnumMap;
+import java.util.Locale;
+import java.util.StringJoiner;
+
+/**
+ * Decides who may use each part of the plugin, straight from {@code config.yml}.
+ *
+ * <p>A server that runs no permissions plugin still has to decide who may forge, browse the codex or
+ * brush stone, so every surface carries a {@link Mode}: {@code public} leaves it open to everyone,
+ * {@code op} restricts it to operators, and {@code permission} hands the decision to the node
+ * declared in {@code plugin.yml} (so LuckPerms, PermissionsEx or the vanilla {@code permissions.yml}
+ * can narrow it further). The defaults reproduce the historical behaviour of the plugin exactly, so
+ * an untouched config changes nothing.</p>
+ */
+public final class AccessControl {
+
+    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
+
+    /** Every part of the plugin a server owner can rule on. */
+    public enum Surface {
+
+        /** Opening the Alloy Codex, from {@code /mvtink codex} or the book button in the crucible. */
+        CODEX("codex", "multiversetinker.codex", Mode.PUBLIC,
+                "<red>You do not have permission to open the Alloy Codex.</red>"),
+
+        /** The multiblock Forge, its GUI, the Alloy Crucible and the casting cauldron. */
+        FORGE("forge", "multiversetinker.forge", Mode.PUBLIC,
+                "<red>You do not have permission to use the Forge and the Alloy Crucible.</red>"),
+
+        /** Brushing a valid geological block for minerals. */
+        ARCHAEOLOGY("archaeology", "multiversetinker.archaeology", Mode.PUBLIC,
+                "<red>You do not have permission to perform geological archaeology.</red>"),
+
+        /** The administrative {@code /mvtink} subcommands, and aiming the codex at another player. */
+        ADMIN_COMMANDS("admin-commands", "multiversetinker.admin", Mode.PERMISSION,
+                "<red>You do not have permission to execute this command.</red>");
+
+        private final String key;
+        private final String permission;
+        private final Mode defaultMode;
+        private final String defaultMessage;
+
+        Surface(@Nonnull String key, @Nonnull String permission, @Nonnull Mode defaultMode,
+                @Nonnull String defaultMessage) {
+            this.key = key;
+            this.permission = permission;
+            this.defaultMode = defaultMode;
+            this.defaultMessage = defaultMessage;
+        }
+
+        /** Path of the mode in {@code config.yml}. */
+        @Nonnull
+        public String configKey() {
+            return "access." + key;
+        }
+
+        /** Path of the refusal message in {@code config.yml}. */
+        @Nonnull
+        public String messageKey() {
+            return "messages.access-denied." + key;
+        }
+
+        /** Node that decides this surface while it is configured as {@link Mode#PERMISSION}. */
+        @Nonnull
+        public String permission() {
+            return permission;
+        }
+
+        @Nonnull
+        public Mode defaultMode() {
+            return defaultMode;
+        }
+
+        @Nonnull
+        public String defaultMessage() {
+            return defaultMessage;
+        }
+
+        /** How this surface is named in logs and documentation. */
+        @Nonnull
+        public String getKey() {
+            return key;
+        }
+    }
+
+    /** Who a surface answers to. */
+    public enum Mode {
+
+        /** Every player, without ever asking a permissions plugin. */
+        PUBLIC,
+
+        /** The permission node declared in {@code plugin.yml}. */
+        PERMISSION,
+
+        /** Server operators only, for nodes a permissions plugin should stay out of. */
+        OP;
+
+        /**
+         * Reads a mode from config, accepting the synonyms a server owner is likely to write and
+         * falling back (never throwing) on anything unrecognised, so a typo cannot lock a server out
+         * of its own forge.
+         */
+        @Nonnull
+        public static Mode parse(@Nullable String raw, @Nonnull Mode fallback) {
+            if (raw == null) return fallback;
+
+            String value = raw.trim().toUpperCase(Locale.ROOT);
+            for (Mode mode : values()) {
+                if (mode.name().equals(value)) return mode;
+            }
+            return switch (value) {
+                case "EVERYONE", "ALL", "TRUE", "YES" -> PUBLIC;
+                case "OPS", "OPERATOR", "OPERATORS", "ADMIN", "ADMINS" -> OP;
+                case "PERM", "PERMS", "NODE" -> PERMISSION;
+                default -> fallback;
+            };
+        }
+
+        /** How the mode is spelled in {@code config.yml}. */
+        @Nonnull
+        public String configName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+    }
+
+    private static final EnumMap<Surface, Mode> MODES = new EnumMap<>(Surface.class);
+    private static final EnumMap<Surface, String> MESSAGES = new EnumMap<>(Surface.class);
+
+    static {
+        reset();
+    }
+
+    private AccessControl() {
+    }
+
+    /**
+     * Applies the {@code access} and {@code messages.access-denied} sections of {@code config.yml}.
+     * Called on enable and again by {@code /mvtink reload}, so a server never has to restart.
+     */
+    public static void configure(@Nullable ConfigurationSection config) {
+        reset();
+        if (config == null) return;
+
+        for (Surface surface : Surface.values()) {
+            MODES.put(surface, Mode.parse(config.getString(surface.configKey()), surface.defaultMode()));
+            MESSAGES.put(surface, config.getString(surface.messageKey(), surface.defaultMessage()));
+        }
+    }
+
+    /** Restores the shipped defaults, used before any config is read and by the tests. */
+    public static void reset() {
+        for (Surface surface : Surface.values()) {
+            MODES.put(surface, surface.defaultMode());
+            MESSAGES.put(surface, surface.defaultMessage());
+        }
+    }
+
+    @Nonnull
+    public static Mode mode(@Nonnull Surface surface) {
+        return MODES.getOrDefault(surface, surface.defaultMode());
+    }
+
+    /** True while the surface is open to every player, whatever their permissions. */
+    public static boolean isPublic(@Nonnull Surface surface) {
+        return mode(surface) == Mode.PUBLIC;
+    }
+
+    /**
+     * Whether this sender may use the surface under the configured mode. Console is always allowed:
+     * a mode is about players, and the server console already has full access to plugin.yml.
+     */
+    public static boolean allows(@Nonnull CommandSender sender, @Nonnull Surface surface) {
+        return switch (mode(surface)) {
+            case PUBLIC -> true;
+            case OP -> sender.isOp();
+            case PERMISSION -> sender.hasPermission(surface.permission());
+        };
+    }
+
+    /** The refusal a denied player sees, in their own server's wording. */
+    @Nonnull
+    public static Component denial(@Nonnull Surface surface) {
+        return MINI_MESSAGE.deserialize(MESSAGES.getOrDefault(surface, surface.defaultMessage()));
+    }
+
+    /** One-line report of every surface, for the log and {@code /mvtink verify}. */
+    @Nonnull
+    public static String summary() {
+        StringJoiner joiner = new StringJoiner(" · ");
+        for (Surface surface : Surface.values()) {
+            joiner.add(surface.getKey() + ": " + mode(surface).configName());
+        }
+        return joiner.toString();
+    }
+}

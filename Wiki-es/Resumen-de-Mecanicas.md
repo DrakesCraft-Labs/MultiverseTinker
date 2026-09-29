@@ -38,7 +38,7 @@ mineral de esa dimensión.
 | **Qué mineral** | Ponderado por rareza (común 50, poco común 30, raro 14, épico 5, legendario 1). La brocha de prospector **duplica** el peso de los raros, épicos y legendarios |
 | **Estado del bloque** | `archaeology.block-behavior`: `DEGRADE` (stone → cobblestone → gravel → aire), `COOLDOWN` o `NONE` |
 | **Anti-macro** | Cada bloque tiene su temporizador `block-cooldown-seconds` (15s) |
-| **Coste** | `brush-durability-cost` de durabilidad por extracción; requiere `multiversetinker.archaeology` (por defecto **true**) |
+| **Coste** | `brush-durability-cost` de durabilidad por extracción; `access.archaeology` decide quién puede cepillar (**public** por defecto) |
 
 Todos los minerales que puede soltar, con sus rasgos, están en la
 **[Referencia de Materiales](Fuentes-de-Materiales.md)**.
@@ -224,8 +224,10 @@ la brocha y los moldes no pertenecen a ningún material, cualquier filtro activo
 | `/mvtink verify` | admin | Diagnostica el registro de ítems |
 | `/mvtink reload` | admin | Recarga config, ítems y loot |
 
-Permisos: `multiversetinker.admin` (op) · `multiversetinker.codex` (todos) ·
-`multiversetinker.archaeology` (todos).
+Permisos: `multiversetinker.admin` (op) · `multiversetinker.forge` (todos) ·
+`multiversetinker.codex` (todos) · `multiversetinker.archaeology` (todos) — y el bloque `access` de
+`config.yml` abre o cierra cada una de esas cuatro superficies como **public**, **op** o **permission**, así que
+un servidor decide sin instalar un plugin de permisos. Ver **[Configuración](Configuracion.md#-quién-puede-usar-qué-access)**.
 
 El autocompletado ofrece **todos los ids de ítem registrados** en una sola lista y la filtra según
 escribes, y el prefijo `mvtink_` es opcional en todos sitios: escribiendo `tin` aparecen `mvtink_tin`,

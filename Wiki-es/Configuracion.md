@@ -174,16 +174,74 @@ reescribe su lore.
 
 ---
 
+## 🔐 Quién puede usar qué (`access`)
+
+Que el codex, la forja o la brocha estén abiertos a todos es una decisión del servidor, no necesariamente de un
+plugin de permisos. Cada superficie lleva un **modo**, leído de `config.yml`, así que un servidor sin plugin de
+permisos decide igualmente quién puede forjar:
+
+| Modo | Quién entra |
+| --- | --- |
+| `public` | **Todos**, sin consultar ningún nodo de permiso. |
+| `op` | **Solo operadores** — para un servidor sin plugin de permisos. |
+| `permission` | El nodo declarado en `plugin.yml`, para que LuckPerms, PermissionsEx o un `permissions.yml` vanilla lo restrinjan más. |
+
+| Clave | Tipo | Por defecto | Qué controla |
+| --- | --- | --- | --- |
+| `access.codex` | string | `public` | Abrir el Codex de Aleaciones — tanto `/mvtink codex` como el botón del libro en la pestaña del Crisol. |
+| `access.forge` | string | `public` | La Forja multibloque, su GUI, el Crisol de Aleaciones y el caldero de moldeo. |
+| `access.archaeology` | string | `public` | Cepillar un bloque geológico válido para extraer minerales. |
+| `access.admin-commands` | string | `permission` | Los subcomandos administrativos de `/mvtink`, y apuntar el codex a otro jugador. |
+
+```yaml
+access:
+  codex: public
+  forge: public
+  archaeology: public
+  admin-commands: permission
+```
+
+```yaml
+messages:
+  access-denied:
+    codex: "<red>No tienes permiso para abrir el Codex de Aleaciones.</red>"
+    forge: "<red>No tienes permiso para usar la Forja y el Crisol de Aleaciones.</red>"
+    archaeology: "<red>No tienes permiso para hacer arqueología geológica.</red>"
+    admin-commands: "<red>No tienes permiso para ejecutar este comando.</red>"
+```
+
+### Cuál manda
+
+El modo se aplica **antes** que el nodo, y valen las dos direcciones:
+
+* `access.archaeology: op` rechaza incluso a un jugador con `multiversetinker.archaeology`.
+* `access.archaeology: public` nunca consulta el nodo.
+* `access.archaeology: permission` es el comportamiento clásico: decide el nodo, y su `default` en `plugin.yml` dice quién lo tiene de fábrica.
+
+Cualquier valor no reconocido vuelve al valor por defecto, así que una errata nunca deja a un servidor sin forja, y se
+aceptan las palabras que un dueño escribiría: `everyone` y `all` significan `public`, `ops` y `admin` significan `op`,
+`node` significa `permission`. Cada decisión se reporta al arrancar y en `/mvtink reload`:
+
+```
+[MultiverseTinker] Access control — codex: public · forge: public · archaeology: public · admin-commands: permission
+```
+
+Un **yunque** vanilla normal no se toca para quien no puede usar la Forja: solo un multibloque reconocido responde a
+la regla, así que el plugin nunca estorba al reparar en un yunque cualquiera.
+
+---
+
 ## 🧭 Otras secciones
 
 | Sección | Propósito |
 | --- | --- |
+| `access` | Quién puede usar el codex, la forja (GUI, crisol y moldeo), la arqueología y los comandos de admin, como `public`, `op` o `permission`. |
 | `archaeology` | Sistema de cepillado: interruptor, duración del cepillado, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque (`DEGRADE` / `COOLDOWN` / `NONE`), enfriamiento anti-macro y rendimientos de la brocha. |
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
 | `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado y si la armadura defiende con la protección calculada a partir de sus minerales, o con los valores vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumir la lava fuente y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
 | `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). **Reservado:** hoy la tabla de botín de arqueología usa los pesos internos (común 50, poco común 30, raro 14, épico 5, legendario 1), así que editar esta clave todavía no tiene efecto. |
-| `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |
+| `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y el rechazo de cada superficie. |
 
 ---
 

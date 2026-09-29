@@ -1,6 +1,8 @@
 package com.chagui68.multiversetinker.commands;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.access.AccessControl;
+import com.chagui68.multiversetinker.access.AccessControl.Surface;
 import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
@@ -28,11 +30,11 @@ import java.util.*;
 
 public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
-    /** Full access to every administrative subcommand. */
-    public static final String ADMIN_PERMISSION = "multiversetinker.admin";
+    /** Full access to every administrative subcommand, while {@code access.admin-commands} says so. */
+    public static final String ADMIN_PERMISSION = Surface.ADMIN_COMMANDS.permission();
 
     /** Opens the Alloy Codex; granted to everyone by default, because it is reference material. */
-    public static final String CODEX_PERMISSION = "multiversetinker.codex";
+    public static final String CODEX_PERMISSION = Surface.CODEX.permission();
 
     /** Item-id suffixes that are not item kinds but still resolve to the same material. */
     private static final List<String> LEGACY_ALIASES = List.of("_processed", "_handle", "_pommel");
@@ -56,7 +58,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {
         if (args.length == 0) {
-            if (sender.hasPermission(ADMIN_PERMISSION)) {
+            if (AccessControl.allows(sender, Surface.ADMIN_COMMANDS)) {
                 sendHelp(sender, label);
             } else {
                 sendPublicHelp(sender, label);
@@ -71,10 +73,13 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
             return openCodex(sender, label, args);
         }
 
-        if (!sender.hasPermission(ADMIN_PERMISSION)) {
-            sender.sendMessage(miniMessage.deserialize("<red>You do not have permission to execute this command.</red>"));
-            sender.sendMessage(miniMessage.deserialize("<gray>Players can browse the Alloy Codex with </gray><yellow>/"
-                    + label + " codex</yellow><gray>.</gray>"));
+        if (!AccessControl.allows(sender, Surface.ADMIN_COMMANDS)) {
+            sender.sendMessage(AccessControl.denial(Surface.ADMIN_COMMANDS));
+            // Only point at the codex while the player is actually allowed to open it.
+            if (AccessControl.allows(sender, Surface.CODEX)) {
+                sender.sendMessage(miniMessage.deserialize("<gray>Players can browse the Alloy Codex with </gray><yellow>/"
+                        + label + " codex</yellow><gray>.</gray>"));
+            }
             return true;
         }
 
@@ -84,6 +89,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 plugin.applyLoreSettings();
                 plugin.applyAnimationSettings();
                 plugin.applyEquipmentSettings();
+                plugin.applyAccessSettings();
                 plugin.getArchaeologyManager().getLootTable().reload();
                 itemRegistry.reload();
                 // Forged alloys are named after their parents, so their words are re-derived on reload.
@@ -429,14 +435,14 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
      * admins.</p>
      */
     private boolean openCodex(@Nonnull CommandSender sender, @Nonnull String label, @Nonnull String[] args) {
-        if (!sender.hasPermission(CODEX_PERMISSION)) {
-            sender.sendMessage(miniMessage.deserialize("<red>You do not have permission to open the Alloy Codex.</red>"));
+        if (!AccessControl.allows(sender, Surface.CODEX)) {
+            sender.sendMessage(AccessControl.denial(Surface.CODEX));
             return true;
         }
 
         Player viewer;
         if (args.length >= 2) {
-            if (!sender.hasPermission(ADMIN_PERMISSION)) {
+            if (!AccessControl.allows(sender, Surface.ADMIN_COMMANDS)) {
                 sender.sendMessage(miniMessage.deserialize("<red>Only admins may open the codex for another player.</red>"));
                 return true;
             }
@@ -464,6 +470,12 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
     /** Help shown to players without the admin permission: the codex is the public entry point. */
     private void sendPublicHelp(CommandSender sender, String label) {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker (Chagui68) ===</gold>"));
+        if (!AccessControl.allows(sender, Surface.CODEX)) {
+            // A server can close the codex; promising it here would only be a dead end.
+            sender.sendMessage(miniMessage.deserialize("<gray>There is nothing here for you.</gray>"));
+            sender.sendMessage(miniMessage.deserialize("<gray>Ask an administrator for access to this server's forge.</gray>"));
+            return;
+        }
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " codex</yellow> <gray>- Open the Alloy Codex: mineral catalog, legendary recipes, catalysts, forged alloys, the combination explorer and the totals.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<gray>It is also reachable from the book button in the Alloy Crucible tab of the Forge.</gray>"));
     }
@@ -481,18 +493,24 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String alias, @Nonnull String[] args) {
         if (args.length == 1) {
-            List<String> subcommands = sender.hasPermission(ADMIN_PERMISSION)
-                    ? List.of("craft", "give", "forge", "codex", "verify", "reload")
-                    : List.of("codex");
+            List<String> subcommands;
+            if (AccessControl.allows(sender, Surface.ADMIN_COMMANDS)) {
+                subcommands = List.of("craft", "give", "forge", "codex", "verify", "reload");
+            } else if (AccessControl.allows(sender, Surface.CODEX)) {
+                subcommands = List.of("codex");
+            } else {
+                // Nothing this sender may run, so nothing is suggested.
+                subcommands = List.of();
+            }
             return filter(subcommands, args[0]);
         }
 
         // Admins may aim the codex at a player: their names are the suggestions.
         if (args.length == 2 && args[0].equalsIgnoreCase("codex")) {
-            return sender.hasPermission(ADMIN_PERMISSION) ? null : Collections.emptyList();
+            return AccessControl.allows(sender, Surface.ADMIN_COMMANDS) ? null : Collections.emptyList();
         }
 
-        if (!sender.hasPermission(ADMIN_PERMISSION)) {
+        if (!AccessControl.allows(sender, Surface.ADMIN_COMMANDS)) {
             return Collections.emptyList();
         }
 

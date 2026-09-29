@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker;
 
+import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.archaeology.ArchaeologyListener;
@@ -58,6 +59,7 @@ public class MultiverseTinker extends JavaPlugin {
         applyLoreSettings();
         applyAnimationSettings();
         applyEquipmentSettings();
+        applyAccessSettings();
 
         getLogger().info("========================================");
         getLogger().info("   MultiverseTinker - Paper 1.21+       ");
@@ -187,6 +189,18 @@ public class MultiverseTinker extends JavaPlugin {
                 + (TinkerItemBuilder.isModularArmorDefense()
                         ? "rolled from the forged minerals (Defense, Toughness, knockback)."
                         : "left at the vanilla values of the tier material."));
+    }
+
+    /**
+     * Applies the access rules of {@code config.yml}.
+     *
+     * <p>Who may forge, browse or brush is a server decision, so it lives in the config rather than in
+     * the permission nodes alone: a server without a permissions plugin can open or close each surface
+     * here, and a server with one keeps the fine-grained nodes. Re-read by {@code /mvtink reload}.</p>
+     */
+    public void applyAccessSettings() {
+        AccessControl.configure(getConfig());
+        getLogger().info("Access control — " + AccessControl.summary());
     }
 
     private void registerRecipes() {

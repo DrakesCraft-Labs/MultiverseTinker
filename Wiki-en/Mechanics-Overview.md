@@ -36,7 +36,7 @@ dimension.
 | **Which mineral** | Weighted by rarity (common 50, uncommon 30, rare 14, epic 5, legendary 1). The prospector brush **doubles** the weight of rare, epic and legendary minerals |
 | **Block after** | `archaeology.block-behavior`: `DEGRADE` (stone → cobblestone → gravel → air), `COOLDOWN`, or `NONE` |
 | **Anti-macro** | Every block has a `block-cooldown-seconds` (15s) per-block timer |
-| **Cost** | `brush-durability-cost` durability per extraction; requires `multiversetinker.archaeology` (default **true**) |
+| **Cost** | `brush-durability-cost` durability per extraction; `access.archaeology` decides who may brush at all (**public** by default) |
 
 Every mineral it can drop, with its traits, is listed in the **[Material Reference](Material-Reference.md)**.
 
@@ -217,8 +217,10 @@ the brush and the casts belong to no material at all, any active filter hides th
 | `/mvtink verify` | admin | Diagnoses the item registry |
 | `/mvtink reload` | admin | Reloads config, items and loot |
 
-Permissions: `multiversetinker.admin` (op) · `multiversetinker.codex` (everyone) ·
-`multiversetinker.archaeology` (everyone).
+Permissions: `multiversetinker.admin` (op) · `multiversetinker.forge` (everyone) ·
+`multiversetinker.codex` (everyone) · `multiversetinker.archaeology` (everyone) — and the `access` block of
+`config.yml` opens or closes each of those four surfaces as **public**, **op** or **permission**, so a server
+decides without installing a permissions plugin. See **[Configuration](Configuration.md#-who-may-use-what-access)**.
 
 Tab completion offers **every registered item id** in one list and filters it as you type, and the
 `mvtink_` prefix is optional everywhere — typing `tin` finds `mvtink_tin`, `mvtink_tin_ingot` and the
