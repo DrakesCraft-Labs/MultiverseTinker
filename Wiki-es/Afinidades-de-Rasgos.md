@@ -71,8 +71,8 @@ Bronce (Cobre + Estaño) -> Terrain (Cobre) + Primal (Cobre)
 
 **Además, una aleación *es* sus padres en cuanto a esencia.** Cuando se vierte un lingote forjado,
 las esencias de sus dos minerales se funden en la identidad propia de la aleación (hasta 3,
-ordenadas por prioridad dimensional), así que una cabeza de aleación nombra el perk del arma igual
-que lo haría su mineral:
+ordenadas por prioridad dimensional), así que una cabeza de aleación aporta la esencia de identidad
+del arma igual que lo haría su mineral:
 
 | Aleación | Padres | Identidad de esencia |
 |---|---|---|
@@ -93,25 +93,32 @@ rasgo exclusivo curado por encima de las afinidades heredadas.
 ## ⚔️ Perks de arma según los materiales
 
 Cada arma modular conserva una **mecánica característica** según su tipo (Tajo Enlazado, Piercing
-Velocity, Oleada Hidráulica, …), pero la **esencia que nombra e impulsa ese perk proviene de los
-materiales con los que fue forjada**:
+Velocity, Oleada Hidráulica, …). El **nombre del perk proviene de todos los minerales con los que se
+forjó** (ver [Nombres de Perk](Nombres-de-Perk.md)), mientras la **esencia que lo impulsa viene del
+mineral de la cabeza**:
 
 | Pieza | Influencia sobre el perk |
 |---|---|
+| **Todas las partes** | Aporta el **epíteto** de su propio mineral, así el nombre identifica el build completo. |
 | **Cabeza** (hoja, brazos del arco, dientes, mazo, placa del escudo) | Decide la **esencia de identidad** del arma — la esencia de mayor rango que enseña su mineral. |
 | **Empuñadura / Pomo** (varilla, cuerda, atadura, umbón) | Deciden la **potencia**: cuánta parte del arma forjada porta realmente esa esencia. |
 
-Así, el perk se muestra como `<Esencia> <Mecánica>`:
+Así, el perk se muestra como `<epítetos> <Mecánica>`:
 
 | Mineral de la cabeza | Perk resultante |
 |---|---|
-| Cobalto (Nether) | **Infernal Piercing Velocity** — los virotes incendian lo que golpean. |
-| Piedra del Vacío (End) | **Void Piercing Velocity** — el impacto arrastra a los enemigos. |
-| Diamante (gema vanilla) | **Radiant Tajo Enlazado** — los enemigos alcanzados quedan marcados con Brillantez. |
-| Hierro (metal vanilla) | **Tempered Tajo Enlazado** — filo endurecido con daño extra. |
-| Rubí (gema del Overworld) | **Terrain Embestida de Justa** — los golpes terrosos ralentizan al objetivo. |
-| Manyullyn (aleación del Nether) | **Infernal Tajo Enlazado** — la aleación pelea con las esencias de sus minerales padre, no con una esencia metálica genérica. |
-| Void Damascus (aleación Nether + End) | **Void Tajo Enlazado** — la esencia de vacío del padre del End gana la identidad. |
+| Cobalto (Nether) | **Lightfooted … Piercing Velocity** — la esencia Infernal de la cabeza incendia los virotes. |
+| Piedra del Vacío (End) | **Warping … Piercing Velocity** — la esencia Void de la cabeza arrastra a los enemigos. |
+| Diamante (gema vanilla) | **Adamant Tajo Enlazado** — la esencia Radiant de la cabeza marca a los enemigos con Brillantez. |
+| Hierro (metal vanilla) | **Ironclad Tajo Enlazado** — la esencia Tempered de la cabeza endurece el filo. |
+| Rubí (gema del Overworld) | **Rubicund Embestida de Justa** — la esencia Terrain de la cabeza ralentiza al objetivo. |
+| Manyullyn (aleación del Nether) | **Insatiable Tajo Enlazado** — la aleación pelea con las esencias de sus minerales padre, no con una esencia metálica genérica. |
+| Void Damascus (aleación Nether + End) | **Damascened Tajo Enlazado** — la esencia de vacío del padre del End gana la identidad. |
+
+> 🔎 **¿Por qué el mineral y no solo la esencia?** La Amatista y el Diamante enseñan *exactamente las
+> mismas esencias*, así que nombrar el perk solo con la esencia daba el mismo nombre a dos builds
+> realmente distintos. Cada mineral tiene un epíteto único ([los 139](Nombres-de-Perk.md)), así que solo
+> dos builds idénticos comparten nombre.
 
 Justo debajo del perk verás `• Essence Focus: <Esencia> essence (<n>%)`, la proporción de la masa
 forjada del arma que porta la esencia de identidad. Un arma hecha íntegramente de un solo mineral

@@ -10,6 +10,7 @@ import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.PerkEpithet;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.tools.WeaponPerkProfile;
 import net.kyori.adventure.text.Component;
@@ -146,7 +147,7 @@ class WeaponPerkAuditTest {
     }
 
     @Test
-    @DisplayName("Every weapon perk changes when the head mineral changes")
+    @DisplayName("Every weapon perk is named after the minerals it was forged from")
     void testWeaponPerkVariesWithHeadMineral() {
         TinkerMaterial cobalt = registry.get("mvtink_cobalt");   // Nether  -> Infernal
         TinkerMaterial voidstone = registry.get("mvtink_voidstone"); // The End -> Void
@@ -172,10 +173,10 @@ class WeaponPerkAuditTest {
                     type + " must keep its signature perk name, got: " + infernalPerk);
             assertTrue(voidPerk.contains(WeaponPerkProfile.baseName(type)),
                     type + " must keep its signature perk name, got: " + voidPerk);
-            assertTrue(infernalPerk.startsWith("Infernal "),
-                    type + " forged from a Nether mineral must read as Infernal, got: " + infernalPerk);
-            assertTrue(voidPerk.startsWith("Void "),
-                    type + " forged from an End mineral must read as Void, got: " + voidPerk);
+            assertTrue(infernalPerk.startsWith(PerkEpithet.of(cobalt) + " "),
+                    type + " must lead with the epithet of the head mineral it was forged from, got: " + infernalPerk);
+            assertTrue(voidPerk.startsWith(PerkEpithet.of(voidstone) + " "),
+                    type + " must lead with the epithet of the head mineral it was forged from, got: " + voidPerk);
             assertNotEquals(infernalPerk, voidPerk,
                     type + " perk must vary with the minerals it is forged from");
 

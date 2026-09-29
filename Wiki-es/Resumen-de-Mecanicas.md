@@ -165,8 +165,9 @@ rotos y las armaduras con daño absorbido.
 
 Cada material enseña hasta **3 esencias deterministas** (Infernal, Void, Primal, Terrain, Tempered,
 Radiant, Resonant, Volatile, Swift, Brutal, Bulwark, Ascendant) que se comportan distinto en armas,
-herramientas y armaduras — ver [Afinidades de Rasgos](Afinidades-de-Rasgos.md). La **cabeza** nombra el
-perk, el **mango/pomo** fijan su potencia, y un **80% de enfoque de esencia** desbloquea el
+herramientas y armaduras — ver [Afinidades de Rasgos](Afinidades-de-Rasgos.md). **Todos** los
+minerales nombran el perk (ver [Nombres de Perk](Nombres-de-Perk.md)), la **cabeza** posee su esencia
+de identidad, el **mango/pomo** fijan su potencia, y un **80% de enfoque de esencia** desbloquea el
 **[ultimate](Ultimates-de-Esencia.md)** de esa esencia.
 
 Cada uno de los **16 tipos de equipo** tiene su propia coreografía de partículas y sonido, que se

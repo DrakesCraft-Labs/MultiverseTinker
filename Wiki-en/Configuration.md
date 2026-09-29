@@ -46,11 +46,12 @@ Wrapped continuation rows get a **hanging indent**, so a row that started with `
 own text instead of under the bullet:
 
 ```
-✦ Weapon Perk: Infernal Sweeping
-  Cleave: hits multiple adjacent foes
-  and chains elemental traits. Imbued
-  essence: searing hits that set
-  foes ablaze.
+✦ Weapon Perk: Fluxforged Resonant Auric
+  Sweeping Cleave: hits multiple
+  adjacent foes and chains elemental
+  traits. Imbued with Infernal,
+  Tempered, Swift essence: searing
+  hits that set foes ablaze.
 ```
 
 ### Turning it off
@@ -186,6 +187,7 @@ an armor piece that evolves **re-arms with its new numbers** at the same moment 
 ## 🔗 Related pages
 
 * **[Forge GUI & Modular Equipment Guide](Forge-GUI-Guide.md)**: what the wrapped lore actually prints — perks, essence focus, trait channels and the exclusive animation of every type.
+* **[Perk Names](Perk-Names.md)**: the 139 mineral epithets that name every perk, and why the minerals — not just the essence — decide it.
 * **[Traits & Mineral Effects](Traits-and-Effects.md)**: the trait and affinity reference behind those lore rows.
 * **[Prime Alloys](Prime-Alloys.md)**: the `dynamic-alloys.yml` file that stores player-forged primes across restarts.
 * **[Mechanics Overview](Mechanics-Overview.md)**: every mechanic, item and command the keys above configure.

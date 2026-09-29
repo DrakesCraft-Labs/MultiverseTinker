@@ -45,11 +45,14 @@ public final class PerkFocus {
 
     private final TraitAffinity affinity;
     private final List<TraitAffinity> headEssences;
+    private final List<String> epithets;
     private final double potency;
 
-    private PerkFocus(@Nonnull TraitAffinity affinity, @Nonnull List<TraitAffinity> headEssences, double potency) {
+    private PerkFocus(@Nonnull TraitAffinity affinity, @Nonnull List<TraitAffinity> headEssences,
+                      @Nonnull List<String> epithets, double potency) {
         this.affinity = affinity;
         this.headEssences = headEssences;
+        this.epithets = epithets;
         this.potency = potency;
     }
 
@@ -84,7 +87,17 @@ public final class PerkFocus {
             }
         }
 
-        return new PerkFocus(dominant, headEssences, (total > 0.0) ? Math.min(1.0, carrying / total) : 0.0);
+        // 3. Epithets: every part contributes the forged word of its own mineral, so the perk name
+        // identifies the whole build and not just the identity essence of the head.
+        List<String> epithets = new ArrayList<>();
+        for (PartComposition part : parts) {
+            if (part == null) continue;
+            String epithet = PerkEpithet.of(part.getPrimaryMaterial());
+            if (!epithet.isEmpty()) epithets.add(epithet);
+        }
+
+        return new PerkFocus(dominant, headEssences, epithets,
+                (total > 0.0) ? Math.min(1.0, carrying / total) : 0.0);
     }
 
     @Nullable
@@ -146,5 +159,26 @@ public final class PerkFocus {
     @Nonnull
     public String focusLine() {
         return String.format(Locale.US, "%s essence (%d%%)", affinity.getDisplayName(), potencyPercent());
+    }
+
+    /** The forged epithet each non-empty part contributes, in forge order. */
+    @Nonnull
+    public List<String> epithets() {
+        return List.copyOf(epithets);
+    }
+
+    /**
+     * Name of the piece's perk: the epithet of every part's mineral, in forge order, ahead of the
+     * signature mechanic.
+     *
+     * <p>This is what stops two items of the same type from sharing a perk when they are forged from
+     * different minerals: {@code Fluxforged Resonant Auric Sweeping Cleave} and {@code Fluxforged
+     * Resonant Adamant Sweeping Cleave} are the same sword type with a different trim, and they read
+     * differently.</p>
+     */
+    @Nonnull
+    public String perkName(@Nonnull String baseName) {
+        if (epithets.isEmpty()) return baseName;
+        return String.join(" ", epithets) + " " + baseName;
     }
 }

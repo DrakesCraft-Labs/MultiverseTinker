@@ -71,7 +71,7 @@ Bronze (Copper + Tin) -> Terrain (Copper) + Primal (Copper)
 
 **An alloy also *is* its parents, essence-wise.** When a forged ingot is poured, the essences of its
 two minerals are fused into the alloy's own identity (up to 3, ordered by dimensional priority), so
-an alloy head names the weapon perk exactly like its mineral would:
+an alloy head feeds the weapon's identity essence exactly like its mineral would:
 
 | Alloy | Parents | Essence identity |
 |---|---|---|
@@ -92,25 +92,30 @@ signature trait on top of the inherited affinities.
 ## ⚔️ Material-driven weapon perks
 
 Every modular weapon keeps a **signature mechanic** from its type (Sweeping Cleave, Piercing
-Velocity, Hydraulic Surge, …), but the **essence that names and powers that perk comes from the
-minerals it was forged with**:
+Velocity, Hydraulic Surge, …). The **name of the perk comes from every mineral it was forged with**
+(see [Perk Names](Perk-Names.md)), while the **essence that powers it comes from the head mineral**:
 
 | Part | Influence over the perk |
 |---|---|
+| **Every part** | Contributes its own mineral's **epithet**, so the name identifies the whole build. |
 | **Head** (blade, bow limbs, prongs, mace head, shield plate) | Decides the weapon's **identity essence** — the highest ranking essence its mineral teaches. |
 | **Handle / Pommel** (rod, string, binding, boss) | Decide the **potency**: how much of the forged weapon actually carries that essence. |
 
-The perk therefore reads `<Essence> <Signature>`:
+The perk therefore reads `<epithets> <Signature>`:
 
 | Head mineral | Resulting perk |
 |---|---|
-| Cobalt (Nether) | **Infernal Piercing Velocity** — the bolts burn what they hit. |
-| Voidstone (The End) | **Void Piercing Velocity** — the impact drags foes off balance. |
-| Diamond (vanilla gem) | **Radiant Sweeping Cleave** — cleaved foes are marked with Glowing. |
-| Iron (vanilla metal) | **Tempered Sweeping Cleave** — hardened edge damage. |
-| Ruby (Overworld gem) | **Terrain Jousting Reach** — earthen blows slow the target. |
-| Manyullyn (Nether alloy) | **Infernal Sweeping Cleave** — the alloy fights with the essences of its parent minerals, not a generic metal one. |
-| Void Damascus (Nether + End alloy) | **Void Sweeping Cleave** — the End parent's void essence wins the identity. |
+| Cobalt (Nether) | **Lightfooted … Piercing Velocity** — the head's Infernal essence burns what the bolts hit. |
+| Voidstone (The End) | **Warping … Piercing Velocity** — the head's Void essence drags foes off balance. |
+| Diamond (vanilla gem) | **Adamant Sweeping Cleave** — the head's Radiant essence marks cleaved foes with Glowing. |
+| Iron (vanilla metal) | **Ironclad Sweeping Cleave** — the head's Tempered essence hardens the edge. |
+| Ruby (Overworld gem) | **Rubicund Jousting Reach** — the head's Terrain essence slows the target. |
+| Manyullyn (Nether alloy) | **Insatiable Sweeping Cleave** — the alloy fights with the essences of its parent minerals, not a generic metal one. |
+| Void Damascus (Nether + End alloy) | **Damascened Sweeping Cleave** — the End parent's void essence wins the identity. |
+
+> 🔎 **Why the mineral and not just the essence?** Amethyst and Diamond teach the *exact same essences*,
+> so naming the perk after the essence alone gave two genuinely different builds the same name. Each
+> mineral owns one unique epithet ([the 139 of them](Perk-Names.md)), so only an identical build shares a name.
 
 Right under the perk you will find `• Essence Focus: <Essence> essence (<n>%)`, the share of the
 weapon's forged mass that carries the identity essence. A weapon built entirely from one mineral is

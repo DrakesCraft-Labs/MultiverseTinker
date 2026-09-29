@@ -13,9 +13,9 @@ import java.util.List;
  * Material-driven weapon perk.
  *
  * <p>A modular weapon's signature mechanic (sweeping cleave, piercing velocity, hydraulic surge...)
- * is fixed by its {@link ModularWeaponType}, but the <b>essence</b> that names and powers that perk
- * is decided by the minerals it was forged from: the head part's mineral dictates the weapon's
- * elemental identity while the rod and binding dictate how concentrated that identity is.</p>
+ * is fixed by its {@link ModularWeaponType}, while the part that <b>names</b> that perk is the minerals
+ * it was forged from: every part contributes its own {@link PerkEpithet} ahead of the mechanic, and the
+ * head mineral additionally dictates the weapon's elemental identity and how concentrated it is.</p>
  *
  * <p>Everything here is pure and deterministic, so the same composition always yields the same perk
  * name, description and potency — keeping lore and combat behaviour in lock-step.</p>
@@ -91,10 +91,13 @@ public final class WeaponPerkProfile {
         };
     }
 
-    /** Material-flavoured perk name, e.g. {@code "Infernal Piercing Velocity"}. */
+    /**
+     * Perk name of the forged weapon: one epithet per mineral ahead of the signature mechanic, e.g.
+     * {@code "Fluxforged Resonant Auric Piercing Velocity"} for a Borax / Amethyst / Gold build.
+     */
     @Nonnull
     public String getDisplayName() {
-        return focus.affinity().getDisplayName() + " " + baseName(weaponType);
+        return focus.perkName(baseName(weaponType));
     }
 
     /** Full perk description: the signature mechanic plus the essence blend its head mineral teaches. */

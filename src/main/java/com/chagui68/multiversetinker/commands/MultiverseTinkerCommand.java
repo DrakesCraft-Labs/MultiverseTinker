@@ -11,6 +11,7 @@ import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
+import com.chagui68.multiversetinker.tools.PerkEpithet;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -85,6 +86,8 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 plugin.applyEquipmentSettings();
                 plugin.getArchaeologyManager().getLootTable().reload();
                 itemRegistry.reload();
+                // Forged alloys are named after their parents, so their words are re-derived on reload.
+                PerkEpithet.clearCache();
                 sender.sendMessage(miniMessage.deserialize("<green>MultiverseTinker configuration, items and loot tables reloaded successfully!</green>"));
                 return true;
             }

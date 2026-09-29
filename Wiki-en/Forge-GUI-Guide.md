@@ -99,7 +99,7 @@ Click the **Weapon Selector** in **Slot 13** to cycle between all 7 weapon types
   - **Kinetic Spear**: Extended attack reach and +30% sprint charge damage.
   - **Tower Shield**: Reflects 35% of blocked damage back to the attacker.
   - **Broadsword**: Sweeping melee attacks chain elemental traits across adjacent foes.
-- **Material-Driven Perks**: every perk above is **named and powered by the weapon's head mineral** (a Cobalt head yields *Infernal Piercing Velocity*, a Voidstone head yields *Void Piercing Velocity*), while the handle and pommel set the **Essence Focus** percentage shown in the lore. The dominant essence is channelled into the perk's primary strike, so identical weapon types forged from different minerals fight differently.
+- **Material-Driven Perks**: every perk above is **named by every mineral it was forged from** and **powered by the weapon's head mineral** (a Cobalt head starts the name with *Lightfooted*, a Voidstone head with *Warping*), while the handle and pommel set the **Essence Focus** percentage shown in the lore. The dominant essence is channelled into the perk's primary strike, so identical weapon types forged from different minerals fight differently.
 - **Trait Channels**: each trait row in the lore is labelled with the moment that weapon fires it — `on sweep`, `on arrow hit` (longbow), `on bolt impact`, `on surge`, `on thrust`, `on smash` and `on block` — so a broadsword, a longbow and a tower shield never show the same trait block.
 
 ---
@@ -117,13 +117,13 @@ Click the **Tool Selector** in **Slot 13** to cycle between all 5 tool types:
 - Every tool starts at **Wood Tier** (`0` blocks broken).
 - Mining blocks increases the blocks broken counter and advances the tool through tiers:
   `Wood → Stone (50 blocks) → Copper (150) → Iron (350) → Gold (750) → Diamond (1500) → Netherite (3000)`.
-- **Specialized Tool Perks** — the mechanic belongs to the tool type, the essence belongs to the minerals. The head part dictates the elemental identity (and therefore the perk's name and its extra effect), the handle and pommel set the Essence Focus:
-  - **Pickaxe** (*Vein Resonance*): a 15% chance for extra ore drops and temporary Haste. A Cobalt head prints *Infernal Vein Resonance*, a Voidstone head *Void Vein Resonance*.
+- **Specialized Tool Perks** — the mechanic belongs to the tool type, the name belongs to every mineral, the essence to the head. Each part adds its mineral's epithet ahead of the mechanic (see [Perk Names](Perk-Names.md)), the head also dictates the elemental identity and its extra effect, and the handle and pommel set the Essence Focus:
+  - **Pickaxe** (*Vein Resonance*): a 15% chance for extra ore drops and temporary Haste. A Cobalt head prints *Lightfooted … Vein Resonance*, a Voidstone head *Warping … Vein Resonance*.
   - **Battleaxe** (*Lumber Cleave*): fells whole logs and shatters mob shields on critical hits.
   - **Excavator** (*Seismic Tremor*): excavates a 3x3 area of soil, sand, and gravel while sneaking.
   - **Scythe** (*Harvest Scythe*): harvests 3x3 crops and automatically replants seeds from your inventory.
   - **Fishing Rod** (*Abyssal Dredge*): a 15% chance to fish up rare geological minerals.
-  - Each tool prints `✦ Tool Perk: <Essence> <Mechanic>` plus its own `• Essence Focus: <Essence> essence (<n>%)` line, and its trait rows are labelled with the moment they fire: `while mining`, `while chopping`, `while digging`, `while harvesting` or `while fishing`.
+  - Each tool prints `✦ Tool Perk: <Epithets> <Mechanic>` plus its own `• Essence Focus: <Essence> essence (<n>%)` line, and its trait rows are labelled with the moment they fire: `while mining`, `while chopping`, `while digging`, `while harvesting` or `while fishing`.
 
 > 🔮 **Mineral Affinities**: on top of the perks above, every part contributes up to 3 trait affinities (see [Trait Affinities](Trait-Affinities.md)). They fire **offensively on weapons, as mining procs on tools and as defensive procs on armor**, so different mineral combinations genuinely play differently.
 
@@ -154,7 +154,7 @@ Those three numbers are not cosmetic: the piece's armor modifiers are replaced b
   - **Chestplate** (*Kinetic Dampener*): absorbs 25% of heavy impacts and releases protective energy.
   - **Leggings** (*Stride Momentum*): mitigates sprint stamina drain and boosts movement recovery.
   - **Boots** (*Feathered Grounding*): negates up to 50% fall damage and provides anti-slip traction.
-  - A Voidstone chestplate prints *Void Kinetic Dampener* while an Infernal one prints *Infernal Kinetic Dampener*: same slot mechanic, different essence reaction, different Essence Focus. Armor trait rows are labelled `when struck`, because armor always answers a hit.
+  - A Voidstone plate prints *Warping Kinetic Dampener* while a Cobalt one prints *Lightfooted Kinetic Dampener*: same slot mechanic, different minerals in the name, different essence reaction, different Essence Focus. Changing only the trim changes the name too — Borax / Amethyst / Gold reads *Fluxforged Resonant Auric Kinetic Dampener*. Armor trait rows are labelled `when struck`, because armor always answers a hit.
 
 ---
 

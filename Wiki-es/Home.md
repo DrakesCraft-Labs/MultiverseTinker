@@ -11,6 +11,7 @@
 * **[Crisol de Fundición y Templado en Caldero](Fundicion-y-Caldero.md)**: Operación del crisol sobre lava/magma, diagnósticos visuales y enfriamiento de metales en caldero con moldes.
 * **[Estructura Multibloque de la Forja](Estructura-Forja.md)**: Arquitectura multibloque, simulación de partículas de validación y aura del yunque central.
 * **[Guía del GUI de la Forja y Equipo Modular](Guia-GUI-Forja.md)**: Detalle completo de las 6 secciones, forja multimaterial, evolución por rarezas (Madera a Netherite) y habilidades especiales de armas, herramientas y armaduras — incluido cómo cada perk se nombra e impulsa según sus minerales.
+* **[Nombres de Perk](Nombres-de-Perk.md)**: Los 139 epítetos minerales que nombran cada perk, con el ejemplo de por qué Borax / Amatista / Oro y Borax / Amatista / Diamante nunca comparten nombre.
 * **[Guía de Mezcla de Materiales y Aleaciones](Mezcla-de-Materiales.md)**: Crisol de aleaciones, mezcla universal de minerales brocha/vanilla (110 minerales mezclables, 5.995 pares de minerales) y listado de las 16 aleaciones personalizadas.
 * **[Referencia de Materiales](Fuentes-de-Materiales.md)**: Cómo obtener cada material — fuente, clase, rareza, estadísticas de forja, rasgo (en arma, herramienta y armadura) y esencias, material por material.
 * **[Índice de Recetas](Indice-de-Recetas.md)**: Cada par mezclable (5.995) con la aleación que forja y las esencias que hereda, más las 16 recetas legendarias y los 12 catalizadores vanilla.

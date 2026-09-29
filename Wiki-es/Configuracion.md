@@ -46,11 +46,12 @@ Las filas de continuación llevan una **sangría colgante**, así una fila que e
 propio texto en lugar de bajo el bullet:
 
 ```
-✦ Weapon Perk: Infernal Sweeping
-  Cleave: hits multiple adjacent foes
-  and chains elemental traits. Imbued
-  essence: searing hits that set
-  foes ablaze.
+✦ Weapon Perk: Fluxforged Resonant Auric
+  Sweeping Cleave: hits multiple
+  adjacent foes and chains elemental
+  traits. Imbued with Infernal,
+  Tempered, Swift essence: searing
+  hits that set foes ablaze.
 ```
 
 ### Cómo desactivarlo
@@ -189,6 +190,7 @@ reescribe su lore.
 ## 🔗 Páginas relacionadas
 
 * **[Guía del GUI de la Forja y Equipo Modular](Guia-GUI-Forja.md)**: qué imprime exactamente el lore envuelto — perks, enfoque de esencia, canales de rasgos y la animación exclusiva de cada tipo.
+* **[Nombres de Perk](Nombres-de-Perk.md)**: los 139 epítetos minerales que nombran cada perk y por qué lo deciden los minerales, no solo la esencia.
 * **[Rasgos de Forja y Efectos de Minerales](Rasgos-y-Efectos.md)**: la referencia de rasgos y afinidades tras esas filas de lore.
 * **[Aleaciones Primordiales](Aleaciones-Primordiales.md)**: el archivo `dynamic-alloys.yml` que conserva las primordiales forjadas por los jugadores entre reinicios.
 * **[Resumen de Mecánicas](Resumen-de-Mecanicas.md)**: cada mecánica, ítem y comando que configuran las claves de arriba.

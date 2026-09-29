@@ -159,7 +159,8 @@ absorbed.
 
 Every material teaches up to **3 deterministic essences** (Infernal, Void, Primal, Terrain, Tempered,
 Radiant, Resonant, Volatile, Swift, Brutal, Bulwark, Ascendant) that behave differently on weapons,
-tools and armor — see [Trait Affinities](Trait-Affinities.md). The **head** names the perk, the
+tools and armor — see [Trait Affinities](Trait-Affinities.md). **Every** mineral (see
+[Perk Names](Perk-Names.md)) names the perk, the **head** owns its identity essence, the
 **handle/pommel** set its potency, and an **80% essence focus** unlocks that essence'
 **[ultimate](Essence-Ultimates.md)**.
 

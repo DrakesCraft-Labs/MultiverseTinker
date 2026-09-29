@@ -5,7 +5,7 @@ Guía práctica de forja: qué minerales poner en cada parte para conseguir el m
 > 📐 **Cómo se calcula.** Los números de esta página salen de la propia matemática del yunque, verificados forjando los ítems en el juego.
 > * **Espada (3 partes)**: `Daño = 4.0 + ataque(Cabeza/Hoja) + ataque(Pomo/Guarda) / 3` · `Durabilidad = Mango + Cabeza + Pomo / 2`
 > * **Arco (2 partes)**: `Daño = 4.0 + ataque(Limbos) + ataque(Cuerda) / 2` · `Durabilidad = Limbos + Cuerda`
-> * El **mineral de la cabeza (hoja/limbos)** decide la esencia de identidad y nombra el perk: Cobalto → *Infernal Sweeping Cleave*, Voidstone → *Void Sweeping Cleave*, Cuarzo Prismático → *Resonant Infused Volley*, etc.
+> * El **mineral de la cabeza (hoja/limbos)** decide la esencia de identidad, y **todos** los minerales del build nombran el perk con sus epítetos ([lista completa](Nombres-de-Perk.md)): una espada de Cobalto lee *Lightfooted … Sweeping Cleave*, una de Voidstone *Warping … Sweeping Cleave*, y cambiar solo el pomo ya cambia el nombre (*Fluxforged Resonant Auric* vs *Fluxforged Resonant Adamant*).
 > * El **Enfoque de Esencia** del lore mide cuánto del arma lleva esa esencia. Con **≥80%** se desbloquea el **ultimate cinematográfico** de la esencia (Infernal → *Meteor Storm*, Void → *Singularity Collapse*, Terrain → *Earthen Grasp*…).
 > * Los **tres primeros puestos** de cada tabla son combinaciones con **100% de enfoque**, es decir, perk y ultimate garantizados. La evolución de rareza (Madera → Netherite) solo suma bonos planos, no cambia el orden.
 
@@ -48,7 +48,7 @@ Guía práctica de forja: qué minerales poner en cada parte para conseguir el m
 | 8 | **Glacial Silver / Glacial Silver** | 13.8 | 960 | Terrain | *Absolute Frost*: cada flecha congela con Lentitud III y nieve polvo durante 4s. |
 
 ### La regla de oro del arco
-1. **Limbos = identidad**: decide la esencia de las flechas y nombra el perk (*Infused Volley*).
+1. **Limbos = identidad**: deciden la esencia de las flechas y su epíteto abre el nombre del perk (*Infused Volley*).
 2. **Cuerda = durabilidad + enfoque**: al ser la parte 2 con peso 2, basta con que comparta la esencia de los limbos para llegar al 100% y desbloquear el ultimate.
 3. Un arco con **una aleación legendaria en cada parte** acumula dos rasgos de aleación además del ultimate de esencia.
 

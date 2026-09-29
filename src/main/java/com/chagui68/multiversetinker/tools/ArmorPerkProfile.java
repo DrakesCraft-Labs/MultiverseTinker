@@ -12,9 +12,9 @@ import java.util.List;
  * Material-driven armor perk.
  *
  * <p>A modular armor piece protects through the mechanic of its slot (cranium ward, kinetic
- * dampener, stride momentum, feathered grounding), but the <b>essence</b> that colours and powers
- * that protection is decided by the minerals it was forged from: the plate dictates the defensive
- * identity while the lining and trim dictate how concentrated it is.</p>
+ * dampener, stride momentum, feathered grounding), while the part that <b>names</b> that protection is
+ * the minerals it was forged from: every part contributes its own {@link PerkEpithet} ahead of the
+ * mechanic, and the plate additionally dictates the defensive identity and its concentration.</p>
  *
  * <p>So a Void chestplate answers hits with warping retaliation while an Infernal one answers with
  * fire resistance, and no two pieces of armor share one fixed perk line.</p>
@@ -67,10 +67,13 @@ public final class ArmorPerkProfile {
         };
     }
 
-    /** Material-flavoured armor name, e.g. {@code "Infernal Kinetic Dampener"}. */
+    /**
+     * Perk name of the forged armor piece: one epithet per mineral ahead of the slot mechanic, e.g.
+     * {@code "Fluxforged Resonant Auric Kinetic Dampener"} for a Borax / Amethyst / Gold build.
+     */
     @Nonnull
     public String getDisplayName() {
-        return focus.affinity().getDisplayName() + " " + baseName(armorType);
+        return focus.perkName(baseName(armorType));
     }
 
     /** Full description: the slot mechanic plus the defensive essence its plate mineral teaches. */

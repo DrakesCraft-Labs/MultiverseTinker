@@ -11,6 +11,7 @@ Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a soverei
 * **[Smeltery & Cauldron Casting](Smeltery-and-Casting.md)**: Operating the Smeltery Crucible over lava/magma, diagnostic GUI, and cooling molten metals in water cauldrons with reusable molds.
 * **[The Multiverse Forge Multiblock](Forge-Structure.md)**: Multiblock structure, validation particle simulation, and central anvil aura.
 * **[Forge GUI & Modular Equipment Guide](Forge-GUI-Guide.md)**: Detailed breakdown of the 6 GUI tabs, multi-material casting, tier evolution (Wood to Netherite), and specialized weapon, tool and armor perks — including how each perk is named and powered by the weapon's minerals.
+* **[Perk Names](Perk-Names.md)**: The 139 mineral epithets that name every perk, with the worked example of why Borax / Amethyst / Gold and Borax / Amethyst / Diamond never share a name.
 * **[Alloy Mixing & Metallurgy Guide](Alloy-Mixing.md)**: The Alloy Crucible, universal brush/vanilla mineral blending (110 blendable minerals, 5,995 mineral pairs), and exhaustive guide to all 16 custom alloys.
 * **[Material Reference](Material-Reference.md)**: How to obtain every material — source, class, rarity, forge stats, trait (on weapons, tools and armor) and essences, one block per material.
 * **[Alloy Recipe Index](Alloy-Recipe-Index.md)**: Every blendable pair (5,995) with the alloy it forges and the essences it inherits, plus the 16 legendary recipes and the 12 vanilla catalysts.

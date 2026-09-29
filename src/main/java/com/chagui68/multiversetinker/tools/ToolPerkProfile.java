@@ -12,9 +12,9 @@ import java.util.List;
  * Material-driven tool perk.
  *
  * <p>Exactly like weapons, a modular tool's signature mechanic (vein resonance, lumber cleave,
- * seismic tremor...) is fixed by its {@link ModularToolType}, but the <b>essence</b> that names and
- * powers it comes from the minerals it was forged from: the head part dictates the tool's elemental
- * identity while the handle and pommel dictate how concentrated that identity is.</p>
+ * seismic tremor...) is fixed by its {@link ModularToolType}, while the part that <b>names</b> it is the
+ * minerals it was forged from: every part contributes its own {@link PerkEpithet} ahead of the
+ * mechanic, and the head additionally dictates the tool's elemental identity and concentration.</p>
  *
  * <p>This is what keeps an Infernal pickaxe, a Void pickaxe and a Radiant pickaxe from being the same
  * tool with a different name, and what stops every tool of a given type from sharing one fixed perk
@@ -72,10 +72,13 @@ public final class ToolPerkProfile {
         };
     }
 
-    /** Material-flavoured perk name, e.g. {@code "Infernal Vein Resonance"}. */
+    /**
+     * Perk name of the forged tool: one epithet per mineral ahead of the signature mechanic, e.g.
+     * {@code "Fluxforged Resonant Auric Vein Resonance"} for a Borax / Amethyst / Gold build.
+     */
     @Nonnull
     public String getDisplayName() {
-        return focus.affinity().getDisplayName() + " " + baseName(toolType);
+        return focus.perkName(baseName(toolType));
     }
 
     /** Full perk description: the signature mechanic plus the essence blend its head mineral teaches. */
