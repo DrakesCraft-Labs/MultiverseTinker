@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +28,46 @@ class LoreWrapTest {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+
+    @AfterEach
+    void restoreDefaults() {
+        LoreWrap.reset();
+    }
+
+    @Test
+    @DisplayName("Wrapping can be switched off from the configuration")
+    void wrappingCanBeDisabled() {
+        Component row = sampleWeaponPerkRow();
+        LoreWrap.configure(false, LoreWrap.DEFAULT_MAX_PIXELS, LoreWrap.HEADER_MAX_PIXELS);
+
+        assertFalse(LoreWrap.isEnabled());
+        assertEquals(List.of(row), LoreWrap.wrap(row), "A disabled wrapper must not touch the row");
+        assertEquals(List.of(row), LoreWrap.wrapAll(List.of(row)), "wrapAll must stay a no-op too");
+    }
+
+    @Test
+    @DisplayName("The configured width is applied, clamped and used by every entry point")
+    void configuredWidthIsApplied() {
+        Component row = sampleWeaponPerkRow();
+
+        LoreWrap.configure(true, 240, 400);
+        assertEquals(240, LoreWrap.configuredMaxPixels());
+        assertEquals(400, LoreWrap.configuredHeaderPixels());
+
+        List<Component> wider = LoreWrap.wrap(row);
+        assertTrue(wider.size() < LoreWrap.wrap(row, LoreWrap.DEFAULT_MAX_PIXELS).size(),
+                "A wider budget must need fewer rows");
+        for (Component line : wider) {
+            assertTrue(LoreWrap.pixelWidth(PLAIN.serialize(line)) <= 240,
+                    "Row exceeds the configured width: " + PLAIN.serialize(line));
+        }
+
+        LoreWrap.configure(true, 10, 5);
+        assertEquals(LoreWrap.MIN_MAX_PIXELS, LoreWrap.configuredMaxPixels(),
+                "An unreadable width must be clamped");
+        assertEquals(LoreWrap.MIN_MAX_PIXELS, LoreWrap.configuredHeaderPixels(),
+                "The header budget can never be narrower than the body budget");
+    }
 
     @Test
     @DisplayName("Rows that already fit are returned untouched")

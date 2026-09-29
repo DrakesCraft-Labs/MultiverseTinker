@@ -52,6 +52,23 @@ smeltery:
   # Smelting duration multiplier for Magma Block heat source (1.30 = 30% slower smelting speed)
   magma-duration-multiplier: 1.30
 
+# Item lore presentation (tooltips)
+#
+# Minecraft never wraps a multi-coloured lore line: a row wider than the window is clipped, which
+# used to hide weapon perks and trait descriptions. Long lore rows are word-wrapped to fit instead.
+lore:
+  # Split long lore rows at word boundaries so nothing runs off the screen
+  wrap-long-lines: true
+
+  # Maximum width of a wrapped lore row, in default-font pixels
+  # (a lowercase character averages ~6px, the tooltip area is ~200px in vanilla)
+  # Lower it for narrower tooltips with more rows, raise it for wider tooltips with fewer rows.
+  max-line-width-pixels: 190
+
+  # Wider budget for the first two rows of modular equipment (tier tag + progress bar).
+  # Those rows are rewritten in place every time an item levels up, so they must stay intact.
+  header-line-width-pixels: 320
+
 # Relative rarity weights for mineral drops
 rarity-weights:
   common: 50

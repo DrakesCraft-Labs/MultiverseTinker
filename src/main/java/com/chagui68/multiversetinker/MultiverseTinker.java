@@ -9,6 +9,7 @@ import com.chagui68.multiversetinker.casting.CastingListener;
 import com.chagui68.multiversetinker.commands.MultiverseTinkerCommand;
 import com.chagui68.multiversetinker.forge.ForgeListener;
 import com.chagui68.multiversetinker.forge.ForgeManager;
+import com.chagui68.multiversetinker.items.LoreWrap;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
@@ -52,6 +53,7 @@ public class MultiverseTinker extends JavaPlugin {
         saveDefaultConfig();
         getConfig().options().copyDefaults(true);
         saveConfig();
+        applyLoreSettings();
 
         getLogger().info("========================================");
         getLogger().info("   MultiverseTinker - Paper 1.21+       ");
@@ -121,6 +123,24 @@ public class MultiverseTinker extends JavaPlugin {
         registerRecipes();
 
         getLogger().info("MultiverseTinker successfully enabled. Smeltery, Archaeology, Forge & Modular Tools online.");
+    }
+
+    /**
+     * Applies the item lore presentation settings of {@code config.yml}.
+     *
+     * <p>Lore is wrapped by a static helper, so this is called on enable and again by
+     * {@code /mvtink reload} — otherwise a changed width would only show on freshly built items.</p>
+     */
+    public void applyLoreSettings() {
+        LoreWrap.configure(
+                getConfig().getBoolean(LoreWrap.CONFIG_ENABLED, true),
+                getConfig().getInt(LoreWrap.CONFIG_MAX_PIXELS, LoreWrap.DEFAULT_MAX_PIXELS),
+                getConfig().getInt(LoreWrap.CONFIG_HEADER_PIXELS, LoreWrap.HEADER_MAX_PIXELS));
+
+        getLogger().info("Item lore wrapping " + (LoreWrap.isEnabled()
+                ? "enabled at " + LoreWrap.configuredMaxPixels() + "px (headers "
+                        + LoreWrap.configuredHeaderPixels() + "px) per row."
+                : "disabled."));
     }
 
     private void registerRecipes() {

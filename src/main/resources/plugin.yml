@@ -3,7 +3,7 @@ version: ${project.version}
 main: com.chagui68.multiversetinker.MultiverseTinker
 api-version: "1.21"
 author: Chagui68
-description: Modular tools, armors, geological archaeology, smeltery crucible and metallurgy for Paper 1.21+.
+description: Modular tools, weapons and armor, geological archaeology, smeltery crucible, alloy codex and prime-alloy metallurgy for Paper 1.21+.
 website: https://github.com/DrakesCraft-Labs/MultiverseTinker
 
 commands:
@@ -11,7 +11,7 @@ commands:
     description: Main management command for MultiverseTinker.
     aliases: [mvtink, mvt]
     permission: multiversetinker.admin
-    usage: /mvtink <give|forge|list|reload>
+    usage: /mvtink <craft|give|forge|codex|list|verify|reload>
 
 permissions:
   multiversetinker.admin:

@@ -1,9 +1,11 @@
 package com.chagui68.multiversetinker;
 
 import com.chagui68.multiversetinker.api.CastType;
+import com.chagui68.multiversetinker.items.LoreWrap;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -13,6 +15,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +34,51 @@ class MultiverseTinkerPluginTest {
     @AfterEach
     void tearDown() {
         MockBukkit.unmock();
+    }
+
+    @Test
+    @DisplayName("plugin.yml stays in sync with the command the plugin registers")
+    void testPluginDescriptor() {
+        YamlConfiguration descriptor = loadResource("plugin.yml");
+
+        assertEquals("MultiverseTinker", descriptor.getString("name"));
+        assertEquals("com.chagui68.multiversetinker.MultiverseTinker", descriptor.getString("main"));
+        assertNotNull(descriptor.getString("version"), "The maven filter must fill the version");
+        assertEquals("1.21", descriptor.getString("api-version"));
+        assertTrue(descriptor.getStringList("commands.multiversetinker.aliases").contains("mvtink"));
+        assertEquals("multiversetinker.admin", descriptor.getString("commands.multiversetinker.permission"));
+        assertNotNull(descriptor.getConfigurationSection("permissions"), "Permissions must stay documented");
+
+        String usage = descriptor.getString("commands.multiversetinker.usage");
+        assertNotNull(usage);
+        for (String sub : List.of("craft", "give", "forge", "codex", "list", "verify", "reload")) {
+            assertTrue(usage.contains(sub), "plugin.yml usage is missing /mvtink " + sub);
+        }
+    }
+
+    @Test
+    @DisplayName("config.yml documents the lore wrapping options and the plugin applies them on enable")
+    void testLoreConfiguration() {
+        YamlConfiguration config = loadResource("config.yml");
+
+        assertTrue(config.isBoolean(LoreWrap.CONFIG_ENABLED), LoreWrap.CONFIG_ENABLED + " must be a boolean");
+        assertTrue(config.isInt(LoreWrap.CONFIG_MAX_PIXELS), LoreWrap.CONFIG_MAX_PIXELS + " must be an integer");
+        assertTrue(config.isInt(LoreWrap.CONFIG_HEADER_PIXELS), LoreWrap.CONFIG_HEADER_PIXELS + " must be an integer");
+
+        assertEquals(config.getBoolean(LoreWrap.CONFIG_ENABLED), LoreWrap.isEnabled());
+        assertEquals(config.getInt(LoreWrap.CONFIG_MAX_PIXELS), LoreWrap.configuredMaxPixels());
+        assertEquals(config.getInt(LoreWrap.CONFIG_HEADER_PIXELS), LoreWrap.configuredHeaderPixels());
+    }
+
+    /** Reads a packaged resource such as plugin.yml or config.yml. */
+    private YamlConfiguration loadResource(String name) {
+        try (java.io.InputStream stream = getClass().getClassLoader().getResourceAsStream(name)) {
+            assertNotNull(stream, name + " must be packaged in the jar");
+            return YamlConfiguration.loadConfiguration(new java.io.InputStreamReader(stream,
+                    java.nio.charset.StandardCharsets.UTF_8));
+        } catch (java.io.IOException exception) {
+            throw new java.io.UncheckedIOException(exception);
+        }
     }
 
     @Test

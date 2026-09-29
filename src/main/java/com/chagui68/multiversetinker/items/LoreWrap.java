@@ -39,6 +39,18 @@ public final class LoreWrap {
      */
     public static final int HEADER_MAX_PIXELS = 320;
 
+    /** Floor accepted from the configuration: narrower rows would be unreadable. */
+    public static final int MIN_MAX_PIXELS = 60;
+
+    /** Configuration keys read from {@code config.yml}. */
+    public static final String CONFIG_ENABLED = "lore.wrap-long-lines";
+    public static final String CONFIG_MAX_PIXELS = "lore.max-line-width-pixels";
+    public static final String CONFIG_HEADER_PIXELS = "lore.header-line-width-pixels";
+
+    private static volatile boolean enabled = true;
+    private static volatile int maxPixels = DEFAULT_MAX_PIXELS;
+    private static volatile int headerPixels = HEADER_MAX_PIXELS;
+
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
     private static final int DEFAULT_CHAR_WIDTH = 6;
     private static final int WIDE_CHAR_WIDTH = 8;
@@ -48,29 +60,74 @@ public final class LoreWrap {
     private LoreWrap() {
     }
 
-    /** Wraps every row of a lore list at the default budget. */
+    /**
+     * Applies the {@code lore} section of the plugin configuration.
+     *
+     * <p>Static on purpose: items are built from static factories all over the plugin, so the wrap
+     * settings have to be reachable without a plugin instance.</p>
+     *
+     * @param wrapEnabled      whether long lore rows are split at all
+     * @param lineWidthPixels  width budget of a normal row
+     * @param headerLineWidth  width budget of the two header rows (tier tag + progress bar)
+     */
+    public static void configure(boolean wrapEnabled, int lineWidthPixels, int headerLineWidth) {
+        enabled = wrapEnabled;
+        maxPixels = Math.max(MIN_MAX_PIXELS, lineWidthPixels);
+        headerPixels = Math.max(maxPixels, headerLineWidth);
+    }
+
+    /** Restores the shipped defaults; the plugin calls this from its own configuration loader. */
+    public static void reset() {
+        configure(true, DEFAULT_MAX_PIXELS, HEADER_MAX_PIXELS);
+    }
+
+    /** Whether long rows are currently split. */
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
+    /** Width budget currently applied to normal rows. */
+    public static int configuredMaxPixels() {
+        return maxPixels;
+    }
+
+    /** Width budget currently applied to the header rows. */
+    public static int configuredHeaderPixels() {
+        return headerPixels;
+    }
+
+    /** Wraps every row of a lore list at the configured budget. */
     @Nonnull
     public static List<Component> wrapAll(@Nonnull List<Component> lines) {
         return wrapAll(lines, 0);
     }
 
     /**
-     * Wraps every row of a lore list, giving the first {@code headerLines} rows the wider
-     * {@link #HEADER_MAX_PIXELS} budget instead of {@link #DEFAULT_MAX_PIXELS}.
+     * Wraps every row of a lore list, giving the first {@code headerLines} rows the wider header
+     * budget instead of the normal one.
      */
     @Nonnull
     public static List<Component> wrapAll(@Nonnull List<Component> lines, int headerLines) {
+        if (!enabled) {
+            return List.copyOf(lines);
+        }
         List<Component> wrapped = new ArrayList<>(lines.size());
         for (int i = 0; i < lines.size(); i++) {
-            wrapped.addAll(wrap(lines.get(i), i < headerLines ? HEADER_MAX_PIXELS : DEFAULT_MAX_PIXELS));
+            wrapped.addAll(wrap(lines.get(i), i < headerLines ? headerPixels : maxPixels));
         }
         return wrapped;
     }
 
-    /** Wraps a single row at the default budget. */
+    /** Wraps a single row at the configured budget. */
     @Nonnull
     public static List<Component> wrap(@Nonnull Component line) {
-        return wrap(line, DEFAULT_MAX_PIXELS);
+        return enabled ? wrap(line, maxPixels) : List.of(line);
+    }
+
+    /** Wraps a header row (tier tag or progress bar) with the wider configured budget. */
+    @Nonnull
+    public static List<Component> wrapHeader(@Nonnull Component line) {
+        return enabled ? wrap(line, headerPixels) : List.of(line);
     }
 
     /**

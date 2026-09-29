@@ -1031,7 +1031,7 @@ public class TinkerItemBuilder {
 
         List<Component> rebuilt = new ArrayList<>();
         rebuilt.add(tierTag);
-        rebuilt.addAll(LoreWrap.wrap(progressLine, LoreWrap.HEADER_MAX_PIXELS));
+        rebuilt.addAll(LoreWrap.wrapHeader(progressLine));
         if (boundary < lore.size()) {
             rebuilt.addAll(lore.subList(boundary, lore.size()));
         }
