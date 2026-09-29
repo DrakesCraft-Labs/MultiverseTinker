@@ -145,23 +145,27 @@
     <rect x="-24" y="-14" width="48" height="12" rx="4" fill="url(#moltenG)" filter="url(#glowLab)">
       <animate attributeName="opacity" values="0.8;1;0.8" dur="1.6s" repeatCount="indefinite"/>
     </rect>
+<!-- Martillo orientado como en el diagrama: pivote en la base del mango (0, 0) -->
+  <!-- En 0° está horizontal reposando sobre el lingote/yunque -->
+  <!-- Ajuste 'translate(X, Y)' para que el pivote calce a la izquierda del yunque -->
+  <g transform="translate(-70, -20)">
+    <g>
+      <animateTransform attributeName="transform" type="rotate"
+                        values="-65 0 0; -65 0 0; 0 0 0; -16 0 0; -65 0 0"
+                        keyTimes="0; 0.32; 0.44; 0.54; 1"
+                        dur="1.6s" repeatCount="indefinite"
+                        calcMode="spline"
+                        keySplines="0.4 0 0.6 1; 0.32 0 0 1; 0.25 1 0.7 1; 0.35 0 0.6 1"/>
 
-    <!-- Hammer: pivots above the ingot; at strike (angle 0) the head lands ON the ingot -->
-    <g transform="translate(0, -96)">
-      <g>
-        <animateTransform attributeName="transform" type="rotate"
-                          values="-58 0 0; -58 0 0; 0 0 0; -12 0 0; -58 0 0"
-                          keyTimes="0; 0.34; 0.46; 0.56; 1"
-                          dur="1.6s" repeatCount="indefinite"
-                          calcMode="spline"
-                          keySplines="0.4 0 0.6 1; 0.85 0 1 1; 0.3 0 0.7 1; 0.35 0 0.6 1"/>
-        <!-- handle points straight down from pivot; head at the bottom rests on ingot at angle 0 -->
-        <rect x="-6" y="6" width="12" height="60" rx="5" fill="#7C4A21"/>
-        <rect x="-6" y="6" width="5"  height="60" rx="3" fill="#A16207" opacity="0.7"/>
-        <rect x="-30" y="66" width="60" height="28" rx="6" fill="url(#steelG)" stroke="url(#ringGrad)" stroke-width="2.5"/>
-        <rect x="-30" y="66" width="60" height="8"  rx="4" fill="#CBD5E1" opacity="0.55"/>
-      </g>
+      <!-- Mango horizontal: nace en el pivote (0, 0) y va hacia la derecha (+X) -->
+      <rect x="0" y="-5" width="70" height="10" rx="4" fill="#7C4A21"/>
+      <rect x="0" y="-5" width="70" height="4"  rx="2" fill="#A16207" opacity="0.7"/>
+
+      <!-- Cabeza del martillo: vertical en el extremo derecho del mango -->
+      <rect x="52" y="-25" width="26" height="50" rx="5" fill="url(#steelG)" stroke="url(#ringGrad)" stroke-width="2.5"/>
+      <rect x="52" y="-25" width="7"  height="50" rx="3" fill="#CBD5E1" opacity="0.55"/>
     </g>
+  </g>
 
     <!-- Impact sparks (burst synced to the strike ~0.46 of the 1.6s cycle => ~0.74s) -->
     <g fill="#FDE68A" filter="url(#glowLab)">
