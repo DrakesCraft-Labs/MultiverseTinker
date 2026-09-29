@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="https://raw.githubusercontent.com/DrakesCraft-Labs/MultiverseTinker/main/banner.svg" width="100%" alt="MultiverseTinker — animated forge banner" />
+
 # ⚒️ MultiverseTinker
 
 **Modular Tools, Geological Archaeology, Smeltery Crucible & Metallurgy for Paper 1.21+ (Java 21)**
