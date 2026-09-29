@@ -3,6 +3,7 @@ package com.chagui68.multiversetinker.materials;
 import com.chagui68.multiversetinker.api.MaterialRarity;
 import com.chagui68.multiversetinker.api.MaterialType;
 import com.chagui68.multiversetinker.api.MineralOrigin;
+import com.chagui68.multiversetinker.items.PartComposition;
 import org.bukkit.Material;
 
 import javax.annotation.Nonnull;
@@ -33,6 +34,40 @@ public class MaterialRegistry {
     @Nullable
     public TinkerMaterial get(@Nonnull String id) {
         return materials.get(id.toLowerCase(Locale.ROOT));
+    }
+
+    // ==========================================
+    // PART COMPOSITION CACHE
+    // ==========================================
+    /**
+     * Bounded memo for {@link PartComposition#deserialize}. Combat, mining and the equipment aura
+     * all re-parse the same composition strings many times per second, so the parsed composition is
+     * cached per raw string instead of rebuilt from scratch on every proc. The cache is cleared
+     * wholesale when it grows past {@link #COMPOSITION_CACHE_LIMIT}, which keeps it bounded without
+     * any eviction bookkeeping on the hot path.
+     */
+    private static final int COMPOSITION_CACHE_LIMIT = 2_048;
+
+    private final Map<String, PartComposition> compositionCache = new ConcurrentHashMap<>();
+
+    /**
+     * Parses (or reuses) a serialized part composition.
+     */
+    @Nullable
+    public PartComposition composition(@Nullable String raw) {
+        if (raw == null || raw.trim().isEmpty()) return null;
+
+        PartComposition cached = compositionCache.get(raw);
+        if (cached != null) return cached;
+
+        PartComposition parsed = PartComposition.deserializeUncached(raw, this);
+        if (parsed == null) return null;
+
+        if (compositionCache.size() >= COMPOSITION_CACHE_LIMIT) {
+            compositionCache.clear();
+        }
+        compositionCache.put(raw, parsed);
+        return parsed;
     }
 
     @Nonnull

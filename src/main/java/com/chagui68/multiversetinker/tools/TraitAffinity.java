@@ -7,11 +7,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
  * Deterministic "essence" classification for every geological mineral, vanilla ore and alloy.
@@ -129,6 +132,15 @@ public enum TraitAffinity {
             INFERNAL, VOID, PRIMAL, TERRAIN, TEMPERED, RADIANT, RESONANT, VOLATILE, SWIFT, BRUTAL, BULWARK, ASCENDANT);
 
     /**
+     * Per-material memo of the resolved affinity set. {@link TinkerMaterial} is immutable and its
+     * identity is stable while it is registered, so caching by instance is safe; keys are weak so a
+     * discarded registry releases its entries. The mapping is pure, so this only saves the set
+     * churn that used to happen on every single combat and mining proc.
+     */
+    private static final Map<TinkerMaterial, Set<TraitAffinity>> CACHE =
+            Collections.synchronizedMap(new WeakHashMap<>());
+
+    /**
      * Resolves the deterministic affinity set of a single material.
      *
      * <p>Forge alloys publish the essences inherited from their parent minerals, so a Manyullyn
@@ -137,6 +149,16 @@ public enum TraitAffinity {
      */
     @Nonnull
     public static Set<TraitAffinity> of(@Nonnull TinkerMaterial material) {
+        Set<TraitAffinity> cached = CACHE.get(material);
+        if (cached != null) return cached;
+
+        Set<TraitAffinity> computed = compute(material);
+        CACHE.put(material, computed);
+        return computed;
+    }
+
+    @Nonnull
+    private static Set<TraitAffinity> compute(@Nonnull TinkerMaterial material) {
         Set<TraitAffinity> inherited = parseInherited(material);
         if (inherited != null) return inherited;
 

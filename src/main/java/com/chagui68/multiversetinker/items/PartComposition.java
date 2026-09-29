@@ -107,8 +107,22 @@ public class PartComposition {
         return sb.toString();
     }
 
+    /**
+     * Parses a serialized composition, reusing the registry's memo. Compositions are immutable once
+     * built, so sharing the parsed instance across every combat, mining and aura proc is safe and
+     * removes the repeated string splitting that used to run several times per hit.
+     */
     @Nullable
     public static PartComposition deserialize(@Nullable String raw, @Nonnull MaterialRegistry registry) {
+        return registry.composition(raw);
+    }
+
+    /**
+     * Unmemoized parser. Call this only from {@link MaterialRegistry#composition(String)}: every
+     * other caller should use {@link #deserialize(String, MaterialRegistry)} so the cache is used.
+     */
+    @Nullable
+    public static PartComposition deserializeUncached(@Nullable String raw, @Nonnull MaterialRegistry registry) {
         if (raw == null || raw.trim().isEmpty()) return null;
         List<Entry> list = new ArrayList<>();
         String[] tokens = raw.split(";");

@@ -131,7 +131,8 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 * `/mvtink forge build [0|90|180|270]` — Construct the complete multiblock Forge structure at your location.
 * `/mvtink forge check` — Validate the targeted anvil and display structure match percentage and diagnostics.
 * `/mvtink forge gui` — Open the custom Multiverse Forge GUI directly.
-* `/mvtink give <player> <mvtink_id> [amount]` — Give any item (raw, ingot, nugget, block, molten bucket, tool parts, casts, smeltery, prospector brush).
+* `/mvtink give <player> <mvtink_id> [amount]` — Give any item (raw, ingot, nugget, block, molten bucket, tool parts, casts, smeltery, prospector brush). The `mvtink_` prefix is optional, ids are resolved on demand, and composite/prime alloys forged after startup are givable too.
+* `/mvtink verify` — Diagnose the item registry: registered materials, item kinds per material, distinct ids and a full resolvability check (every material × every kind).
 * `/mvtink list [OVERWORLD|NETHER|THE_END]` — Inspect every registered material (97 geological + 14 vanilla), colors, origins, and traits.
 * `/mvtink reload` — Reload configuration, items, and loot tables.
 

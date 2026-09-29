@@ -38,6 +38,11 @@ public class AlloyRegistry {
             "mvtink_glacial_silver", "mvtink_sanguine_gold", "mvtink_cosmic_netherite");
 
     private final Map<String, TinkerAlloy> alloys = new LinkedHashMap<>();
+    /**
+     * Canonical parent-pair index, so recipe lookups stay O(1) even after a player has forged
+     * thousands of composites and primes (the old implementation scanned every alloy on each hit).
+     */
+    private final Map<String, TinkerAlloy> pairIndex = new HashMap<>();
     /** Ids of the 16 curated recipes: everything else is player-forged and must be persisted. */
     private final Set<String> curatedIds = new LinkedHashSet<>();
 
@@ -182,16 +187,29 @@ public class AlloyRegistry {
 
     public void register(@Nonnull TinkerAlloy alloy) {
         alloys.put(alloy.id().toLowerCase(Locale.ROOT), alloy);
+        pairIndex.put(pairKey(alloy.mat1Id(), alloy.mat2Id()), alloy);
     }
 
     @Nullable
     public TinkerAlloy findAlloy(@Nonnull String mat1, @Nonnull String mat2) {
+        TinkerAlloy indexed = pairIndex.get(pairKey(mat1, mat2));
+        if (indexed != null) return indexed;
+
+        // Fallback for hand-registered alloys that may share a parent pair.
         for (TinkerAlloy alloy : alloys.values()) {
             if (alloy.matches(mat1, mat2)) {
                 return alloy;
             }
         }
         return null;
+    }
+
+    /** Order-independent key for a pair of parent ids. */
+    @Nonnull
+    private static String pairKey(@Nonnull String mat1, @Nonnull String mat2) {
+        String a = mat1.toLowerCase(Locale.ROOT);
+        String b = mat2.toLowerCase(Locale.ROOT);
+        return a.compareTo(b) <= 0 ? a + "|" + b : b + "|" + a;
     }
 
     @Nonnull

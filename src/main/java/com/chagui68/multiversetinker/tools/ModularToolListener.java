@@ -44,6 +44,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -1596,6 +1597,16 @@ public class ModularToolListener implements Listener {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 60, 0, false, false));
             }
         }
+    }
+
+    /**
+     * Releases per-player runtime state so long uptimes cannot accumulate stale entries.
+     */
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        UUID id = event.getPlayer().getUniqueId();
+        primeStateCooldowns.remove(id);
+        fellingGuard.remove(id);
     }
 
     @Nonnull

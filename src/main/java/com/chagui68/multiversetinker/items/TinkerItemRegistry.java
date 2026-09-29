@@ -10,201 +10,172 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
+/**
+ * Cache and factory for every tinker item.
+ *
+ * <p>Items are built <b>lazily</b>: the registry used to precompute one of each item per material at
+ * startup (about 2,300 stacks with full lore and persistent data), which wasted memory and, worse,
+ * meant that a composite or prime alloy discovered later had no items to hand out. Now each kind is
+ * a cache filled on first request, so every material that exists at the moment of the request - the
+ * 111 catalogued ones, the 12 catalysts, and every composite or prime a player forges - resolves its
+ * raw ore, ingot, nugget, block, molten bucket and all ten part types through {@link #getItemById}.</p>
+ */
 public class TinkerItemRegistry {
+
+    /** Kind of item a material can be turned into. */
+    public enum ItemKind {
+        RAW("_raw"),
+        INGOT("_ingot"),
+        NUGGET("_nugget"),
+        BLOCK("_block"),
+        MOLTEN_BUCKET("_molten_bucket"),
+        HEAD("_head"),
+        ROD("_rod"),
+        BINDING("_binding"),
+        BOW_LIMBS("_bow_limbs"),
+        BOWSTRING("_bowstring"),
+        SHIELD_PLATE("_shield_plate"),
+        SHIELD_BOSS("_shield_boss"),
+        ARMOR_PLATE("_armor_plate"),
+        ARMOR_LINING("_armor_lining"),
+        ARMOR_TRIM("_armor_trim");
+
+        private final String suffix;
+
+        ItemKind(String suffix) {
+            this.suffix = suffix;
+        }
+
+        @Nonnull
+        public String getSuffix() {
+            return suffix;
+        }
+    }
+
+    /** Alternate ids players and older configs may still use. */
+    private static final Map<String, ItemKind> ALIASES = Map.of(
+            "_processed", ItemKind.INGOT,
+            "_handle", ItemKind.ROD,
+            "_pommel", ItemKind.BINDING);
 
     private final MaterialRegistry materialRegistry;
 
-    private final Map<String, ItemStack> rawItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> ingotItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> nuggetItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> blockItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> moltenBucketItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> toolHeadItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> toolRodItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> toolBindingItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> bowLimbsItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> bowstringItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> shieldPlateItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> shieldBossItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> armorPlateItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> armorLiningItems = new ConcurrentHashMap<>();
-    private final Map<String, ItemStack> armorTrimItems = new ConcurrentHashMap<>();
+    private final Map<ItemKind, Map<String, ItemStack>> caches = new EnumMap<>(ItemKind.class);
     private final Map<CastType, ItemStack> castItems = new EnumMap<>(CastType.class);
 
-    private final Map<String, ItemStack> allItemsById = new ConcurrentHashMap<>();
+    /** Ids that are not derived from a material (tools, casts, smeltery…). */
+    private final Map<String, ItemStack> specialItems = new ConcurrentHashMap<>();
 
     private ItemStack smelteryItem;
     private ItemStack prospectorBrush;
 
     public TinkerItemRegistry(@Nonnull MaterialRegistry materialRegistry) {
         this.materialRegistry = materialRegistry;
+        for (ItemKind kind : ItemKind.values()) {
+            caches.put(kind, new ConcurrentHashMap<>());
+        }
         reload();
     }
 
+    /** Drops every cached stack: the next request rebuilds it on demand. */
     public void reload() {
-        rawItems.clear();
-        ingotItems.clear();
-        nuggetItems.clear();
-        blockItems.clear();
-        moltenBucketItems.clear();
-        toolHeadItems.clear();
-        toolRodItems.clear();
-        toolBindingItems.clear();
-        bowLimbsItems.clear();
-        bowstringItems.clear();
-        shieldPlateItems.clear();
-        shieldBossItems.clear();
-        armorPlateItems.clear();
-        armorLiningItems.clear();
-        armorTrimItems.clear();
+        for (Map<String, ItemStack> cache : caches.values()) {
+            cache.clear();
+        }
         castItems.clear();
-        allItemsById.clear();
+        specialItems.clear();
 
         this.smelteryItem = TinkerItemBuilder.createSmeltery();
-        allItemsById.put("mvtink_smeltery", smelteryItem);
-
         this.prospectorBrush = TinkerItemBuilder.createProspectorBrush();
-        allItemsById.put("mvtink_brush_prospector", prospectorBrush);
+        specialItems.put("mvtink_smeltery", smelteryItem);
+        specialItems.put("mvtink_brush_prospector", prospectorBrush);
 
         for (CastType castType : CastType.values()) {
             ItemStack cast = TinkerItemBuilder.createCast(castType);
             castItems.put(castType, cast);
-            allItemsById.put(castType.getId().toLowerCase(Locale.ROOT), cast);
-        }
-
-        for (TinkerMaterial material : materialRegistry.getAll()) {
-            String baseId = material.getId().toLowerCase(Locale.ROOT);
-            PartComposition comp = PartComposition.fromMaterials(List.of(material));
-
-            ItemStack raw = TinkerItemBuilder.createRawMineral(material);
-            ItemStack ingot = TinkerItemBuilder.createIngot(material);
-            ItemStack nugget = TinkerItemBuilder.createNugget(material);
-            ItemStack block = TinkerItemBuilder.createBlock(material);
-            ItemStack moltenBucket = TinkerItemBuilder.createMoltenBucket(material);
-            ItemStack head = TinkerItemBuilder.createModularPart(ToolPartType.HEAD, comp);
-            ItemStack rod = TinkerItemBuilder.createModularPart(ToolPartType.ROD, comp);
-            ItemStack binding = TinkerItemBuilder.createModularPart(ToolPartType.BINDING, comp);
-            ItemStack bowLimbs = TinkerItemBuilder.createModularPart(ToolPartType.BOW_LIMBS, comp);
-            ItemStack bowstring = TinkerItemBuilder.createModularPart(ToolPartType.BOWSTRING, comp);
-            ItemStack shieldPlate = TinkerItemBuilder.createModularPart(ToolPartType.SHIELD_PLATE, comp);
-            ItemStack shieldBoss = TinkerItemBuilder.createModularPart(ToolPartType.SHIELD_BOSS, comp);
-            ItemStack armorPlate = TinkerItemBuilder.createModularPart(ToolPartType.ARMOR_PLATE, comp);
-            ItemStack armorLining = TinkerItemBuilder.createModularPart(ToolPartType.ARMOR_LINING, comp);
-            ItemStack armorTrim = TinkerItemBuilder.createModularPart(ToolPartType.ARMOR_TRIM, comp);
-
-            rawItems.put(baseId, raw);
-            ingotItems.put(baseId, ingot);
-            nuggetItems.put(baseId, nugget);
-            blockItems.put(baseId, block);
-            moltenBucketItems.put(baseId, moltenBucket);
-            toolHeadItems.put(baseId, head);
-            toolRodItems.put(baseId, rod);
-            toolBindingItems.put(baseId, binding);
-            bowLimbsItems.put(baseId, bowLimbs);
-            bowstringItems.put(baseId, bowstring);
-            shieldPlateItems.put(baseId, shieldPlate);
-            shieldBossItems.put(baseId, shieldBoss);
-            armorPlateItems.put(baseId, armorPlate);
-            armorLiningItems.put(baseId, armorLining);
-            armorTrimItems.put(baseId, armorTrim);
-
-            allItemsById.put(baseId + "_raw", raw);
-            allItemsById.put(baseId + "_ingot", ingot);
-            allItemsById.put(baseId + "_processed", ingot);
-            allItemsById.put(baseId + "_nugget", nugget);
-            allItemsById.put(baseId + "_block", block);
-            allItemsById.put(baseId + "_molten_bucket", moltenBucket);
-            allItemsById.put(baseId + "_head", head);
-            allItemsById.put(baseId + "_rod", rod);
-            allItemsById.put(baseId + "_handle", rod);
-            allItemsById.put(baseId + "_binding", binding);
-            allItemsById.put(baseId + "_pommel", binding);
-            allItemsById.put(baseId + "_bow_limbs", bowLimbs);
-            allItemsById.put(baseId + "_bowstring", bowstring);
-            allItemsById.put(baseId + "_shield_plate", shieldPlate);
-            allItemsById.put(baseId + "_shield_boss", shieldBoss);
-            allItemsById.put(baseId + "_armor_plate", armorPlate);
-            allItemsById.put(baseId + "_armor_lining", armorLining);
-            allItemsById.put(baseId + "_armor_trim", armorTrim);
-            allItemsById.put(baseId, raw);
+            specialItems.put(castType.getId().toLowerCase(Locale.ROOT), cast);
         }
     }
 
+    // ==========================================
+    // LAZY MATERIAL ITEMS
+    // ==========================================
     @Nullable
-    public ItemStack getToolHeadItem(@Nonnull String materialId) {
-        ItemStack item = toolHeadItems.get(materialId.toLowerCase(Locale.ROOT));
-        return item != null ? item.clone() : null;
-    }
+    private ItemStack cached(@Nonnull ItemKind kind, @Nonnull String materialId,
+                             @Nonnull Function<TinkerMaterial, ItemStack> factory) {
+        String key = materialId.toLowerCase(Locale.ROOT);
+        Map<String, ItemStack> cache = caches.get(kind);
 
-    @Nullable
-    public ItemStack getToolRodItem(@Nonnull String materialId) {
-        ItemStack item = toolRodItems.get(materialId.toLowerCase(Locale.ROOT));
-        return item != null ? item.clone() : null;
-    }
+        ItemStack hit = cache.get(key);
+        if (hit != null) return hit.clone();
 
-    @Nullable
-    public ItemStack getToolBindingItem(@Nonnull String materialId) {
-        ItemStack item = toolBindingItems.get(materialId.toLowerCase(Locale.ROOT));
-        return item != null ? item.clone() : null;
-    }
+        TinkerMaterial material = materialRegistry.get(key);
+        if (material == null) return null;
 
-    @Nullable
-    public ItemStack getPartItem(@Nonnull ToolPartType partType, @Nonnull String materialId) {
-        String id = materialId.toLowerCase(Locale.ROOT);
-        ItemStack item = switch (partType) {
-            case HEAD -> toolHeadItems.get(id);
-            case ROD -> toolRodItems.get(id);
-            case BINDING -> toolBindingItems.get(id);
-            case BOW_LIMBS -> bowLimbsItems.get(id);
-            case BOWSTRING -> bowstringItems.get(id);
-            case SHIELD_PLATE -> shieldPlateItems.get(id);
-            case SHIELD_BOSS -> shieldBossItems.get(id);
-            case ARMOR_PLATE -> armorPlateItems.get(id);
-            case ARMOR_LINING -> armorLiningItems.get(id);
-            case ARMOR_TRIM -> armorTrimItems.get(id);
-        };
-        return item != null ? item.clone() : null;
+        // Hand-built parts need the material wrapped in a single-entry composition.
+        ItemStack built = factory.apply(material);
+        cache.put(key, built);
+        return built.clone();
     }
 
     @Nullable
     public ItemStack getRawItem(@Nonnull String materialId) {
-        ItemStack item = rawItems.get(materialId.toLowerCase(Locale.ROOT));
-        return item != null ? item.clone() : null;
+        return cached(ItemKind.RAW, materialId, TinkerItemBuilder::createRawMineral);
     }
 
     @Nullable
     public ItemStack getIngotItem(@Nonnull String materialId) {
-        String key = materialId.toLowerCase(Locale.ROOT);
-        ItemStack item = ingotItems.get(key);
-        if (item == null) {
-            TinkerMaterial tm = materialRegistry.get(key);
-            if (tm != null) {
-                item = TinkerItemBuilder.createIngot(tm);
-                ingotItems.put(key, item);
-                allItemsById.put(key + "_ingot", item);
-                allItemsById.put(key + "_processed", item);
-            }
-        }
-        return item != null ? item.clone() : null;
+        return cached(ItemKind.INGOT, materialId, TinkerItemBuilder::createIngot);
     }
 
     @Nullable
     public ItemStack getNuggetItem(@Nonnull String materialId) {
-        ItemStack item = nuggetItems.get(materialId.toLowerCase(Locale.ROOT));
-        return item != null ? item.clone() : null;
+        return cached(ItemKind.NUGGET, materialId, TinkerItemBuilder::createNugget);
     }
 
     @Nullable
     public ItemStack getBlockItem(@Nonnull String materialId) {
-        ItemStack item = blockItems.get(materialId.toLowerCase(Locale.ROOT));
-        return item != null ? item.clone() : null;
+        return cached(ItemKind.BLOCK, materialId, TinkerItemBuilder::createBlock);
     }
 
     @Nullable
     public ItemStack getMoltenBucketItem(@Nonnull String materialId) {
-        ItemStack item = moltenBucketItems.get(materialId.toLowerCase(Locale.ROOT));
-        return item != null ? item.clone() : null;
+        return cached(ItemKind.MOLTEN_BUCKET, materialId, TinkerItemBuilder::createMoltenBucket);
+    }
+
+    @Nullable
+    public ItemStack getToolHeadItem(@Nonnull String materialId) {
+        return getPartItem(ToolPartType.HEAD, materialId);
+    }
+
+    @Nullable
+    public ItemStack getToolRodItem(@Nonnull String materialId) {
+        return getPartItem(ToolPartType.ROD, materialId);
+    }
+
+    @Nullable
+    public ItemStack getToolBindingItem(@Nonnull String materialId) {
+        return getPartItem(ToolPartType.BINDING, materialId);
+    }
+
+    @Nullable
+    public ItemStack getPartItem(@Nonnull ToolPartType partType, @Nonnull String materialId) {
+        ItemKind kind = kindOf(partType);
+        if (kind == null) return null;
+        return cached(kind, materialId, material ->
+                TinkerItemBuilder.createModularPart(partType, PartComposition.fromMaterials(List.of(material))));
+    }
+
+    /** Part kinds share their name with the material item kinds. */
+    @Nullable
+    private static ItemKind kindOf(@Nonnull ToolPartType partType) {
+        try {
+            return ItemKind.valueOf(partType.name());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     @Nullable
@@ -223,14 +194,100 @@ public class TinkerItemRegistry {
         return prospectorBrush.clone();
     }
 
+    // ==========================================
+    // ID RESOLUTION
+    // ==========================================
+    /**
+     * Resolves any tinker item id, including materials created after startup (composites, prime
+     * alloys and their parts).
+     */
     @Nullable
     public ItemStack getItemById(@Nonnull String id) {
-        ItemStack item = allItemsById.get(id.toLowerCase(Locale.ROOT));
-        return item != null ? item.clone() : null;
+        String key = id.toLowerCase(Locale.ROOT);
+
+        ItemStack special = specialItems.get(key);
+        if (special != null) return special.clone();
+
+        ItemKind kind = kindOfId(key);
+        if (kind != null) {
+            String materialId = key.substring(0, key.length() - suffixLengthOf(key, kind));
+            ItemStack item = itemFor(kind, materialId);
+            if (item != null) return item;
+        }
+
+        // A bare material id resolves to its raw ore, exactly like before.
+        if (materialRegistry.get(key) != null) return getRawItem(key);
+        return null;
     }
 
+    @Nullable
+    private ItemStack itemFor(@Nonnull ItemKind kind, @Nonnull String materialId) {
+        return switch (kind) {
+            case RAW -> getRawItem(materialId);
+            case INGOT -> getIngotItem(materialId);
+            case NUGGET -> getNuggetItem(materialId);
+            case BLOCK -> getBlockItem(materialId);
+            case MOLTEN_BUCKET -> getMoltenBucketItem(materialId);
+            case HEAD -> getPartItem(ToolPartType.HEAD, materialId);
+            case ROD -> getPartItem(ToolPartType.ROD, materialId);
+            case BINDING -> getPartItem(ToolPartType.BINDING, materialId);
+            case BOW_LIMBS -> getPartItem(ToolPartType.BOW_LIMBS, materialId);
+            case BOWSTRING -> getPartItem(ToolPartType.BOWSTRING, materialId);
+            case SHIELD_PLATE -> getPartItem(ToolPartType.SHIELD_PLATE, materialId);
+            case SHIELD_BOSS -> getPartItem(ToolPartType.SHIELD_BOSS, materialId);
+            case ARMOR_PLATE -> getPartItem(ToolPartType.ARMOR_PLATE, materialId);
+            case ARMOR_LINING -> getPartItem(ToolPartType.ARMOR_LINING, materialId);
+            case ARMOR_TRIM -> getPartItem(ToolPartType.ARMOR_TRIM, materialId);
+        };
+    }
+
+    /** Kind implied by an id suffix (including legacy aliases), or {@code null}. */
+    @Nullable
+    private static ItemKind kindOfId(@Nonnull String id) {
+        for (Map.Entry<String, ItemKind> alias : ALIASES.entrySet()) {
+            if (id.endsWith(alias.getKey())) return alias.getValue();
+        }
+        for (ItemKind kind : ItemKind.values()) {
+            if (id.endsWith(kind.getSuffix())) return kind;
+        }
+        return null;
+    }
+
+    private static int suffixLengthOf(@Nonnull String id, @Nonnull ItemKind kind) {
+        for (Map.Entry<String, ItemKind> alias : ALIASES.entrySet()) {
+            if (alias.getValue() == kind && id.endsWith(alias.getKey())) return alias.getKey().length();
+        }
+        return kind.getSuffix().length();
+    }
+
+    /**
+     * Every id the registry can hand out: the special tools/casts plus, for each registered
+     * material, its raw ore, ingot, nugget, block, molten bucket and ten part types. Generated from
+     * strings only - no ItemStack is built until it is actually requested.
+     */
     @Nonnull
     public Set<String> getAllItemIds() {
-        return Collections.unmodifiableSet(allItemsById.keySet());
+        Set<String> ids = new LinkedHashSet<>(specialItems.keySet());
+        for (TinkerMaterial material : materialRegistry.getAll()) {
+            String baseId = material.getId().toLowerCase(Locale.ROOT);
+            ids.add(baseId);
+            for (ItemKind kind : ItemKind.values()) {
+                ids.add(baseId + kind.getSuffix());
+            }
+            ids.add(baseId + "_processed");
+            ids.add(baseId + "_handle");
+            ids.add(baseId + "_pommel");
+        }
+        return Collections.unmodifiableSet(ids);
+    }
+
+    /** How many distinct item ids can be handed out right now (used by /mvtink verify). */
+    public int getAvailableItemIdCount() {
+        return getAllItemIds().size();
+    }
+
+    /** Number of distinct item kinds each material supports. */
+    public static int kindsPerMaterial() {
+        return ItemKind.values().length;
     }
 }

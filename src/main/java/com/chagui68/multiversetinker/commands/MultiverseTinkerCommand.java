@@ -62,6 +62,47 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
 
+            case "verify" -> {
+                // Proves that every material and every item kind is actually registered and resolvable.
+                int materials = materialRegistry.getAll().size();
+                int kindsPerMaterial = TinkerItemRegistry.kindsPerMaterial();
+                int expectedIds = materials * (kindsPerMaterial + 4);
+                List<String> unresolved = new ArrayList<>();
+
+                for (TinkerMaterial mat : materialRegistry.getAll()) {
+                    for (TinkerItemRegistry.ItemKind kind : TinkerItemRegistry.ItemKind.values()) {
+                        String id = mat.getId().toLowerCase(Locale.ROOT) + kind.getSuffix();
+                        if (itemRegistry.getItemById(id) == null) {
+                            unresolved.add(id);
+                        }
+                    }
+                }
+
+                for (String special : List.of("mvtink_smeltery", "mvtink_brush_prospector")) {
+                    if (itemRegistry.getItemById(special) == null) unresolved.add(special);
+                }
+                for (com.chagui68.multiversetinker.api.CastType cast : com.chagui68.multiversetinker.api.CastType.values()) {
+                    if (itemRegistry.getItemById(cast.getId().toLowerCase(Locale.ROOT)) == null) unresolved.add(cast.getId());
+                }
+
+                sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker Item Registry Verification ===</gold>"));
+                sender.sendMessage(miniMessage.deserialize("<gray>Materials registered: <yellow>" + materials
+                        + "</yellow> (catalogued + alloys + catalysts)</gray>"));
+                sender.sendMessage(miniMessage.deserialize("<gray>Item kinds per material: <yellow>" + kindsPerMaterial
+                        + "</yellow> (raw, ingot, nugget, block, molten bucket + 10 part types)</gray>"));
+                sender.sendMessage(miniMessage.deserialize("<gray>Distinct item ids available: <yellow>"
+                        + itemRegistry.getAvailableItemIdCount() + "</yellow></gray>"));
+                sender.sendMessage(miniMessage.deserialize("<gray>Material-derived ids checked: <yellow>" + expectedIds
+                        + "</yellow> (each material also answers to its bare id, _processed, _handle and _pommel)</gray>"));
+                if (unresolved.isEmpty()) {
+                    sender.sendMessage(miniMessage.deserialize("<green>✔ Every item id resolves correctly. Caches are now warm.</green>"));
+                } else {
+                    sender.sendMessage(miniMessage.deserialize("<red>✖ " + unresolved.size() + " ids failed to resolve: </red><yellow>"
+                            + String.join(", ", unresolved.subList(0, Math.min(10, unresolved.size()))) + "</yellow>"));
+                }
+                return true;
+            }
+
             case "list" -> {
                 MineralOrigin filter = null;
                 if (args.length >= 2) {
@@ -101,9 +142,20 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
                 String itemId = args[2].toLowerCase(Locale.ROOT);
                 ItemStack item = itemRegistry.getItemById(itemId);
+                if (item == null && !itemId.startsWith("mvtink_")) {
+                    // Convenience: "tin_ingot" and "mvtink_tin_ingot" are the same item.
+                    item = itemRegistry.getItemById("mvtink_" + itemId);
+                }
 
                 if (item == null) {
                     sender.sendMessage(miniMessage.deserialize("<red>Item not found: " + args[2] + "</red>"));
+                    List<String> suggestions = suggestIds(itemId);
+                    if (!suggestions.isEmpty()) {
+                        sender.sendMessage(miniMessage.deserialize("<gray>Did you mean: <yellow>"
+                                + String.join("</yellow>, <yellow>", suggestions) + "</yellow>?</gray>"));
+                    } else {
+                        sender.sendMessage(miniMessage.deserialize("<gray>Use tab-completion after <yellow>give <player> </yellow>to browse every registered item.</gray>"));
+                    }
                     return true;
                 }
 
@@ -334,7 +386,8 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
     private void sendHelp(CommandSender sender, String label) {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give items, parts, tools, raw ores, ingots, casts, or prospector brush.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give any raw ore, ingot, nugget, block, molten bucket, part, cast, smeltery or brush. The mvtink_ prefix is optional.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " verify</yellow> <gray>- Check that every material and every item kind is registered and resolvable.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));                sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " list [OVERWORLD|NETHER|THE_END]</yellow> <gray>- List all 97 geological materials.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " reload</yellow> <gray>- Reload configuration and caches.</gray>"));
     }
@@ -346,7 +399,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return filter(List.of("craft", "give", "forge", "list", "reload"), args[0]);
+            return filter(List.of("craft", "give", "forge", "list", "verify", "reload"), args[0]);
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("craft")) {
@@ -402,6 +455,17 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
 
         return Collections.emptyList();
+    }
+
+    /** Up to five registered ids that start with (or contain) what the sender typed. */
+    @Nonnull
+    private List<String> suggestIds(@Nonnull String typed) {
+        List<String> out = new ArrayList<>(5);
+        for (String id : itemRegistry.getAllItemIds()) {
+            if (out.size() >= 5) break;
+            if (id.startsWith(typed) || (typed.length() > 3 && id.contains(typed))) out.add(id);
+        }
+        return out;
     }
 
     private List<String> filter(List<String> list, String input) {

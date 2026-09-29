@@ -131,7 +131,8 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 * `/mvtink forge build [0|90|180|270]` — Construye la estructura completa de la forja en la ubicación del jugador.
 * `/mvtink forge check` — Valida el yunque al que estás apuntando y muestra el porcentaje de coincidencia.
 * `/mvtink forge gui` — Abre directamente la interfaz gráfica de la Forja Multiverse.
-* `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha).
+* `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha). El prefijo `mvtink_` es opcional, los ids se resuelven bajo demanda y las aleaciones compuestas/primordiales forjadas después del arranque también se pueden entregar.
+* `/mvtink verify` — Diagnostica el registro de ítems: materiales registrados, tipos de ítem por material, ids distintos y una comprobación completa de resolubilidad (cada material × cada tipo).
 * `/mvtink list [OVERWORLD|NETHER|THE_END]` — Lista todos los materiales registrados (97 geológicos + 14 vanilla) con sus rasgos, rarezas y colores.
 * `/mvtink reload` — Recarga la configuración y las tablas de arqueología.
 
