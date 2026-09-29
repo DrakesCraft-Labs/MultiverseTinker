@@ -146,6 +146,46 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 
 ---
 
+## ⚙️ Configuración
+
+`config.yml` se genera en la carpeta de datos del plugin en el primer arranque con los valores por defecto. No hace falta reiniciar para aplicar un cambio: edita el archivo y ejecuta `/mvtink reload`.
+
+### 📜 Presentación del lore de los ítems (`lore`)
+
+Minecraft dibuja cada fila de lore como una sola línea y recorta lo que sobresale del área del tooltip, que es lo
+que cortaba los perks de arma y las descripciones de rasgos. MultiverseTinker en su lugar **envuelve las filas
+largas** conservando colores, degradados y decoraciones. Solo se parten las filas que sobresalen; las filas cortas
+mantienen su formato exacto.
+
+| Clave | Tipo | Por defecto | Qué hace |
+| --- | --- | --- | --- |
+| `lore.wrap-long-lines` | booleano | `true` | Parte las filas largas de lore en los espacios. Ponlo en `false` para volver a la salida de una sola fila. |
+| `lore.max-line-width-pixels` | entero | `190` | Ancho máximo de una fila normal de lore, en píxeles con la tipografía por defecto (un carácter minúsculo promedia ~6 px; el área del tooltip vanilla es ~200 px). Bájalo para tooltips más estrechos con más filas, súbelo para filas más anchas. Los valores por debajo de `60` se recortan. |
+| `lore.header-line-width-pixels` | entero | `320` | Presupuesto más amplio para las dos filas de cabecera del equipo modular (etiqueta de tier + barra de progreso). Esas filas se reescriben en su sitio al subir de nivel, así que deben conservar el mismo número de filas. Se recorta a un mínimo de `max-line-width-pixels`. |
+
+```yaml
+lore:
+  wrap-long-lines: true
+  max-line-width-pixels: 190
+  header-line-width-pixels: 320
+```
+
+La envoltura se **mide, no se cuenta**: el ancho de cada fila se estima glifo a glifo con la tipografía por
+defecto de Minecraft, y los glifos anchos (bullets, barras, estrellas) se sobreestiman a propósito para partir
+una palabra antes en lugar de recortar. Las filas de continuación llevan sangría colgante, así los bullets `✦ `
+y `• ` siguen alineados bajo su texto.
+
+### 🧭 Otras secciones
+
+| Sección | Propósito |
+| --- | --- |
+| `archaeology` | Sistema de cepillado: interruptor, duración, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque, enfriamiento anti-macro y rendimientos de la brocha. |
+| `smeltery` | Ajustes del crisol: probabilidad de consumo de lava y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
+| `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). |
+| `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |
+
+---
+
 <div align="center">
 
 **DrakesCraft Labs** · Diseñado por **Chagui68**  

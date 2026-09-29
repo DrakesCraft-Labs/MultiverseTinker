@@ -156,6 +156,10 @@ Haz clic en el **Selector de Armaduras** (Ranura 13) para alternar entre las 4 p
 
 ---
 
+> ⚙️ **Ancho del tooltip**: las filas largas de perks y rasgos se envuelven para que nada se corte en pantalla. El ancho de fila, el presupuesto más amplio de la cabecera y el interruptor de la función viven en `config.yml` — consulta la **[Referencia de Configuración](Configuracion.md)**.
+
+---
+
 ## ⚡ Comando de Creación Directa (Admin)
 
 Para administradores o pruebas rápidas sin necesidad de armar la estructura física de la Forja:

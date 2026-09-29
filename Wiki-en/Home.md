@@ -16,6 +16,7 @@ Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a soverei
 * **[Essence Ultimates](Essence-Ultimates.md)**: The 12 cinematic attack ultimates — meteors, vortexes, light pillars and cages that root the enemy — and how to reach the 80% essence focus they demand.
 * **[Complete Mineral Catalog](Minerals.md)**: Exhaustive breakdown of all 111 geological & vanilla materials, 16 legendary alloys and the 12 vanilla crucible catalysts.
 * **[Forge Traits & Mineral Effects](Traits-and-Effects.md)**: Full reference guide for mineral traits, combat effects, stat bonuses, and unique physical perks.
+* **[Configuration Reference](Configuration.md)**: Every `config.yml` option, including the `lore` keys that word-wrap long tooltips (width budget, header rows and how to disable it).
 
 ---
 

@@ -146,6 +146,45 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 
 ---
 
+## ⚙️ Configuration
+
+`config.yml` is written to the plugin data folder on first startup with the shipped defaults. No restart is needed to apply a change: edit the file and run `/mvtink reload`.
+
+### 📜 Item lore presentation (`lore`)
+
+Minecraft renders every lore row as a single line and clips anything wider than the tooltip area, which used
+to cut off weapon perks and trait descriptions. MultiverseTinker word-wraps long lore rows instead, keeping their
+colours, gradients and decorations intact. Only rows that overflow are split — short rows keep their exact
+formatting.
+
+| Key | Type | Default | What it does |
+| --- | --- | --- | --- |
+| `lore.wrap-long-lines` | boolean | `true` | Split long lore rows at word boundaries. Set to `false` to keep the old single-row output. |
+| `lore.max-line-width-pixels` | integer | `190` | Width budget of a normal lore row, in default-font pixels (a lowercase glyph averages ~6 px; the vanilla tooltip area is ~200 px). Lower it for narrower tooltips with more rows, raise it for wider rows. Values under `60` are clamped. |
+| `lore.header-line-width-pixels` | integer | `320` | Wider budget for the two header rows of modular equipment (tier tag + progress bar). Those rows are rewritten in place on every level-up, so they must keep the same row count. Clamped to at least `max-line-width-pixels`. |
+
+```yaml
+lore:
+  wrap-long-lines: true
+  max-line-width-pixels: 190
+  header-line-width-pixels: 320
+```
+
+Wrapping is **measured, not counted**: the row width is estimated glyph by glyph with the default Minecraft font,
+and wide glyphs (bullets, bars, stars) are deliberately over-estimated so text wraps one word early rather than
+clipping. Continuation rows get a hanging indent, so `✦ ` and `• ` bullets keep lining up under their text.
+
+### 🧭 Other sections
+
+| Section | Purpose |
+| --- | --- |
+| `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour, anti-macro cooldown and brush yields. |
+| `smeltery` | Crucible tuning: lava consumption chance and the Magma Block heat-source slowdown multiplier. |
+| `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). |
+| `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |
+
+---
+
 ## 🛠️ Build & Compilation
 
 ```bash

@@ -153,3 +153,7 @@ Click the **Armor Selector** in **Slot 13** to cycle between all 4 armor types:
   - **Leggings** (*Stride Momentum*): mitigates sprint stamina drain and boosts movement recovery.
   - **Boots** (*Feathered Grounding*): negates up to 50% fall damage and provides anti-slip traction.
   - A Voidstone chestplate prints *Void Kinetic Dampener* while an Infernal one prints *Infernal Kinetic Dampener*: same slot mechanic, different essence reaction, different Essence Focus. Armor trait rows are labelled `when struck`, because armor always answers a hit.
+
+---
+
+> ⚙️ **Tooltip width**: long perk and trait rows are word-wrapped so nothing is clipped off the screen. The row width, the wider header budget and the on/off switch all live in `config.yml` — see the **[Configuration Reference](Configuration.md)**.

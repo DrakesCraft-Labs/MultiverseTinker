@@ -17,6 +17,7 @@
 * **[Ultimates de Esencia](Ultimates-de-Esencia.md)**: Los 12 ultimates cinematográficos de ataque — meteoritos, vórtices, pilares de luz y jaulas que inmovilizan al enemigo — y cómo alcanzar el 80% de enfoque que exigen.
 * **[Catálogo Completo de Minerales](Minerales.md)**: Listado exhaustivo de los 111 materiales geológicos y vanilla, las 16 aleaciones legendarias y los 12 catalizadores vanilla del crisol.
 * **[Rasgos de Forja y Efectos de Minerales](Rasgos-y-Efectos.md)**: Guía de referencia de los rasgos de forja, efectos pasivos, modificadores de combate y estadísticas.
+* **[Referencia de Configuración](Configuracion.md)**: Todas las opciones de `config.yml`, incluidas las claves de `lore` que envuelven los tooltips largos (ancho, filas de cabecera y cómo desactivarlo).
 
 ---
 
