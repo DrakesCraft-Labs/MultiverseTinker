@@ -80,12 +80,13 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
   * Centered on an Anvil, constructed with Chiseled Tuff Bricks, Deepslate Tiles, Deepslate Bricks, Tuff Brick Slabs/Stairs, and 4 corner thermal Lava columns (243 blocks total). Supports all rotations ($0^\circ, 90^\circ, 180^\circ, 270^\circ$).
 * **Validation Particle Sweep & Ambient Aura**:
   * Completed forges feature a multi-phase validation particle sweep and continuous volcanic embers/smoke orbiting the anvil.
-* **Redesigned 5-Section GUI**:
+* **Redesigned 6-Section GUI**:
   * **[1. Codex & Guide]**: In-game encyclopedias covering multiblock structure, casting, alloy recipes, tier progression, and specialized perks.
   * **[2. Molds & Parts]**: Quick mold carving (1 Clay Brick = 1 reusable cast) and multi-material forging (place 1 to 3 materials for 100%, 50/50, or 33/33/33 concentration-based trait splitting!).
   * **[3. Alloy Crucible]**: Blend **any 2 distinct brush-extracted or vanilla minerals** into a unique alloy. 16 legendary recipes (Bronze, Electrum, Manyullyn, Cosmic Netherite, etc.) keep curated abilities; every other pair synthesizes its own dynamic composite alloy. Finished alloys cannot be re-blended.
   * **[4. Weapon Assembly]**: Assemble 7 weapon types (Broadsword, Longbow, Heavy Crossbow, Elder Trident, Kinetic Spear, War Mace, Tower Shield) starting at **Wood Tier** and leveling up through **Combat Kills**!
   * **[5. Tool Assembly]**: Assemble 5 tool types (Pickaxe, Battleaxe, Excavator/Shovel, Scythe/Hoe, Fishing Rod) starting at **Wood Tier** and leveling up through **Blocks Broken**!
+  * **[6. Armor Assembly]**: Assemble 4 armor types (Helmet, Chestplate, Leggings, Boots) from Plate, Lining and Trim parts, leveling up through **Damage Absorbed**.
 * **Specialized Weapon & Tool Perks**:
   * **War Mace**: Downward fall strikes trigger seismic ground shockwaves dealing AOE damage.
   * **Longbow**: Arrows inherit limb and string elemental traits.

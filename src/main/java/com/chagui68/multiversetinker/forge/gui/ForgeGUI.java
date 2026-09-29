@@ -312,7 +312,9 @@ public class ForgeGUI implements InventoryHolder {
                         "• Elder Trident: Unleashes storm surges & lightning.",
                         "• Kinetic Spear: Extended reach & +30% sprint charge.",
                         "• War Mace: Crushing downward smashes with shockwaves.",
-                        "• Tower Shield: Reflects 35% damage & retaliates on block."
+                        "• Tower Shield: Reflects 35% damage & retaliates on block.",
+                        "• Perks are material-driven: the head part's mineral names and powers them",
+                        "  (Cobalt => Infernal Piercing Velocity, Voidstone => Void Piercing Velocity)."
                 )));
 
         inventory.setItem(31, createGuideItem(Material.NETHERITE_PICKAXE,
