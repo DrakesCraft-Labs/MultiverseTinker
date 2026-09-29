@@ -26,6 +26,7 @@ Muestra guías interactivas que explican:
 3. **Crisol de Aleaciones**: Las 16 recetas de aleaciones registradas.
 4. **Tiers de Evolución**: Progresión de Madera a Netherite mediante bajas (armas), bloques rotos (herramientas) y daño absorbido (armaduras).
 5. **Ventajas Especializadas**: Mecánicas exclusivas para las 7 armas, 5 herramientas y 4 piezas de armadura.
+6. **Códice de Aleaciones**: cada material forjable, con el **epíteto de perk** que presta al nombre forjado — para leer la palabra de un mineral antes de gastarlo (ver [Nombres de Perk](Nombres-de-Perk.md)).
 
 ---
 

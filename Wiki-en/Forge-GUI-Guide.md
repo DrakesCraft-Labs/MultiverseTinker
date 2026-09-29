@@ -26,6 +26,7 @@ Displays interactive codex books explaining:
 3. **Alloy Crucible**: The 16 alloy recipes and metallurgical blending mechanics.
 4. **Tier Evolution**: Progression from Wood to Netherite via kills (weapons), blocks broken (tools), and damage absorbed (armor).
 5. **Specialized Perks**: Unique mechanics for all 7 weapons, 5 tools, and 4 armor pieces.
+6. **Alloy Codex**: every material you can forge with, printing the **perk epithet** it lends to a forged name — so a mineral's word can be read before it is spent (see [Perk Names](Perk-Names.md)).
 
 ---
 

@@ -6,6 +6,10 @@ regla que los construye.
 
 > ⚙️ **La regla en una línea:** cada parte aporta el **epíteto** de su propio mineral, en orden de forja,
 > delante del mecanismo del tipo: `<epíteto cabeza> <epíteto mango> <epíteto unión> <mecanismo>`.
+>
+> 🧾 **En el juego:** el **Códice de Aleaciones** imprime el epíteto de cada mineral en su propia ficha
+> —en el Catálogo de Minerales, el Explorador de Combinaciones, las Recetas Legendarias y los
+> Catalizadores Primordiales— para leer la palabra antes de mezclar nada.
 
 ## 📖 Ejemplo real
 

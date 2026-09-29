@@ -6,6 +6,10 @@ rule that builds them.
 
 > ⚙️ **The rule in one line:** each part contributes the **epithet** of its own mineral, in forge order,
 > ahead of the type's mechanic: `<head epithet> <handle epithet> <binding epithet> <mechanic>`.
+>
+> 🧾 **In game:** the **Alloy Codex** prints a mineral's epithet on its own entry — in the Mineral
+> Catalog, the Combination Explorer, the Legendary Recipes and the Prime Catalysts — so the word can be
+> read before anything is blended.
 
 ## 📖 A worked example
 

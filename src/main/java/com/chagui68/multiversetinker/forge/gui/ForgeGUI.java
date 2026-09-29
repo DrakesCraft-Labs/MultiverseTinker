@@ -325,6 +325,7 @@ public class ForgeGUI implements InventoryHolder {
                         "• Tower Shield: Reflects 35% damage & retaliates on block.",
                         "• Perks are material-driven: the head part's mineral names and powers them",
                         "  (Cobalt => Infernal Piercing Velocity, Voidstone => Void Piercing Velocity).",
+                        "• Every mineral's perk word is listed in the Alloy Codex, under Mineral Catalog.",
                         "• Focus a weapon to 80%+ essence to unleash cinematic essence ultimates."
                 )));
 

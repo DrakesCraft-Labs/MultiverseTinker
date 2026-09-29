@@ -10,6 +10,7 @@ import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
+import com.chagui68.multiversetinker.tools.PerkEpithet;
 import com.chagui68.multiversetinker.tools.PrimeArmorState;
 import com.chagui68.multiversetinker.tools.PrimeUltimate;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
@@ -241,6 +242,14 @@ public class AlloyCodexGUI implements InventoryHolder {
     private void renderInfo(int entries, int pages) {
         List<String> lore = new ArrayList<>();
         lore.add("<gray>" + section.description + "</gray>");
+        if (section != Section.SUMMARY) {
+            // One legend for every section that lists a mineral, so the word on each entry has a meaning
+            // a player can find without leaving the codex.
+            lore.add("");
+            lore.add("<gold>✦ Perk epithet</gold> <gray>is the word a mineral lends to the name of the"
+                    + " perk it forges.</gray>");
+            lore.add("<gray>Read a mineral's word here before you spend it.</gray>");
+        }
         lore.add("");
         lore.add("<gray>Entries: <yellow>" + entries + "</yellow> · Page <yellow>" + (page + 1)
                 + "</yellow>/<yellow>" + pages + "</yellow></gray>");
@@ -731,6 +740,7 @@ public class AlloyCodexGUI implements InventoryHolder {
             lore.add("<gold>✦ Trait: </gold><aqua>" + material.getTraitName() + "</aqua>");
             lore.add("<dark_aqua>" + material.getTraitDescription() + "</dark_aqua>");
             lore.add("<gray>Essences: <light_purple>" + essenceLine(material) + "</light_purple></gray>");
+            addEpithet(lore, material);
             lore.add("");
             lore.add("<dark_gray>" + material.getDescription() + "</dark_gray>");
 
@@ -767,6 +777,7 @@ public class AlloyCodexGUI implements InventoryHolder {
                         + String.format(Locale.US, "%.1fx", result.getMiningSpeed()) + "</aqua> · Damage: <red>+"
                         + String.format(Locale.US, "%.1f", result.getAttackDamageBonus()) + "</red></gray>");
                 lore.add("<gray>Essences: <light_purple>" + essenceLine(result) + "</light_purple></gray>");
+                addEpithet(lore, result);
             }
             lore.add("");
             lore.add("<gold>✦ " + alloy.traitName() + "</gold>");
@@ -792,6 +803,7 @@ public class AlloyCodexGUI implements InventoryHolder {
             lore.add("<gray>  " + catalyst.getUltimate().getDescription() + "</gray>");
             lore.add("<gold>🛡 Armor State: </gold><light_purple>" + catalyst.getArmorState().getDisplayName() + "</light_purple>");
             lore.add("<gray>  " + catalyst.getArmorState().getDescription() + "</gray>");
+            addEpithet(lore, material);
             lore.add("");
             lore.add("<gray>Fuse with any of the <yellow>16 legendary alloys</yellow> → <bold>"
                     + catalyst.compatiblePrimes() + "</bold> prime alloys.</gray>");
@@ -821,6 +833,7 @@ public class AlloyCodexGUI implements InventoryHolder {
                         + String.format(Locale.US, "%.1fx", result.getMiningSpeed()) + "</aqua> · Damage: <red>+"
                         + String.format(Locale.US, "%.1f", result.getAttackDamageBonus()) + "</red></gray>");
                 lore.add("<gray>Essences: <light_purple>" + essenceLine(result) + "</light_purple></gray>");
+                addEpithet(lore, result);
                 if (primes) {
                     lore.add("");
                     lore.add("<gold>⚡ Prime ultimate: </gold><aqua>" + PrimeUltimate.of(result).getDisplayName() + "</aqua>");
@@ -872,6 +885,7 @@ public class AlloyCodexGUI implements InventoryHolder {
         lore.add("<dark_gray>ID: " + material.getId() + "</dark_gray>");
         lore.add("");
         lore.add("<gray>Essences: <light_purple>" + essenceLine(material) + "</light_purple></gray>");
+        addEpithet(lore, material);
         lore.add("");
         lore.add("<yellow>▶ Click to list every compatible partner</yellow>");
         return entry(material, Material.IRON_INGOT, title, lore);
@@ -1237,6 +1251,21 @@ public class AlloyCodexGUI implements InventoryHolder {
     @Nonnull
     private String nameOf(@Nullable TinkerMaterial material, @Nonnull String fallbackId) {
         return material != null ? material.getName() : fallbackId;
+    }
+
+    /**
+     * Adds the mineral's perk epithet to an entry's lore.
+     *
+     * <p>The word that names a forged perk is only useful before the forge, so it belongs on every codex
+     * entry that describes something a player can forge with — the mineral catalog, the explorer picker,
+     * the legendary recipes, the catalysts and everything this server has already blended. It is added by
+     * the same {@link PerkEpithet} the forge uses, so the word a player reads here is the word their item
+     * will print.</p>
+     */
+    private static void addEpithet(@Nonnull List<String> lore, @Nullable TinkerMaterial material) {
+        String epithet = PerkEpithet.of(material);
+        if (epithet.isEmpty()) return;
+        lore.add("<gold>✦ Perk epithet: </gold><light_purple>" + epithet + "</light_purple>");
     }
 
     @Nonnull

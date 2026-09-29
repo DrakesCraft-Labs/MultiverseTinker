@@ -7,6 +7,7 @@ import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
+import com.chagui68.multiversetinker.tools.PerkEpithet;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.tools.VanillaCatalyst;
 import net.kyori.adventure.text.Component;
@@ -24,6 +25,8 @@ import org.mockbukkit.mockbukkit.ServerMock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -237,6 +240,65 @@ class AlloyCodexTest {
             codex.handleClick(player, SLOT_NEXT);
         }
         assertEquals(1, found, "Copper must appear exactly once in the catalog");
+    }
+
+    @Test
+    @DisplayName("Every codex entry prints the perk word its mineral lends, before it is spent")
+    void codexPrintsThePerkEpithet() {
+        // The legend, so the word printed on each entry has a meaning a player can look up in the codex.
+        codex.handleClick(player, CATALOG_SECTION);
+        String info = plainText(codex.getInventory().getItem(SLOT_INFO));
+        assertTrue(info.contains("Perk epithet"), "The catalog must explain the word it prints: " + info);
+
+        // The mineral catalog: every entry that names a material prints that material's exact word.
+        Pattern id = Pattern.compile("ID: (mvtink_[a-z0-9_]+)");
+        int checked = 0;
+        long pages = (long) Math.ceil(materials.getAll().size() / 36.0);
+        for (long page = 0; page < pages; page++) {
+            for (int slot = CONTENT_START; slot < CONTENT_START + 36; slot++) {
+                ItemStack entry = codex.getInventory().getItem(slot);
+                if (entry == null || entry.getType() == org.bukkit.Material.GRAY_STAINED_GLASS_PANE) continue;
+                String text = plainText(entry);
+                Matcher matcher = id.matcher(text);
+                if (!matcher.find()) continue;
+                TinkerMaterial material = materials.get(matcher.group(1));
+                assertNotNull(material, matcher.group(1) + " must be registered");
+                assertTrue(text.contains("Perk epithet: " + PerkEpithet.of(material)),
+                        "The entry must print the word the forge will use, got: " + text);
+                checked++;
+            }
+            codex.handleClick(player, SLOT_NEXT);
+        }
+        assertTrue(checked > 30, "The whole catalog must be walked, only " + checked + " entries checked");
+
+        // The legendary recipes and the catalysts carry their own word too.
+        codex.handleClick(player, SLOT_SECTION_FIRST);
+        assertEquals(AlloyCodexGUI.Section.LEGENDARY, codex.getSection());
+        assertTrue(pageText().contains("Perk epithet: " + PerkEpithet.of(materials.get("mvtink_cosmic_netherite"))),
+                "A legendary entry must print the word it lends");
+
+        codex.handleClick(player, SLOT_SECTION_FIRST + 1);
+        assertEquals(AlloyCodexGUI.Section.CATALYSTS, codex.getSection());
+        assertTrue(pageText().contains("Perk epithet: "
+                        + PerkEpithet.of(materials.get("mvtink_catalyst_nether_star"))),
+                "A catalyst entry must print the word it lends");
+
+        // The explorer picker is the page a player reads right before choosing what to blend.
+        codex.handleClick(player, SLOT_SECTION_FIRST + 4);
+        assertEquals(AlloyCodexGUI.Section.EXPLORER, codex.getSection());
+        assertTrue(pageText().contains("Perk epithet: "),
+                "The explorer choices must print the words they lend");
+    }
+
+    /** Plain text of every entry the codex is showing on the current page. */
+    private String pageText() {
+        StringBuilder text = new StringBuilder();
+        for (int slot = CONTENT_START; slot < CONTENT_START + 36; slot++) {
+            ItemStack entry = codex.getInventory().getItem(slot);
+            if (entry == null) continue;
+            text.append(plainText(entry)).append('\n');
+        }
+        return text.toString();
     }
 
     @Test
