@@ -14,6 +14,7 @@ Esta página dice, material por material, **de dónde sale** y **qué aporta**: 
 | **Catalizadores** | Objetos vanilla reales (Estrella del Nether, Hielo Azul…) dejados en el crisol junto a una aleación legendaria. |
 | **Compuestas / Primordiales** | Forjadas en el crisol a partir de un par válido (ver Índice de Recetas). Se guardan en `dynamic-alloys.yml`. |
 
+<!-- mvtink:generated -->
 ## 🌍 Overworld (33 materiales)
 
 ### Amber · `mvtink_amber`
@@ -1227,4 +1228,4 @@ Los catalizadores no se mezclan solos: se emparejan con una de las 16 aleaciones
 - **Esencias:** Primal, Tempered, Brutal
 - **Ultimate primordial:** Prismatic Ascension — A prismatic pillar descends, transfixing the target and mending the wielder.
 - **Estado de armadura:** Prime Aegis — Spins up a hardened aegis of absorption and resistance when struck.
-
+<!-- mvtink:generated:end -->

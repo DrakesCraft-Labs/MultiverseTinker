@@ -14,6 +14,7 @@ This page says, material by material, **where it comes from** and **what it give
 | **Catalysts** | Real vanilla items (Nether Star, Blue Ice…) dropped in the crucible next to a legendary alloy. |
 | **Composites / Primes** | Forged in the crucible from a valid pair (see the Recipe Index). Saved to `dynamic-alloys.yml`. |
 
+<!-- mvtink:generated -->
 ## 🌍 Overworld (33 materials)
 
 ### Amber · `mvtink_amber`
@@ -1227,4 +1228,4 @@ Catalysts are never blended on their own: they pair with one of the 16 legendary
 - **Essences:** Primal, Tempered, Brutal
 - **Prime ultimate:** Prismatic Ascension — A prismatic pillar descends, transfixing the target and mending the wielder.
 - **Prime armor state:** Prime Aegis — Spins up a hardened aegis of absorption and resistance when struck.
-
+<!-- mvtink:generated:end -->

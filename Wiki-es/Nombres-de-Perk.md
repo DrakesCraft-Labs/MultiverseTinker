@@ -34,6 +34,7 @@ garantiza que dos combinaciones distintas jamás compartan el nombre del perk.
 > 🌐 Los epítetos son texto que aparece **dentro del juego** y, como el resto del lore, van en inglés; la
 > tabla es la misma en las dos wikis.
 
+<!-- mvtink:generated -->
 | Mineral | ID | Epíteto |
 |---|---|---|
 | **Adamant Steel** | `mvtink_adamant_steel` | **Unyielding** |
@@ -42,11 +43,11 @@ garantiza que dos combinaciones distintas jamás compartan el nombre del perk.
 | **Aether Pearl** | `mvtink_aether_pearl` | **Pearlescent** |
 | **Aetherium** | `mvtink_aetherium` | **Aetheric** |
 | **Amber** | `mvtink_amber` | **Amberbound** |
+| **Amethyst** | `mvtink_amethyst` | **Resonant** |
 | **Amethyst Cluster** | `mvtink_catalyst_amethyst_cluster` | **Clusterborn** |
 | **Amethyst Geode Crystal** | `mvtink_amethyst_cluster_gem` | **Geodic** |
-| **Amethyst** | `mvtink_amethyst` | **Resonant** |
-| **Ancient Debris Slag** | `mvtink_ancient_slag` | **Ancestral** |
 | **Ancient Debris** | `mvtink_catalyst_ancient_debris` | **Deepforged** |
+| **Ancient Debris Slag** | `mvtink_ancient_slag` | **Ancestral** |
 | **Aquamarine** | `mvtink_aquamarine` | **Tidal** |
 | **Ardite** | `mvtink_ardite` | **Ardent** |
 | **Astral Brass** | `mvtink_astral_brass` | **Astral** |
@@ -83,8 +84,8 @@ garantiza que dos combinaciones distintas jamás compartan el nombre del perk.
 | **Eclipse Gem** | `mvtink_eclipse_gem` | **Eclipsed** |
 | **Electrum** | `mvtink_electrum` | **Voltaic** |
 | **Emerald** | `mvtink_emerald` | **Mercantile** |
-| **End Crystal Shard** | `mvtink_end_crystal_shard` | **Resurrective** |
 | **End Crystal** | `mvtink_catalyst_end_crystal` | **Crystalline** |
+| **End Crystal Shard** | `mvtink_end_crystal_shard` | **Resurrective** |
 | **Ender Brass** | `mvtink_ender_brass` | **Phasing** |
 | **Ender Pearl Core** | `mvtink_pearl_core` | **Teleportive** |
 | **Enderite** | `mvtink_enderite` | **Riftborn** |
@@ -120,8 +121,8 @@ garantiza que dos combinaciones distintas jamás compartan el nombre del perk.
 | **Nether Quartz** | `mvtink_quartz` | **Quartzhewn** |
 | **Nether Star** | `mvtink_catalyst_nether_star` | **Starforged** |
 | **Nether Tungsten** | `mvtink_nether_tungsten` | **Netherwrought** |
-| **Netherite Scrap Shard** | `mvtink_netherite_shard` | **Scrapforged** |
 | **Netherite** | `mvtink_netherite` | **Netherforged** |
+| **Netherite Scrap Shard** | `mvtink_netherite_shard` | **Scrapforged** |
 | **Netherite-Infused Quartz** | `mvtink_infused_quartz` | **Infused** |
 | **Nickel** | `mvtink_nickel` | **Nickelated** |
 | **Null-Shard** | `mvtink_null_shard` | **Nullifying** |
@@ -131,8 +132,8 @@ garantiza que dos combinaciones distintas jamás compartan el nombre del perk.
 | **Packed Ice** | `mvtink_catalyst_packed_ice` | **Glaciated** |
 | **Phantomite** | `mvtink_phantomite` | **Phantasmal** |
 | **Platinum** | `mvtink_platinum` | **Platinous** |
-| **Prismarine Crystals** | `mvtink_catalyst_prismarine_crystals` | **Pristine** |
 | **Prismarine** | `mvtink_prismarine` | **Tidebound** |
+| **Prismarine Crystals** | `mvtink_catalyst_prismarine_crystals` | **Pristine** |
 | **Prismatic Quartz** | `mvtink_prismatic_quartz` | **Prismatic** |
 | **Pure Calcite** | `mvtink_calcite_gem` | **Calcified** |
 | **Pure Weeping Shard** | `mvtink_weeping_shard` | **Tearbound** |
@@ -175,6 +176,7 @@ garantiza que dos combinaciones distintas jamás compartan el nombre del perk.
 | **Zero-Point Shard** | `mvtink_zero_point` | **Zeroed** |
 | **Zinc** | `mvtink_zinc` | **Galvanized** |
 | **Zircon** | `mvtink_zircon` | **Tectonic** |
+<!-- mvtink:generated:end -->
 
 ## ⚗ Aleaciones forjadas en el crisol
 
