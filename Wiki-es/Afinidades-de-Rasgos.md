@@ -105,3 +105,7 @@ alcanza el 100%; una cabeza exótica con empuñadura común ronda el 50%.
 En combate la esencia dominante se canaliza en el **golpe primario** del perk (el *perk echo*),
 escalado por esa concentración — por lo que dos ballestas del mismo tier forjadas con minerales
 distintos se comportan de forma realmente diferente.
+
+> ⚡ Las armas cuyo enfoque de esencia alcanza el **80%** desatan además el
+> **[ultimate](Ultimates-de-Esencia.md)** cinematográfico de esa esencia — meteoritos, vórtices,
+> pilares de luz o jaulas que inmovilizan al enemigo — con 20 segundos de enfriamiento.

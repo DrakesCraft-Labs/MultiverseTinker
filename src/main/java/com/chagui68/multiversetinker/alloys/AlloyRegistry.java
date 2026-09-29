@@ -305,6 +305,21 @@ public class AlloyRegistry {
     }
 
     /**
+     * Whether the crucible may forge this exact pair.
+     *
+     * <p>Generic blending stays limited to brush/vanilla minerals, but a pair that matches a curated
+     * legendary recipe is always craftable. That is what keeps <b>Cinder Steel</b> (steel +
+     * netherite) and <b>Cosmic Netherite</b> (netherite + celestine) reachable even though vanilla
+     * netherite is itself typed as an alloy and therefore cannot be blended freely.</p>
+     */
+    public boolean isCraftablePair(@Nullable TinkerMaterial first, @Nullable TinkerMaterial second) {
+        if (first == null || second == null) return false;
+        if (first.getId().equalsIgnoreCase(second.getId())) return false;
+        if (isMixable(first) && isMixable(second)) return true;
+        return findAlloy(first.getId(), second.getId()) != null;
+    }
+
+    /**
      * Convenience overload used for player feedback messages.
      */
     @Nullable

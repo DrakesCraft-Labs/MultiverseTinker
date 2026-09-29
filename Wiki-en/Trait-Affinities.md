@@ -105,3 +105,7 @@ weapon's forged mass that carries the identity essence. A weapon built entirely 
 In combat the dominant essence is channelled into the perk's **primary strike** (the *perk echo*),
 scaled by that focus — so two crossbows of the same tier forged from different minerals genuinely
 fight differently.
+
+> ⚡ Weapons whose essence focus reaches **80%** also unleash that essence' cinematic
+> **[ultimate](Essence-Ultimates.md)** — meteors, vortexes, light pillars or cages that pin the enemy
+> in place — on a 20 second cooldown.

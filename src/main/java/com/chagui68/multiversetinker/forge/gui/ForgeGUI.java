@@ -314,7 +314,8 @@ public class ForgeGUI implements InventoryHolder {
                         "• War Mace: Crushing downward smashes with shockwaves.",
                         "• Tower Shield: Reflects 35% damage & retaliates on block.",
                         "• Perks are material-driven: the head part's mineral names and powers them",
-                        "  (Cobalt => Infernal Piercing Velocity, Voidstone => Void Piercing Velocity)."
+                        "  (Cobalt => Infernal Piercing Velocity, Voidstone => Void Piercing Velocity).",
+                        "• Focus a weapon to 80%+ essence to unleash cinematic essence ultimates."
                 )));
 
         inventory.setItem(31, createGuideItem(Material.NETHERITE_PICKAXE,
@@ -448,7 +449,7 @@ public class ForgeGUI implements InventoryHolder {
                 "<gradient:#ff4500:#ffa500><b>♨ Ignite Crucible & Smelt Alloy</b></gradient>",
                 List.of(
                         "Place 2 distinct brush or vanilla minerals in 29 and 33.",
-                        "Vanilla netherite is already an alloy and cannot be blended.",
+                        "All 16 legendary recipes work, netherite included in its two.",
                         "",
                         "Every mineral combination yields its own unique alloy.",
                         "Consumes 1 of each item to produce 2 alloy ingots."
@@ -889,7 +890,9 @@ public class ForgeGUI implements InventoryHolder {
             return;
         }
 
-        if (!AlloyRegistry.isMixable(m1) || !AlloyRegistry.isMixable(m2)) {
+        // Curated legendary recipes stay craftable even when one parent (vanilla netherite) is not
+        // freely blendable; every other pair must be made of two brush/vanilla minerals.
+        if (!alloyRegistry.isCraftablePair(m1, m2)) {
             player.sendMessage(miniMessage.deserialize("<red>⚠ " + AlloyRegistry.mixRequirementMessage() + "</red>"));
             player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;

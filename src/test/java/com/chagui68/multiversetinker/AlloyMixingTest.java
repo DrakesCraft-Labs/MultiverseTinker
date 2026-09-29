@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -81,24 +80,37 @@ class AlloyMixingTest {
     }
 
     @Test
-    @DisplayName("Legendary recipes point at real minerals and are craftable in the crucible")
+    @DisplayName("Legendary recipes point at real minerals and are all craftable in the crucible")
     void testLegendaryRecipesAreReachable() {
-        Set<String> unreachable = new TreeSet<>();
-
         for (TinkerAlloy alloy : alloyRegistry.getAllAlloys()) {
             TinkerMaterial first = materialRegistry.get(alloy.mat1Id());
             TinkerMaterial second = materialRegistry.get(alloy.mat2Id());
 
             assertNotNull(first, "Recipe " + alloy.id() + " references a non-existent mineral " + alloy.mat1Id());
             assertNotNull(second, "Recipe " + alloy.id() + " references a non-existent mineral " + alloy.mat2Id());
-
-            if (!AlloyRegistry.isMixable(first) || !AlloyRegistry.isMixable(second)) {
-                unreachable.add(alloy.id());
-            }
+            assertTrue(alloyRegistry.isCraftablePair(first, second),
+                    "Recipe " + alloy.id() + " must be forgeable in the crucible");
         }
+    }
 
-        assertEquals(Set.of("mvtink_cinder_steel", "mvtink_cosmic_netherite"), unreachable,
-                "Only the recipes built on unmixable vanilla netherite may be unreachable");
+    @Test
+    @DisplayName("Vanilla netherite may only be blended inside its curated legendary recipes")
+    void testNetheriteOnlyWorksInCuratedRecipes() {
+        TinkerMaterial netherite = materialRegistry.get("mvtink_netherite");
+        TinkerMaterial steel = materialRegistry.get("mvtink_steel");
+        TinkerMaterial celestine = materialRegistry.get("mvtink_celestine");
+        TinkerMaterial tin = materialRegistry.get("mvtink_tin");
+
+        assertNotNull(netherite);
+        assertFalse(AlloyRegistry.isMixable(netherite), "Netherite stays out of free-form blending");
+
+        assertTrue(alloyRegistry.isCraftablePair(netherite, steel), "Cinder Steel must stay forgeable");
+        assertTrue(alloyRegistry.isCraftablePair(netherite, celestine), "Cosmic Netherite must stay forgeable");
+        assertFalse(alloyRegistry.isCraftablePair(netherite, tin),
+                "Netherite must still refuse arbitrary blends with unrelated minerals");
+        assertFalse(alloyRegistry.isCraftablePair(tin, tin), "A mineral cannot be paired with itself");
+        assertFalse(alloyRegistry.isCraftablePair(materialRegistry.get("mvtink_bronze"), tin),
+                "Finished alloys cannot be re-blended");
     }
 
     @Test

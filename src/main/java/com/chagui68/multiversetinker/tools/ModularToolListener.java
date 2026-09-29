@@ -257,37 +257,46 @@ public class ModularToolListener implements Listener {
         }
 
         // Material-driven signature: the perk channels the essence of the minerals the weapon was forged from.
-        applyWeaponPerkEcho(player, target, event, pdc);
+        WeaponPerkProfile profile = applyWeaponPerkEcho(player, target, event, pdc);
+        if (profile != null) {
+            // Rare cinematic payoff for weapons with a concentrated essence focus.
+            UltimateEffectEngine.tryTrigger(plugin, player, target, profile, Math.max(1.0, event.getFinalDamage()));
+        }
     }
 
     /**
      * Releases the weapon's dominant mineral essence as its signature perk on the primary strike.
      * Runs inside the trait-chain guard so echo damage can never recurse without bound.
+     *
+     * @return the weapon's material-driven perk profile, or {@code null} when the item is not a
+     *         recognised modular weapon.
      */
-    private void applyWeaponPerkEcho(@Nullable Player player, @Nullable LivingEntity target,
-                                     @Nullable EntityDamageByEntityEvent event,
-                                     @Nonnull PersistentDataContainer pdc) {
-        if (target == null) return;
+    @Nullable
+    private WeaponPerkProfile applyWeaponPerkEcho(@Nullable Player player, @Nullable LivingEntity target,
+                                                 @Nullable EntityDamageByEntityEvent event,
+                                                 @Nonnull PersistentDataContainer pdc) {
+        if (target == null) return null;
         String weaponTypeName = pdc.get(TinkerKeys.WEAPON_TYPE, PersistentDataType.STRING);
-        if (weaponTypeName == null) return;
+        if (weaponTypeName == null) return null;
 
         ModularWeaponType type;
         try {
             type = ModularWeaponType.valueOf(weaponTypeName);
         } catch (IllegalArgumentException e) {
-            return;
+            return null;
         }
 
         List<PartComposition> parts = collectCompositions(pdc);
-        if (parts.isEmpty()) return;
+        if (parts.isEmpty()) return null;
 
         WeaponPerkProfile profile = WeaponPerkProfile.of(type, parts);
-        if (!enterTraitChain()) return;
+        if (!enterTraitChain()) return profile;
         try {
             TraitEffectEngine.applyWeaponPerkEcho(player, target, event, profile.getAffinity(), profile.getPotency());
         } finally {
             exitTraitChain();
         }
+        return profile;
     }
 
     private void handleSpecializedToolCombat(Player player, LivingEntity target, EntityDamageByEntityEvent event, String toolType) {
@@ -462,7 +471,10 @@ public class ModularToolListener implements Listener {
         if (hitEntity instanceof LivingEntity target) {
             triggerMultiMaterialTraits(shooter, target, null, pdc);
             // Material-driven weapon perk echo for projectile weapons (bow, crossbow, thrown trident).
-            applyWeaponPerkEcho(shooter, target, null, pdc);
+            WeaponPerkProfile profile = applyWeaponPerkEcho(shooter, target, null, pdc);
+            if (shooter != null && profile != null) {
+                UltimateEffectEngine.tryTrigger(plugin, shooter, target, profile, 6.0);
+            }
         }
     }
 

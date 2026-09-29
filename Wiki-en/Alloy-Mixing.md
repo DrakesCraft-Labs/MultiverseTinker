@@ -2,7 +2,7 @@
 
 The **Multiverse Forge** features a dedicated **Alloy Crucible** (Section 3 of the Forge GUI) capable of superheating and fusing two distinct metallurgical or crystalline minerals into powerful, specialized alloys.
 
-> ♻ **Universal blending**: *any* two distinct minerals obtained with the **Prospector Brush** (Overworld, Nether or End geology) or refined from **vanilla Minecraft ores** can be blended — not just the 16 legendary recipes. Every pair synthesizes its own alloy with its own trait, and that trait adapts to **weapons, tools and armor** (see [Trait Affinities](Trait-Affinities.md)). Finished alloys cannot be re-blended, which keeps the crucible from looping infinitely. That leaves **110 blendable minerals** and **5,995 possible pairs**, of which 14 resolve to a legendary recipe; vanilla netherite is the sole exception (it is already classified as an alloy, so **Cinder Steel** and **Cosmic Netherite** cannot be blended).
+> ♻ **Universal blending**: *any* two distinct minerals obtained with the **Prospector Brush** (Overworld, Nether or End geology) or refined from **vanilla Minecraft ores** can be blended — not just the 16 legendary recipes. Every pair synthesizes its own alloy with its own trait, and that trait adapts to **weapons, tools and armor** (see [Trait Affinities](Trait-Affinities.md)). Finished alloys cannot be re-blended, which keeps the crucible from looping infinitely. That leaves **110 blendable minerals** and **5,995 possible pairs**, of which all 16 resolve to a legendary recipe; vanilla netherite is the sole special case (it is already classified as an alloy, so it only blends inside its two curated recipes: **Cinder Steel** and **Cosmic Netherite**).
 
 ---
 
@@ -56,5 +56,5 @@ named `<Mineral A>-<Mineral B> Alloy`, inheriting the affinities of both parents
 - **Cross-Dimensional Blends**: Combining Overworld precious metals with Nether or End minerals unlocks endgame capabilities such as **Cosmic Netherite** and **Void Damascus**.
 - **Alloy Part Forging**: Alloy ingots can also be mixed with other minerals in Section 2 (Multi-Material Casting) for combined hybrid synergies!
 - **Blendable inputs only**: The crucible rejects non-mineral tinker items (casts, tool parts, smeltery, brush) and already-finished alloys. Distinct minerals only — a mineral cannot be paired with itself.
-- **Netherite exception**: vanilla `mvtink_netherite` is already classified as an alloy, so it cannot be fed into the crucible. **Cinder Steel** and **Cosmic Netherite** therefore cannot be synthesized by blending and are only obtainable through admin commands for now; the other 14 legendary recipes are fully craftable.
+- **Netherite exception**: vanilla `mvtink_netherite` is already classified as an alloy, so it cannot be freely blended with arbitrary minerals. It still works inside its two curated recipes, so all **16 legendary alloys are craftable**; every other netherite pairing is rejected.
 - **Adaptive effects**: An alloy forged into a **weapon** triggers offensive procs, into a **tool** triggers mining procs, and into **armor** triggers defensive procs. See [Trait Affinities](Trait-Affinities.md).
