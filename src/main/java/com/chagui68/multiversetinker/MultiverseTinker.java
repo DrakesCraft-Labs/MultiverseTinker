@@ -64,8 +64,11 @@ public class MultiverseTinker extends JavaPlugin {
         // Register Materials & Items
         this.materialRegistry = new MaterialRegistry();
         this.alloyRegistry = new AlloyRegistry();
+        // Composite alloys forged in previous sessions must come back before items and recipes are built.
+        this.alloyRegistry.enablePersistence(this, materialRegistry);
         this.alloyRegistry.registerAlloysIntoMaterialRegistry(materialRegistry);
-        getLogger().info("Registered " + materialRegistry.getAll().size() + " geological and alloy materials.");
+        getLogger().info("Registered " + materialRegistry.getAll().size() + " geological and alloy materials ("
+                + alloyRegistry.getDynamicAlloyCount() + " player-forged composites restored).");
 
         this.itemRegistry = new TinkerItemRegistry(materialRegistry);
 
@@ -245,6 +248,9 @@ public class MultiverseTinker extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (alloyRegistry != null) {
+            alloyRegistry.flush();
+        }
         if (forgeManager != null) {
             forgeManager.stopAuraTask();
         }

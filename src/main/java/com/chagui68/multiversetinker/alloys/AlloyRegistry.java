@@ -5,18 +5,34 @@ import com.chagui68.multiversetinker.api.MaterialType;
 import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class AlloyRegistry {
 
+    /** File holding every composite alloy the players have forged so far. */
+    private static final String DYNAMIC_FILE = "dynamic-alloys.yml";
+
     private final Map<String, TinkerAlloy> alloys = new LinkedHashMap<>();
+    /** Ids of the 16 curated recipes: everything else is player-forged and must be persisted. */
+    private final Set<String> curatedIds = new LinkedHashSet<>();
+
+    @Nullable
+    private JavaPlugin plugin;
+    private boolean saveScheduled;
 
     public AlloyRegistry() {
         registerDefaultAlloys();
+        curatedIds.addAll(alloys.keySet());
     }
 
     private void registerDefaultAlloys() {
@@ -205,6 +221,7 @@ public class AlloyRegistry {
                 attackDamageBonus
         );
         register(dynamicAlloy);
+        markDynamicAlloyDirty();
 
         if (materialRegistry.get(dynamicAlloyId) == null) {
             TinkerMaterial tm = TinkerMaterial.builder()
@@ -262,30 +279,130 @@ public class AlloyRegistry {
 
     public void registerAlloysIntoMaterialRegistry(@Nonnull MaterialRegistry materialRegistry) {
         for (TinkerAlloy alloy : alloys.values()) {
-            if (materialRegistry.get(alloy.id()) != null) continue;
-
-            TinkerMaterial tm = TinkerMaterial.builder()
-                    .id(alloy.id())
-                    .name(alloy.name())
-                    .origin(MineralOrigin.OVERWORLD)
-                    .rarity(MaterialRarity.EPIC)
-                    .type(MaterialType.ALLOY)
-                    .baseVanillaMaterial(Material.RAW_IRON)
-                    .processedVanillaMaterial(Material.IRON_INGOT)
-                    .nuggetVanillaMaterial(Material.IRON_NUGGET)
-                    .blockVanillaMaterial(Material.IRON_BLOCK)
-                    .colorHex(alloy.colorHex())
-                    .description(alloy.traitDescription())
-                    .meltingDurationTicks(100)
-                    .durabilityBonus(alloy.durabilityBonus())
-                    .miningSpeed(alloy.miningSpeed())
-                    .attackDamageBonus(alloy.attackDamageBonus())
-                    .traitName(alloy.traitName())
-                    .traitDescription(alloy.traitDescription())
-                    .alloyParents(alloy.mat1Id() + "," + alloy.mat2Id())
-                    .build();
-            materialRegistry.register(tm);
+            registerMaterial(materialRegistry, alloy);
         }
+    }
+
+    private void registerMaterial(@Nonnull MaterialRegistry materialRegistry, @Nonnull TinkerAlloy alloy) {
+        if (materialRegistry.get(alloy.id()) != null) return;
+
+        TinkerMaterial tm = TinkerMaterial.builder()
+                .id(alloy.id())
+                .name(alloy.name())
+                .origin(MineralOrigin.OVERWORLD)
+                .rarity(MaterialRarity.EPIC)
+                .type(MaterialType.ALLOY)
+                .baseVanillaMaterial(Material.RAW_IRON)
+                .processedVanillaMaterial(Material.IRON_INGOT)
+                .nuggetVanillaMaterial(Material.IRON_NUGGET)
+                .blockVanillaMaterial(Material.IRON_BLOCK)
+                .colorHex(alloy.colorHex())
+                .description(alloy.traitDescription())
+                .meltingDurationTicks(100)
+                .durabilityBonus(alloy.durabilityBonus())
+                .miningSpeed(alloy.miningSpeed())
+                .attackDamageBonus(alloy.attackDamageBonus())
+                .traitName(alloy.traitName())
+                .traitDescription(alloy.traitDescription())
+                .alloyParents(alloy.mat1Id() + "," + alloy.mat2Id())
+                .build();
+        materialRegistry.register(tm);
+    }
+
+    // ==========================================
+    // PERSISTENCE OF PLAYER-FORGED COMPOSITES
+    // ==========================================
+    /**
+     * Restores every composite alloy forged in previous sessions and arms the save pipeline.
+     *
+     * <p>Without this, an alloy ingot crafted before a restart would refer to a material that no
+     * longer exists and would silently stop working as a forging component.</p>
+     */
+    public void enablePersistence(@Nonnull JavaPlugin plugin, @Nonnull MaterialRegistry materialRegistry) {
+        this.plugin = plugin;
+        File file = new File(plugin.getDataFolder(), DYNAMIC_FILE);
+        if (!file.exists()) return;
+
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+        ConfigurationSection root = yaml.getConfigurationSection("alloys");
+        if (root == null) return;
+
+        int restored = 0;
+        for (String id : root.getKeys(false)) {
+            ConfigurationSection section = root.getConfigurationSection(id);
+            if (section == null) continue;
+            String mat1 = section.getString("mat1");
+            String mat2 = section.getString("mat2");
+            if (mat1 == null || mat2 == null) continue;
+
+            TinkerAlloy alloy = new TinkerAlloy(
+                    id,
+                    section.getString("name", id),
+                    mat1,
+                    mat2,
+                    section.getString("color", "#D4AF37"),
+                    section.getString("traitName", "Composite"),
+                    section.getString("traitDescription", "Composite metallurgy."),
+                    section.getInt("durability"),
+                    (float) section.getDouble("miningSpeed"),
+                    section.getDouble("attackDamage"));
+            register(alloy);
+            registerMaterial(materialRegistry, alloy);
+            restored++;
+        }
+
+        if (restored > 0) {
+            plugin.getLogger().info("Restored " + restored + " player-forged composite alloys.");
+        }
+    }
+
+    /** Number of composite alloys players have forged, excluding the 16 curated recipes. */
+    public int getDynamicAlloyCount() {
+        int count = 0;
+        for (String id : alloys.keySet()) {
+            if (!curatedIds.contains(id)) count++;
+        }
+        return count;
+    }
+
+    /** Writes every player-forged composite alloy to disk. Safe to call at any time. */
+    public void flush() {
+        if (plugin == null) return;
+
+        YamlConfiguration yaml = new YamlConfiguration();
+        for (TinkerAlloy alloy : alloys.values()) {
+            if (curatedIds.contains(alloy.id().toLowerCase(Locale.ROOT))) continue;
+            String path = "alloys." + alloy.id() + ".";
+            yaml.set(path + "name", alloy.name());
+            yaml.set(path + "mat1", alloy.mat1Id());
+            yaml.set(path + "mat2", alloy.mat2Id());
+            yaml.set(path + "color", alloy.colorHex());
+            yaml.set(path + "traitName", alloy.traitName());
+            yaml.set(path + "traitDescription", alloy.traitDescription());
+            yaml.set(path + "durability", alloy.durabilityBonus());
+            yaml.set(path + "miningSpeed", (double) alloy.miningSpeed());
+            yaml.set(path + "attackDamage", alloy.attackDamageBonus());
+        }
+
+        File folder = plugin.getDataFolder();
+        if (!folder.exists() && !folder.mkdirs()) {
+            plugin.getLogger().warning("Could not create the plugin data folder for " + DYNAMIC_FILE + ".");
+            return;
+        }
+        try {
+            yaml.save(new File(folder, DYNAMIC_FILE));
+        } catch (IOException e) {
+            plugin.getLogger().warning("Could not save " + DYNAMIC_FILE + ": " + e.getMessage());
+        }
+    }
+
+    private void markDynamicAlloyDirty() {
+        if (plugin == null || saveScheduled) return;
+        saveScheduled = true;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            saveScheduled = false;
+            flush();
+        }, 40L);
     }
 
     /**

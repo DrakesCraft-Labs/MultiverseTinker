@@ -932,9 +932,18 @@ public class ForgeGUI implements InventoryHolder {
         player.sendMessage(miniMessage.deserialize("<gray>  ➤ " + alloy.traitName() + ": </gray><dark_aqua>" + alloy.traitDescription() + "</dark_aqua>"));
     }
 
+    /** Total distinct mineral pairs that the crucible can fuse into an alloy. */
+    private long possibleAlloyPairs() {
+        long blendable = materialRegistry.getAll().stream().filter(AlloyRegistry::isMixable).count();
+        return blendable * (blendable - 1) / 2;
+    }
+
     private void displayAlloyRecipes(Player player) {
         player.sendMessage(miniMessage.deserialize("<gradient:#ffd700:#ff8c00><b>══════════ MULTIVERSE ALLOY CODEX ══════════</b></gradient>"));
         player.sendMessage(miniMessage.deserialize("<gray>Blend any two brush-extracted or vanilla minerals. Every pair yields a unique alloy whose trait adapts to weapons, tools and armor.</gray>"));
+        player.sendMessage(miniMessage.deserialize("<gray>Curated recipes: <yellow>" + (alloyRegistry.getAllAlloys().size() - alloyRegistry.getDynamicAlloyCount())
+                + "</yellow> · player-forged composites: <yellow>" + alloyRegistry.getDynamicAlloyCount()
+                + "</yellow> of <yellow>" + possibleAlloyPairs() + "</yellow> possible mineral pairs.</gray>"));
         for (TinkerAlloy alloy : alloyRegistry.getAllAlloys()) {
             TinkerMaterial res = materialRegistry.get(alloy.id());
             String resName = (res != null) ? res.getName() : alloy.name();
