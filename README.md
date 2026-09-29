@@ -174,11 +174,50 @@ Wrapping is **measured, not counted**: the row width is estimated glyph by glyph
 and wide glyphs (bullets, bars, stars) are deliberately over-estimated so text wraps one word early rather than
 clipping. Continuation rows get a hanging indent, so `✦ ` and `• ` bullets keep lining up under their text.
 
+### ✨ Perk animations (`animations`)
+
+Every weapon, tool and armor type owns an **exclusive choreography** — its own particle geometry, its own particle pair and its own signature sound. The animation plays when that piece's perk actually fires (a broadsword sweep that chains a foe, a longbow arrow that lands, a mace smash, a helmet that takes a hit…) and is tinted with the colour of the dominant mineral the item was forged from. Two types can never share a signature: a test fails the build if they do.
+
+| Key | Type | Default | What it does |
+| --- | --- | --- | --- |
+| `animations.enabled` | boolean | `true` | Play the perk choreographies. |
+| `animations.particle-scale` | number | `1.0` | Particle-count multiplier for every animation, clamped to `0.25` – `3.0` (strong servers can raise it, weak clients can lower it). |
+| `animations.sounds` | boolean | `true` | Play the signature sound of each animation. |
+| `animations.cooldown-millis` | integer | `400` | Minimum delay between two animations of the same type on the same player, so fast procs (sweeps, chestplate hits) cannot strobe. |
+
+```yaml
+animations:
+  enabled: true
+  particle-scale: 1.0
+  sounds: true
+  cooldown-millis: 400
+```
+
+| Equipment | Animation | Pattern | Sound |
+| --- | --- | --- | --- |
+| Broadsword | Sweeping Arc | `SWEEP_ATTACK` | `ENTITY_PLAYER_ATTACK_SWEEP` |
+| Longbow | Volley Trail | `CRIT` | `ENTITY_ARROW_SHOOT` |
+| Crossbow | Piercing Lance | `ELECTRIC_SPARK` | `ITEM_CROSSBOW_SHOOT` |
+| Trident | Hydraulic Surge | `SPLASH` | `ITEM_TRIDENT_RIPTIDE_1` |
+| Spear | Jousting Thrust | `CLOUD` | `ENTITY_PLAYER_ATTACK_STRONG` |
+| War Mace | Seismic Smash | `EXPLOSION` | `ITEM_MACE_SMASH_GROUND_HEAVY` |
+| Tower Shield | Retaliation Bulwark | `ENCHANTED_HIT` | `ITEM_SHIELD_BLOCK` |
+| Pickaxe | Vein Resonance | `ENCHANTED_HIT` | `BLOCK_AMETHYST_BLOCK_CHIME` |
+| Battleaxe | Lumber Cleave | `CRIT` | `BLOCK_WOOD_BREAK` |
+| Excavator | Seismic Tremor | `CLOUD` | `BLOCK_GRAVEL_BREAK` |
+| Scythe | Harvest Swirl | `HAPPY_VILLAGER` | `ITEM_CROP_PLANT` |
+| Fishing Rod | Abyssal Dredge | `BUBBLE` | `ENTITY_FISHING_BOBBER_SPLASH` |
+| Helmet | Cranium Halo | `END_ROD` | `BLOCK_AMETHYST_BLOCK_RESONATE` |
+| Chestplate | Kinetic Dome | `ENCHANTED_HIT` | `BLOCK_ANVIL_LAND` |
+| Leggings | Stride Coil | `CLOUD` | `ENTITY_PHANTOM_FLAP` |
+| Boots | Grounding Puff | `SNOWFLAKE` | `BLOCK_POWDER_SNOW_BREAK` |
+
 ### 🧭 Other sections
 
 | Section | Purpose |
 | --- | --- |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour, anti-macro cooldown and brush yields. |
+| `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
 | `smeltery` | Crucible tuning: lava consumption chance and the Magma Block heat-source slowdown multiplier. |
 | `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). |
 | `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |

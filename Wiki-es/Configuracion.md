@@ -66,11 +66,70 @@ Item lore wrapping enabled at 190px (headers 320px) per row.
 
 ---
 
+## ✨ Animaciones exclusivas de los perks (`animations`)
+
+Los perks no son lo único que posee cada tipo de equipo: cada arma, herramienta y pieza de armadura tiene su
+propia **coreografía exclusiva**. Dos tipos no comparten patrón, par de partículas ni sonido, y un test hace
+fallar el build si alguna vez ocurre — así es como «sin favoritismos» se garantiza en lugar de prometerse.
+
+La animación salta cuando el perk de esa pieza realmente dispara, y se tiñe con el color del mineral dominante
+con el que se forjó el ítem, así una espada ancha de Cobalto y una de Piedra del Vacío comparten el arco pero no su tono.
+
+| Clave | Tipo | Por defecto | Qué hace |
+| --- | --- | --- | --- |
+| `animations.enabled` | booleano | `true` | Reproducir o no las coreografías de los perks. |
+| `animations.particle-scale` | número | `1.0` | Multiplicador de partículas de cada animación, limitado a `0.25` – `3.0`. Bájalo en servidores cargados, súbelo para un espectáculo más fuerte. |
+| `animations.sounds` | booleano | `true` | Reproducir el sonido característico que acompaña a cada patrón. |
+| `animations.cooldown-millis` | entero | `400` | Retardo mínimo entre dos animaciones del mismo tipo en el mismo jugador (limitado a `0` – `5000`). Los procs rápidos — un barrido que encadena, una pechera que come un golpe — se mantienen legibles en vez de estroboscópicos. |
+
+```yaml
+# Animaciones exclusivas de los perks
+animations:
+  enabled: true
+  particle-scale: 1.0
+  sounds: true
+  cooldown-millis: 400
+```
+
+### Las dieciséis coreografías
+
+| Equipo | Animación | Patrón | Sonido característico |
+| --- | --- | --- | --- |
+| Espada Ancha | Sweeping Arc | `SWEEP_ATTACK` + tinte | `ENTITY_PLAYER_ATTACK_SWEEP` |
+| Arco Largo | Volley Trail | `CRIT` + `END_ROD` | `ENTITY_ARROW_SHOOT` |
+| Ballesta Pesada | Piercing Lance | `ELECTRIC_SPARK` + `CRIT` | `ITEM_CROSSBOW_SHOOT` |
+| Tridente Anciano | Hydraulic Surge | `SPLASH` + `ELECTRIC_SPARK` | `ITEM_TRIDENT_RIPTIDE_1` |
+| Lanza Cinética | Jousting Thrust | `CLOUD` + `CRIT` | `ENTITY_PLAYER_ATTACK_STRONG` |
+| Mazo de Guerra | Seismic Smash | `EXPLOSION` + `CLOUD` | `ITEM_MACE_SMASH_GROUND_HEAVY` |
+| Escudo Torre | Retaliation Bulwark | `ENCHANTED_HIT` + `END_ROD` | `ITEM_SHIELD_BLOCK` |
+| Pico | Vein Resonance | `ENCHANTED_HIT` + `ELECTRIC_SPARK` | `BLOCK_AMETHYST_BLOCK_CHIME` |
+| Hacha de Batalla | Lumber Cleave | `CRIT` + `CHERRY_LEAVES` | `BLOCK_WOOD_BREAK` |
+| Pala Excavadora | Seismic Tremor | `CLOUD` + `CAMPFIRE_COSY_SMOKE` | `BLOCK_GRAVEL_BREAK` |
+| Guadaña | Harvest Swirl | `HAPPY_VILLAGER` + `NOTE` | `ITEM_CROP_PLANT` |
+| Caña de Pescar | Abyssal Dredge | `BUBBLE` + `SPLASH` | `ENTITY_FISHING_BOBBER_SPLASH` |
+| Casco | Cranium Halo | `END_ROD` + `ENCHANTED_HIT` | `BLOCK_AMETHYST_BLOCK_RESONATE` |
+| Pechera | Kinetic Dome | `ENCHANTED_HIT` + `CLOUD` | `BLOCK_ANVIL_LAND` |
+| Pantalones | Stride Coil | `CLOUD` + `ELECTRIC_SPARK` | `ENTITY_PHANTOM_FLAP` |
+| Botas | Grounding Puff | `SNOWFLAKE` + `CLOUD` | `BLOCK_POWDER_SNOW_BREAK` |
+
+Cuándo salta cada animación:
+
+* **Espada Ancha** — el barrido encadenó al menos un enemigo adyacente.
+* **Arco Largo / Ballesta / Tridente (lanzado)** — la flecha, el virote o el tridente impactaron en algo.
+* **Tridente (cuerpo a cuerpo), Lanza, Mazo** — se activó la marea, la estocada corriendo/a caballo o el golpe descendente.
+* **Escudo Torre** — se reflejó un golpe bloqueado.
+* **Pico, Guadaña, Caña de Pescar** — el proc del 15% de botín extra tuvo éxito.
+* **Hacha de Batalla, Pala Excavadora** — corrió la tala del árbol o la excavación 3×3 agachado.
+* **Armadura** — la pieza respondió a un golpe (casco, pechera, pantalones al correr) o absorbió una caída (botas).
+
+---
+
 ## 🧭 Otras secciones
 
 | Sección | Propósito |
 | --- | --- |
 | `archaeology` | Sistema de cepillado: interruptor, duración del cepillado, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque (`DEGRADE` / `COOLDOWN` / `NONE`), enfriamiento anti-macro y rendimientos de la brocha. |
+| `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
 | `smeltery` | Ajustes del crisol: probabilidad de consumir la lava fuente y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
 | `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). |
 | `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |
@@ -79,6 +138,6 @@ Item lore wrapping enabled at 190px (headers 320px) per row.
 
 ## 🔗 Páginas relacionadas
 
-* **[Guía del GUI de la Forja y Equipo Modular](Guia-GUI-Forja.md)**: qué imprime exactamente el lore envuelto — perks, enfoque de esencia y canales de rasgos.
+* **[Guía del GUI de la Forja y Equipo Modular](Guia-GUI-Forja.md)**: qué imprime exactamente el lore envuelto — perks, enfoque de esencia, canales de rasgos y la animación exclusiva de cada tipo.
 * **[Rasgos de Forja y Efectos de Minerales](Rasgos-y-Efectos.md)**: la referencia de rasgos y afinidades tras esas filas de lore.
 * **[Aleaciones Primordiales](Aleaciones-Primordiales.md)**: el archivo `dynamic-alloys.yml` que conserva las primordiales forjadas por los jugadores entre reinicios.

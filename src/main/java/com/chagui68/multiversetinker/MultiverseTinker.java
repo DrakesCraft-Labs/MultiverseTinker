@@ -16,6 +16,7 @@ import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.smeltery.SmelteryListener;
 import com.chagui68.multiversetinker.smeltery.SmelteryManager;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.EquipmentAnimation;
 import com.chagui68.multiversetinker.tools.ModularToolListener;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -54,6 +55,7 @@ public class MultiverseTinker extends JavaPlugin {
         getConfig().options().copyDefaults(true);
         saveConfig();
         applyLoreSettings();
+        applyAnimationSettings();
 
         getLogger().info("========================================");
         getLogger().info("   MultiverseTinker - Paper 1.21+       ");
@@ -140,6 +142,26 @@ public class MultiverseTinker extends JavaPlugin {
         getLogger().info("Item lore wrapping " + (LoreWrap.isEnabled()
                 ? "enabled at " + LoreWrap.configuredMaxPixels() + "px (headers "
                         + LoreWrap.configuredHeaderPixels() + "px) per row."
+                : "disabled."));
+    }
+
+    /**
+     * Applies the perk animation settings of {@code config.yml}.
+     *
+     * <p>Like the lore settings, the animation catalogue is static, so this runs on enable and again
+     * from {@code /mvtink reload} to let a server change the intensity without a restart.</p>
+     */
+    public void applyAnimationSettings() {
+        EquipmentAnimation.configure(
+                getConfig().getBoolean(EquipmentAnimation.CONFIG_ENABLED, true),
+                getConfig().getDouble(EquipmentAnimation.CONFIG_PARTICLE_SCALE, EquipmentAnimation.DEFAULT_PARTICLE_SCALE),
+                getConfig().getBoolean(EquipmentAnimation.CONFIG_SOUNDS, true),
+                getConfig().getInt(EquipmentAnimation.CONFIG_COOLDOWN_MILLIS, EquipmentAnimation.DEFAULT_COOLDOWN_MILLIS));
+
+        getLogger().info("Perk animations " + (EquipmentAnimation.isEnabled()
+                ? "enabled at " + EquipmentAnimation.configuredParticleScale() + "x particles (sounds "
+                        + (EquipmentAnimation.isSoundsEnabled() ? "on" : "off") + ", cooldown "
+                        + EquipmentAnimation.configuredCooldownMillis() + "ms)."
                 : "disabled."));
     }
 

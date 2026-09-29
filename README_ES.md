@@ -175,11 +175,50 @@ defecto de Minecraft, y los glifos anchos (bullets, barras, estrellas) se sobree
 una palabra antes en lugar de recortar. Las filas de continuación llevan sangría colgante, así los bullets `✦ `
 y `• ` siguen alineados bajo su texto.
 
+### ✨ Animaciones de los perks (`animations`)
+
+Cada tipo de arma, herramienta y armadura tiene una **coreografía exclusiva**: su propia geometría de partículas, su propio par de partículas y su propio sonido. La animación salta cuando el perk de esa pieza realmente dispara (una espada ancha que encadena un enemigo con el barrido, una flecha del arco que impacta, un golpe de mazo, un casco que recibe un impacto…) y se tiñe con el color del mineral dominante con el que se forjó el ítem. Dos tipos nunca pueden compartir firma: un test hace fallar el build si ocurre.
+
+| Clave | Tipo | Por defecto | Qué hace |
+| --- | --- | --- | --- |
+| `animations.enabled` | booleano | `true` | Reproducir las coreografías de los perks. |
+| `animations.particle-scale` | número | `1.0` | Multiplicador de partículas de cada animación, limitado a `0.25` – `3.0` (súbelo en servidores potentes, bájalo para clientes justos). |
+| `animations.sounds` | booleano | `true` | Reproducir el sonido característico de cada animación. |
+| `animations.cooldown-millis` | entero | `400` | Retardo mínimo entre dos animaciones del mismo tipo en el mismo jugador, para que los procs rápidos (barridos, impactos en la pechera) no se conviertan en un estrobo. |
+
+```yaml
+animations:
+  enabled: true
+  particle-scale: 1.0
+  sounds: true
+  cooldown-millis: 400
+```
+
+| Equipo | Animación | Patrón | Sonido |
+| --- | --- | --- | --- |
+| Espada Ancha | Sweeping Arc | `SWEEP_ATTACK` | `ENTITY_PLAYER_ATTACK_SWEEP` |
+| Arco Largo | Volley Trail | `CRIT` | `ENTITY_ARROW_SHOOT` |
+| Ballesta | Piercing Lance | `ELECTRIC_SPARK` | `ITEM_CROSSBOW_SHOOT` |
+| Tridente | Hydraulic Surge | `SPLASH` | `ITEM_TRIDENT_RIPTIDE_1` |
+| Lanza | Jousting Thrust | `CLOUD` | `ENTITY_PLAYER_ATTACK_STRONG` |
+| Mazo de Guerra | Seismic Smash | `EXPLOSION` | `ITEM_MACE_SMASH_GROUND_HEAVY` |
+| Escudo Torre | Retaliation Bulwark | `ENCHANTED_HIT` | `ITEM_SHIELD_BLOCK` |
+| Pico | Vein Resonance | `ENCHANTED_HIT` | `BLOCK_AMETHYST_BLOCK_CHIME` |
+| Hacha de Batalla | Lumber Cleave | `CRIT` | `BLOCK_WOOD_BREAK` |
+| Pala Excavadora | Seismic Tremor | `CLOUD` | `BLOCK_GRAVEL_BREAK` |
+| Guadaña | Harvest Swirl | `HAPPY_VILLAGER` | `ITEM_CROP_PLANT` |
+| Caña de Pescar | Abyssal Dredge | `BUBBLE` | `ENTITY_FISHING_BOBBER_SPLASH` |
+| Casco | Cranium Halo | `END_ROD` | `BLOCK_AMETHYST_BLOCK_RESONATE` |
+| Pechera | Kinetic Dome | `ENCHANTED_HIT` | `BLOCK_ANVIL_LAND` |
+| Pantalones | Stride Coil | `CLOUD` | `ENTITY_PHANTOM_FLAP` |
+| Botas | Grounding Puff | `SNOWFLAKE` | `BLOCK_POWDER_SNOW_BREAK` |
+
 ### 🧭 Otras secciones
 
 | Sección | Propósito |
 | --- | --- |
 | `archaeology` | Sistema de cepillado: interruptor, duración, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque, enfriamiento anti-macro y rendimientos de la brocha. |
+| `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
 | `smeltery` | Ajustes del crisol: probabilidad de consumo de lava y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
 | `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). |
 | `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |

@@ -156,4 +156,29 @@ Click the **Armor Selector** in **Slot 13** to cycle between all 4 armor types:
 
 ---
 
+## ✨ Signature Animations
+
+Perks are only half of the promise: every equipment type also owns an **exclusive animation**, played at the exact moment its perk fires. No pattern, particle pair or sound is shared between two types — a unit test fails the build if one ever is, so no family can look more finished than another.
+
+* **Broadsword** — *Sweeping Arc*: a horizontal arc is carved through the air whenever the sweep chains a foe.
+* **Longbow** — *Volley Trail*: a dotted trail links you to the arrow that just landed.
+* **Heavy Crossbow** — *Piercing Lance*: a taut line of sparks spears straight through the bolt impact.
+* **Elder Trident** — *Hydraulic Surge*: a rising column of water and sparks wraps the wielder.
+* **Kinetic Spear** — *Jousting Thrust*: a low air-pressure lane marks the reach of the thrust.
+* **War Mace** — *Seismic Smash*: a shock ring breaks outward from the point of impact.
+* **Tower Shield** — *Retaliation Bulwark*: a curved rampart of ward-light rises in front of the blocker.
+* **Pickaxe** — *Vein Resonance*: a vein of light runs down the face of the mined ore.
+* **Battleaxe** — *Lumber Cleave*: splinters and leaves burst sideways from the felled trunk.
+* **Excavator** — *Seismic Tremor*: a dust ring rides across the loosened soil.
+* **Scythe** — *Harvest Swirl*: harvest sparks spiral up over the reaped crops.
+* **Fishing Rod** — *Abyssal Dredge*: water and bubbles drip down the line as something is pulled up.
+* **Helmet** — *Cranium Halo*: a halo of ward-light closes around your head.
+* **Chestplate** — *Kinetic Dome*: a dome of dampening force swells out of the plate and swallows the blow.
+* **Leggings** — *Stride Coil*: a coil of momentum spins up around the legs while striding.
+* **Boots** — *Grounding Puff*: a cushion of air and frost puffs out under the soles on landing.
+
+Every animation is **tinted with the dominant mineral colour** of the item, so the choreography belongs to the type while the hue belongs to the build. Intensity, sound and cooldown live in `config.yml` — see the **[Configuration Reference](Configuration.md)** for the full table of particles and sounds.
+
+---
+
 > ⚙️ **Tooltip width**: long perk and trait rows are word-wrapped so nothing is clipped off the screen. The row width, the wider header budget and the on/off switch all live in `config.yml` — see the **[Configuration Reference](Configuration.md)**.

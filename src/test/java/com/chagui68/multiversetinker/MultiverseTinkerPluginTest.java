@@ -3,6 +3,7 @@ package com.chagui68.multiversetinker;
 import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.items.LoreWrap;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.EquipmentAnimation;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -73,6 +74,26 @@ class MultiverseTinkerPluginTest {
         assertEquals(config.getBoolean(LoreWrap.CONFIG_ENABLED), LoreWrap.isEnabled());
         assertEquals(config.getInt(LoreWrap.CONFIG_MAX_PIXELS), LoreWrap.configuredMaxPixels());
         assertEquals(config.getInt(LoreWrap.CONFIG_HEADER_PIXELS), LoreWrap.configuredHeaderPixels());
+    }
+
+    @Test
+    @DisplayName("config.yml documents the perk animations and the plugin applies them on enable")
+    void testAnimationConfiguration() {
+        YamlConfiguration config = loadResource("config.yml");
+
+        assertTrue(config.isBoolean(EquipmentAnimation.CONFIG_ENABLED),
+                EquipmentAnimation.CONFIG_ENABLED + " must be a boolean");
+        assertTrue(config.isDouble(EquipmentAnimation.CONFIG_PARTICLE_SCALE),
+                EquipmentAnimation.CONFIG_PARTICLE_SCALE + " must be a number");
+        assertTrue(config.isBoolean(EquipmentAnimation.CONFIG_SOUNDS),
+                EquipmentAnimation.CONFIG_SOUNDS + " must be a boolean");
+        assertTrue(config.isInt(EquipmentAnimation.CONFIG_COOLDOWN_MILLIS),
+                EquipmentAnimation.CONFIG_COOLDOWN_MILLIS + " must be an integer");
+
+        assertEquals(config.getBoolean(EquipmentAnimation.CONFIG_ENABLED), EquipmentAnimation.isEnabled());
+        assertEquals(config.getDouble(EquipmentAnimation.CONFIG_PARTICLE_SCALE), EquipmentAnimation.configuredParticleScale());
+        assertEquals(config.getBoolean(EquipmentAnimation.CONFIG_SOUNDS), EquipmentAnimation.isSoundsEnabled());
+        assertEquals(config.getInt(EquipmentAnimation.CONFIG_COOLDOWN_MILLIS), EquipmentAnimation.configuredCooldownMillis());
     }
 
     /** Reads a packaged resource such as plugin.yml or config.yml. */

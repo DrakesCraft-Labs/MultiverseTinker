@@ -217,6 +217,7 @@ public class ModularToolListener implements Listener {
                     double shockDamage = event.getDamage() * 0.65;
                     target.getWorld().spawnParticle(Particle.EXPLOSION, target.getLocation().add(0, 0.5, 0), 3, 0.3, 0.3, 0.3, 0.0);
                     target.getWorld().playSound(target.getLocation(), Sound.ITEM_MACE_SMASH_GROUND, 1.2f, 0.8f);
+                    PerkAnimationEngine.playWeapon(ModularWeaponType.MACE, player, target.getLocation(), animationTint(pdc));
 
                     for (Entity nearby : target.getNearbyEntities(4.0, 2.0, 4.0)) {
                         if (nearby instanceof LivingEntity mob && !nearby.equals(player) && !nearby.equals(target)) {
@@ -235,6 +236,7 @@ public class ModularToolListener implements Listener {
                     target.setVelocity(player.getLocation().getDirection().multiply(0.85).setY(0.35));
                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.2f);
                     target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 15, 0.3, 0.3, 0.3, 0.1);
+                    PerkAnimationEngine.playWeapon(ModularWeaponType.SPEAR, player, target.getLocation(), animationTint(pdc));
                 }
             }
             case TRIDENT -> {
@@ -244,17 +246,24 @@ public class ModularToolListener implements Listener {
                     target.getWorld().strikeLightningEffect(target.getLocation());
                     target.getWorld().playSound(target.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.8f, 1.4f);
                     target.getWorld().spawnParticle(Particle.SPLASH, target.getLocation().add(0, 1, 0), 25, 0.4, 0.4, 0.4, 0.1);
+                    PerkAnimationEngine.playWeapon(ModularWeaponType.TRIDENT, player, target.getLocation(), animationTint(pdc));
                 }
             }
             case SWORD -> {
                 // Sweeping elemental cleave
+                boolean cleaved = false;
                 for (Entity nearby : target.getNearbyEntities(2.5, 1.5, 2.5)) {
                     if (nearby instanceof LivingEntity mob && !nearby.equals(player) && !nearby.equals(target)) {
                         mob.setNoDamageTicks(0);
                         mob.damage(event.getDamage() * 0.4, player);
                         mob.getWorld().spawnParticle(Particle.SWEEP_ATTACK, mob.getLocation().add(0, 0.8, 0), 1);
                         triggerMultiMaterialTraits(player, mob, null, pdc);
+                        cleaved = true;
                     }
+                }
+                // Exclusive signature: the arc is drawn only when the sweep actually chained a foe.
+                if (cleaved) {
+                    PerkAnimationEngine.playWeapon(ModularWeaponType.SWORD, player, target.getLocation(), animationTint(pdc));
                 }
             }
             default -> {}
@@ -361,6 +370,7 @@ public class ModularToolListener implements Listener {
             PersistentDataContainer pdc = meta.getPersistentDataContainer();
             triggerMultiMaterialTraits(victim, attacker, event, pdc, false);
             triggerArmorTraits(victim, attacker, event, pdc);
+            PerkAnimationEngine.playWeapon(ModularWeaponType.SHIELD, victim, victim.getLocation(), animationTint(pdc));
         }
 
         damageEquipment(victim, shield);
@@ -445,6 +455,9 @@ public class ModularToolListener implements Listener {
                 world.spawnParticle(Particle.EXPLOSION, hitLoc, 3, 0.35, 0.35, 0.35, 0.0);
                 world.spawnParticle(Particle.FLAME, hitLoc, 20, 0.4, 0.4, 0.4, 0.1);
                 world.playSound(hitLoc, Sound.ENTITY_GENERIC_EXPLODE, 1.4f, 1.0f);
+                if (shooter != null) {
+                    PerkAnimationEngine.playWeapon(ModularWeaponType.CROSSBOW, shooter, hitLoc, animationTint(pdc));
+                }
 
                 // Kinetic blast wave: guaranteed damage + knockback to every nearby creature.
                 for (Entity nearby : world.getNearbyEntities(hitLoc, 4.0, 2.5, 4.0)) {
@@ -483,6 +496,9 @@ public class ModularToolListener implements Listener {
                     world.strikeLightningEffect(hitLoc);
                     world.playSound(hitLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.8f, 1.4f);
                     world.spawnParticle(Particle.SPLASH, hitLoc, 30, 0.5, 0.5, 0.5, 0.15);
+                    if (shooter != null) {
+                        PerkAnimationEngine.playWeapon(ModularWeaponType.TRIDENT, shooter, hitLoc, animationTint(pdc));
+                    }
                     if (hitEntity instanceof LivingEntity directTarget) {
                         directTarget.damage(5.0, shooter);
                     }
@@ -493,6 +509,7 @@ public class ModularToolListener implements Listener {
         // 2b. BOW: Infused Volley — a focused longbow looses a follow-up arrow at the same target.
         if (wType != null && wType.equalsIgnoreCase(ModularWeaponType.BOW.name())
                 && shooter != null && hitEntity instanceof LivingEntity volleyTarget) {
+            PerkAnimationEngine.playWeapon(ModularWeaponType.BOW, shooter, hitLoc, animationTint(pdc));
             WeaponPerkProfile bowProfile = WeaponPerkProfile.of(ModularWeaponType.BOW, collectCompositions(pdc));
             if (random.nextDouble() < 0.25 + 0.35 * bowProfile.getPotency()) {
                 launchVolleyArrow(shooter, volleyTarget);
@@ -546,7 +563,7 @@ public class ModularToolListener implements Listener {
 
         // 1. Specialized Tool Mining Perks
         if (toolType != null) {
-            handleSpecializedToolMining(player, block, toolType);
+            handleSpecializedToolMining(player, block, toolType, pdc);
         }
 
         // 2. Multi-Material Mining Traits (per-mineral and per-alloy affinities)
@@ -561,7 +578,8 @@ public class ModularToolListener implements Listener {
         }
     }
 
-    private void handleSpecializedToolMining(Player player, Block block, String toolType) {
+    private void handleSpecializedToolMining(Player player, Block block, String toolType,
+                                             @Nonnull PersistentDataContainer pdc) {
         // Pickaxe: Vein Resonance
         if (toolType.equalsIgnoreCase(ModularToolType.PICKAXE.name())) {
             if (block.getType().name().endsWith("_ORE") || block.getType() == Material.ANCIENT_DEBRIS) {
@@ -569,6 +587,7 @@ public class ModularToolListener implements Listener {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 120, 0, false, false));
                     block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(block.getType()));
                     player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.0f, 1.4f);
+                    PerkAnimationEngine.playTool(ModularToolType.PICKAXE, player, block, animationTint(pdc));
                 }
             }
         }
@@ -586,12 +605,14 @@ public class ModularToolListener implements Listener {
                         }
                     }
                 }
+                PerkAnimationEngine.playTool(ModularToolType.SHOVEL, player, block, animationTint(pdc));
             }
         }
 
         // Axe: Lumber Cleave - fells the whole tree trunk
         if (toolType.equalsIgnoreCase(ModularToolType.AXE.name()) && !player.isSneaking()) {
             if (isLogBlock(block.getType()) && !fellingGuard.contains(player.getUniqueId())) {
+                PerkAnimationEngine.playTool(ModularToolType.AXE, player, block, animationTint(pdc));
                 fellTree(player, block, player.getInventory().getItemInMainHand());
             }
         }
@@ -600,6 +621,7 @@ public class ModularToolListener implements Listener {
         if (toolType.equalsIgnoreCase(ModularToolType.HOE.name())) {
             if (block.getBlockData() instanceof Ageable ageable && ageable.getAge() == ageable.getMaximumAge()) {
                 harvestAndReplant(player, block);
+                PerkAnimationEngine.playTool(ModularToolType.HOE, player, block, animationTint(pdc));
                 for (int x = -1; x <= 1; x++) {
                     for (int z = -1; z <= 1; z++) {
                         if (x == 0 && z == 0) continue;
@@ -703,6 +725,7 @@ public class ModularToolListener implements Listener {
 
             event.setDamage(event.getDamage() * 0.5);
             player.getWorld().spawnParticle(Particle.CLOUD, player.getLocation(), 8, 0.3, 0.1, 0.3, 0.02);
+            PerkAnimationEngine.playArmor(ModularArmorType.BOOTS, player, animationTint(pdc));
             break;
         }
     }
@@ -719,6 +742,7 @@ public class ModularToolListener implements Listener {
 
         // Abyssal Dredge: 15% chance to hook rare raw mineral
         if (random.nextDouble() < 0.15) {
+            PerkAnimationEngine.playTool(ModularToolType.FISHING_ROD, player, player.getLocation().getBlock(), animationTint(hand));
             List<TinkerMaterial> allMats = new ArrayList<>(materialRegistry.getAll());
             if (!allMats.isEmpty()) {
                 TinkerMaterial chosen = allMats.get(random.nextInt(allMats.size()));
@@ -1368,6 +1392,16 @@ public class ModularToolListener implements Listener {
                     && event.getDamage() >= 6.0) {
                 event.setDamage(event.getDamage() * 0.75);
                 player.getWorld().spawnParticle(Particle.ENCHANTED_HIT, player.getLocation().add(0, 1, 0), 6, 0.3, 0.3, 0.3, 0.05);
+                PerkAnimationEngine.playArmor(ModularArmorType.CHESTPLATE, player, animationTint(pdc));
+            }
+
+            // Every armor piece answers a hit with its own choreography: the halo wards the head,
+            // the coil only spins up while actually striding.
+            if (armorKind != null && armorKind.equalsIgnoreCase(ModularArmorType.HELMET.name())) {
+                PerkAnimationEngine.playArmor(ModularArmorType.HELMET, player, animationTint(pdc));
+            }
+            if (armorKind != null && armorKind.equalsIgnoreCase(ModularArmorType.LEGGINGS.name()) && player.isSprinting()) {
+                PerkAnimationEngine.playArmor(ModularArmorType.LEGGINGS, player, animationTint(pdc));
             }
 
             // Damage absorbed progress
@@ -1636,6 +1670,7 @@ public class ModularToolListener implements Listener {
         UUID id = event.getPlayer().getUniqueId();
         primeStateCooldowns.remove(id);
         fellingGuard.remove(id);
+        PerkAnimationEngine.clearPlayer(id);
     }
 
     @Nonnull
@@ -1658,6 +1693,39 @@ public class ModularToolListener implements Listener {
             }
         }
         return list;
+    }
+
+    /**
+     * Dominant mineral colour of a piece of equipment, used to tint its perk animation. The shape of
+     * an animation belongs to the equipment type; the colour belongs to the minerals it was forged
+     * from, so a Cobalt broadsword and a Voidstone broadsword share the arc but not its hue.
+     *
+     * @return the tint, or {@code null} when the item carries no material composition
+     */
+    @Nullable
+    private Color animationTint(@Nullable ItemStack item) {
+        if (item == null) return null;
+        ItemMeta meta = item.getItemMeta();
+        return meta == null ? null : animationTint(meta.getPersistentDataContainer());
+    }
+
+    @Nullable
+    private Color animationTint(@Nullable PersistentDataContainer pdc) {
+        if (pdc == null) return null;
+
+        List<String> rawCompositions = new ArrayList<>();
+        addIfNotNull(pdc.get(TinkerKeys.TOOL_HEAD_COMP, PersistentDataType.STRING), rawCompositions);
+        addIfNotNull(pdc.get(TinkerKeys.ARMOR_PLATE_COMP, PersistentDataType.STRING), rawCompositions);
+
+        for (String raw : rawCompositions) {
+            PartComposition comp = PartComposition.deserialize(raw, materialRegistry);
+            if (comp == null || comp.getEntries().isEmpty()) continue;
+            TinkerMaterial material = comp.getEntries().get(0).material();
+            if (material != null) {
+                return parseHexColor(material.getColorHex());
+            }
+        }
+        return null;
     }
 
     @Nonnull

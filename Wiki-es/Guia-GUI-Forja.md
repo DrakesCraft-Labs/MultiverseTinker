@@ -160,6 +160,31 @@ Haz clic en el **Selector de Armaduras** (Ranura 13) para alternar entre las 4 p
 
 ---
 
+## ✨ Animaciones Exclusivas
+
+Los perks son solo la mitad de la promesa: cada tipo de equipo posee además una **animación exclusiva** que salta justo cuando su perk dispara. Ningún patrón, par de partículas ni sonido se comparte entre dos tipos — un test hace fallar el build si alguna vez ocurre, así que ninguna familia puede verse más terminada que otra.
+
+* **Espada Ancha** — *Sweeping Arc*: un arco horizontal se talla en el aire cada vez que el barrido encadena un enemigo.
+* **Arco Largo** — *Volley Trail*: una estela punteada te une con la flecha que acaba de impactar.
+* **Ballesta Pesada** — *Piercing Lance*: una línea tensa de chispas atraviesa el punto de impacto del virote.
+* **Tridente Anciano** — *Hydraulic Surge*: una columna ascendente de agua y chispas envuelve al portador.
+* **Lanza Cinética** — *Jousting Thrust*: una franja de baja presión marca el alcance de la estocada.
+* **Mazo de Guerra** — *Seismic Smash*: un anillo de choque se rompe hacia fuera desde el impacto.
+* **Escudo Torre** — *Retaliation Bulwark*: una muralla curva de luz defensiva se alza frente a quien bloquea.
+* **Pico** — *Vein Resonance*: una vena de luz recorre la cara del mineral extraído.
+* **Hacha de Batalla** — *Lumber Cleave*: astillas y hojas estallan hacia los lados del tronco talado.
+* **Pala Excavadora** — *Seismic Tremor*: un anillo de polvo cabalga sobre la tierra removida.
+* **Guadaña** — *Harvest Swirl*: chispas de cosecha espiralan sobre los cultivos segados.
+* **Caña de Pescar** — *Abyssal Dredge*: agua y burbujas gotean por la línea al subir algo.
+* **Casco** — *Cranium Halo*: un halo de luz defensiva se cierra alrededor de tu cabeza.
+* **Pechera** — *Kinetic Dome*: un domo de fuerza amortiguadora se hincha de la placa y engulle el golpe.
+* **Pantalones** — *Stride Coil*: una espiral de impulso se enciende alrededor de las piernas al correr.
+* **Botas** — *Grounding Puff*: un colchón de aire y escarcha sale bajo las suelas al aterrizar.
+
+Cada animación se **tiñe con el color del mineral dominante** del ítem, así la coreografía pertenece al tipo y el tono al build. La intensidad, el sonido y el enfriamiento viven en `config.yml` — consulta la **[Referencia de Configuración](Configuracion.md)** para la tabla completa de partículas y sonidos.
+
+---
+
 ## ⚡ Comando de Creación Directa (Admin)
 
 Para administradores o pruebas rápidas sin necesidad de armar la estructura física de la Forja:

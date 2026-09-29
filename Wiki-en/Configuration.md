@@ -66,11 +66,70 @@ Item lore wrapping enabled at 190px (headers 320px) per row.
 
 ---
 
+## ✨ Signature perk animations (`animations`)
+
+Perks are not the only thing each equipment type owns: every weapon, tool and armor piece has its own
+**exclusive choreography**. No two types share a pattern, a particle pair or a sound, and a unit test fails
+the build if they ever do — that is how "no favoritism" is enforced instead of promised.
+
+An animation plays when that piece's perk actually fires, and it is tinted with the colour of the dominant
+mineral the item was forged from, so a Cobalt broadsword and a Voidstone broadsword share the arc but not its hue.
+
+| Key | Type | Default | What it does |
+| --- | --- | --- | --- |
+| `animations.enabled` | boolean | `true` | Play the perk choreographies at all. |
+| `animations.particle-scale` | number | `1.0` | Particle-count multiplier for every animation, clamped to `0.25` – `3.0`. Lower it on busy servers, raise it for a louder spectacle. |
+| `animations.sounds` | boolean | `true` | Play the signature sound that accompanies each pattern. |
+| `animations.cooldown-millis` | integer | `400` | Minimum delay between two animations of the same type on the same player (clamped to `0` – `5000`). Fast procs — a sweep that chains, a chestplate that eats a blow — stay readable instead of strobing. |
+
+```yaml
+# Signature perk animations
+animations:
+  enabled: true
+  particle-scale: 1.0
+  sounds: true
+  cooldown-millis: 400
+```
+
+### The sixteen choreographies
+
+| Equipment | Animation | Pattern | Signature sound |
+| --- | --- | --- | --- |
+| Broadsword | Sweeping Arc | `SWEEP_ATTACK` + tint | `ENTITY_PLAYER_ATTACK_SWEEP` |
+| Longbow | Volley Trail | `CRIT` + `END_ROD` | `ENTITY_ARROW_SHOOT` |
+| Heavy Crossbow | Piercing Lance | `ELECTRIC_SPARK` + `CRIT` | `ITEM_CROSSBOW_SHOOT` |
+| Elder Trident | Hydraulic Surge | `SPLASH` + `ELECTRIC_SPARK` | `ITEM_TRIDENT_RIPTIDE_1` |
+| Kinetic Spear | Jousting Thrust | `CLOUD` + `CRIT` | `ENTITY_PLAYER_ATTACK_STRONG` |
+| War Mace | Seismic Smash | `EXPLOSION` + `CLOUD` | `ITEM_MACE_SMASH_GROUND_HEAVY` |
+| Tower Shield | Retaliation Bulwark | `ENCHANTED_HIT` + `END_ROD` | `ITEM_SHIELD_BLOCK` |
+| Pickaxe | Vein Resonance | `ENCHANTED_HIT` + `ELECTRIC_SPARK` | `BLOCK_AMETHYST_BLOCK_CHIME` |
+| Battleaxe | Lumber Cleave | `CRIT` + `CHERRY_LEAVES` | `BLOCK_WOOD_BREAK` |
+| Excavator | Seismic Tremor | `CLOUD` + `CAMPFIRE_COSY_SMOKE` | `BLOCK_GRAVEL_BREAK` |
+| Scythe | Harvest Swirl | `HAPPY_VILLAGER` + `NOTE` | `ITEM_CROP_PLANT` |
+| Fishing Rod | Abyssal Dredge | `BUBBLE` + `SPLASH` | `ENTITY_FISHING_BOBBER_SPLASH` |
+| Helmet | Cranium Halo | `END_ROD` + `ENCHANTED_HIT` | `BLOCK_AMETHYST_BLOCK_RESONATE` |
+| Chestplate | Kinetic Dome | `ENCHANTED_HIT` + `CLOUD` | `BLOCK_ANVIL_LAND` |
+| Leggings | Stride Coil | `CLOUD` + `ELECTRIC_SPARK` | `ENTITY_PHANTOM_FLAP` |
+| Boots | Grounding Puff | `SNOWFLAKE` + `CLOUD` | `BLOCK_POWDER_SNOW_BREAK` |
+
+When the animation plays:
+
+* **Broadsword** — the sweep chained at least one adjacent foe.
+* **Longbow / Crossbow / Trident (thrown)** — the arrow, bolt or trident landed on something.
+* **Trident (melee), Spear, Mace** — the surge, the sprint/horseback thrust or the downward smash triggered.
+* **Tower Shield** — a blocked blow was reflected.
+* **Pickaxe, Scythe, Fishing Rod** — the 15% extra-drop proc succeeded.
+* **Battleaxe, Excavator** — the tree felling or the sneaking 3×3 dig ran.
+* **Armor** — the piece answered a hit (helmet, chestplate, leggings while striding) or absorbed a fall (boots).
+
+---
+
 ## 🧭 Other sections
 
 | Section | Purpose |
 | --- | --- |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour (`DEGRADE` / `COOLDOWN` / `NONE`), anti-macro cooldown and brush yields. |
+| `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
 | `smeltery` | Crucible tuning: chance to consume the lava source and the Magma Block heat-source slowdown multiplier. |
 | `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). |
 | `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |
@@ -79,6 +138,6 @@ Item lore wrapping enabled at 190px (headers 320px) per row.
 
 ## 🔗 Related pages
 
-* **[Forge GUI & Modular Equipment Guide](Forge-GUI-Guide.md)**: what the wrapped lore actually prints — perks, essence focus and trait channels.
+* **[Forge GUI & Modular Equipment Guide](Forge-GUI-Guide.md)**: what the wrapped lore actually prints — perks, essence focus, trait channels and the exclusive animation of every type.
 * **[Traits & Mineral Effects](Traits-and-Effects.md)**: the trait and affinity reference behind those lore rows.
 * **[Prime Alloys](Prime-Alloys.md)**: the `dynamic-alloys.yml` file that stores player-forged primes across restarts.
