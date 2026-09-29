@@ -150,7 +150,7 @@ administración — y solo apuntarlo a otro jugador con `/mvtink codex <jugador>
 
 | Sección | Qué muestra |
 |---|---|
-| **Catálogo de Minerales** | Cada material que conoce este servidor — geológico, vanilla y aleación forjada — con su id, dimensión, rareza, rasgo y esencias. Es el reemplazo del antiguo listado por chat. |
+| **Catálogo de Minerales** | Cada material que conoce este servidor — geológico, vanilla y aleación forjada — con su id, dimensión, rareza, rasgo y esencias, filtrable por **Dimension**, **Rarity** y **Essence** (los tres se acumulan). Es el reemplazo del antiguo listado por chat. |
 | **Recetas Legendarias** | Las 16 aleaciones curadas: padres, stats, esencias y rasgo curado. |
 | **Catalizadores Primordiales** | Los 12 catalizadores vanilla, con el ultimate y el estado que otorga cada uno. |
 | **Compuestas Forjadas** | Cada compuesta descubierta en este servidor, con padres, stats y esencias. |

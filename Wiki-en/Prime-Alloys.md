@@ -147,7 +147,7 @@ sections:
 
 | Section | What it shows |
 |---|---|
-| **Mineral Catalog** | Every material this server knows — geological, vanilla and forged alloy — with its id, dimension, rarity, trait and essences. This is the codex replacement for the old chat listing. |
+| **Mineral Catalog** | Every material this server knows — geological, vanilla and forged alloy — with its id, dimension, rarity, trait and essences, filterable by **Dimension**, **Rarity** and **Essence** (the three stack). This is the codex replacement for the old chat listing. |
 | **Legendary Recipes** | The 16 curated alloys with parents, stats, essences and curated trait. |
 | **Prime Catalysts** | The 12 vanilla catalysts with the ultimate and state each one grants. |
 | **Forged Composites** | Every composite this server has discovered, with parents, stats and essences. |

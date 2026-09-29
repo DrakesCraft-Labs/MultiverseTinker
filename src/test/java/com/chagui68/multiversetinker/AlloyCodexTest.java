@@ -2,9 +2,12 @@ package com.chagui68.multiversetinker;
 
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.alloys.TinkerAlloy;
+import com.chagui68.multiversetinker.api.MaterialRarity;
+import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
+import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.tools.VanillaCatalyst;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -20,6 +23,7 @@ import org.mockbukkit.mockbukkit.ServerMock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,6 +39,11 @@ class AlloyCodexTest {
     private static final int SLOT_NEXT = 53;
     private static final int SLOT_SCOPE = 46;
     private static final int SLOT_KIND = 48;
+    private static final int SLOT_INFO = 49;
+    private static final int SLOT_ORIGIN_FILTER = 50;
+    private static final int SLOT_RARITY_FILTER = 51;
+    private static final int SLOT_ESSENCE_FILTER = 52;
+    private static final int CATALOG_SECTION = SLOT_SECTION_FIRST + 6;
 
     private ServerMock server;
     private MultiverseTinker plugin;
@@ -316,6 +325,216 @@ class AlloyCodexTest {
         assertNull(codex.getInventory().getItem(22), "The explanation must disappear once a prime exists");
     }
 
+    @Test
+    @DisplayName("The catalog filters by dimension, rarity and essence, and the three stack")
+    void catalogFiltersStack() {
+        codex.handleClick(player, CATALOG_SECTION);
+        assertEquals(materials.getAll().size(), codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+        assertFalse(codex.hasMaterialFilters(), "The catalog must open unfiltered");
+
+        // A filter button lists its values instead of cycling them, so one essence is two clicks away.
+        codex.handleClick(player, SLOT_ORIGIN_FILTER);
+        assertEquals(AlloyCodexGUI.FilterKind.ORIGIN, codex.getFilterPicker());
+        assertEquals(1 + MineralOrigin.values().length, codex.entryCount(AlloyCodexGUI.Section.MINERALS),
+                "The picker must offer Any plus every dimension");
+        codex.handleClick(player, CONTENT_START + 1 + MineralOrigin.NETHER.ordinal());
+
+        assertNull(codex.getFilterPicker(), "Picking a value must close the picker");
+        assertEquals(MineralOrigin.NETHER, codex.getOriginFilter());
+        assertTrue(codex.hasMaterialFilters());
+        int byOrigin = matchingMaterials(MineralOrigin.NETHER, null, null);
+        assertEquals(byOrigin, codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+        assertEquals(byOrigin, codex.filteredMaterials().size());
+        codex.filteredMaterials().forEach(material -> assertEquals(MineralOrigin.NETHER, material.getOrigin()));
+
+        // Rarity narrows what the dimension left, never restoring what it dropped.
+        codex.handleClick(player, SLOT_RARITY_FILTER);
+        codex.handleClick(player, CONTENT_START + 1 + MaterialRarity.EPIC.ordinal());
+        assertEquals(MaterialRarity.EPIC, codex.getRarityFilter());
+        int byRarity = matchingMaterials(MineralOrigin.NETHER, MaterialRarity.EPIC, null);
+        assertEquals(byRarity, codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+        assertTrue(byRarity < byOrigin, "Adding a rarity must narrow the list");
+
+        // And the essence stacks on top of both.
+        codex.handleClick(player, SLOT_ESSENCE_FILTER);
+        assertEquals(1 + TraitAffinity.values().length, codex.entryCount(AlloyCodexGUI.Section.MINERALS),
+                "The picker must offer Any plus every essence");
+        codex.handleClick(player, CONTENT_START + 1 + TraitAffinity.INFERNAL.ordinal());
+        assertEquals(TraitAffinity.INFERNAL, codex.getEssenceFilter());
+
+        int byEssence = matchingMaterials(MineralOrigin.NETHER, MaterialRarity.EPIC, TraitAffinity.INFERNAL);
+        assertEquals(byEssence, codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+        assertTrue(byEssence > 0 && byEssence <= byRarity, "Expected the intersection to narrow further");
+        codex.filteredMaterials().forEach(material ->
+                assertTrue(TraitAffinity.of(material).contains(TraitAffinity.INFERNAL),
+                        material.getId() + " must teach the filtered essence"));
+
+        // Filters must never move the entries around: the first slot is the first material left.
+        codex.handleClick(player, CONTENT_START);
+        assertEquals(codex.filteredMaterials().get(0).getId(), codex.getCatalogTarget().getId(),
+                "Clicking a filtered entry must drill into the material on that slot");
+        codex.handleClick(player, CONTENT_START);
+        assertNull(codex.getCatalogTarget());
+
+        // The info button spells the active filters out, so a narrowed list is never a mystery.
+        String info = plainText(codex.getInventory().getItem(SLOT_INFO));
+        assertTrue(info.contains("Filters:"), "The info button must report the filters, got: " + info);
+        assertTrue(info.contains(MineralOrigin.NETHER.getDescription()), "It must name the dimension: " + info);
+        assertTrue(info.contains(MaterialRarity.EPIC.getDisplayName()), "It must name the rarity: " + info);
+        assertTrue(info.contains(TraitAffinity.INFERNAL.getDisplayName()), "It must name the essence: " + info);
+    }
+
+    @Test
+    @DisplayName("The filter picker opens, closes and clears without ever leaving the catalog")
+    void filterPickerLifecycle() {
+        codex.handleClick(player, CATALOG_SECTION);
+
+        // Clicking the same button again closes the picker and applies nothing.
+        codex.handleClick(player, SLOT_ORIGIN_FILTER);
+        assertEquals(AlloyCodexGUI.FilterKind.ORIGIN, codex.getFilterPicker());
+        codex.handleClick(player, SLOT_ORIGIN_FILTER);
+        assertNull(codex.getFilterPicker(), "The same button must close the picker");
+        assertNull(codex.getOriginFilter(), "Closing a picker must not filter anything");
+
+        // "Any" is the first option, and clears that filter only.
+        codex.handleClick(player, SLOT_ORIGIN_FILTER);
+        codex.handleClick(player, CONTENT_START + 1 + MineralOrigin.THE_END.ordinal());
+        codex.handleClick(player, SLOT_RARITY_FILTER);
+        codex.handleClick(player, CONTENT_START + 1 + MaterialRarity.RARE.ordinal());
+        assertEquals(MineralOrigin.THE_END, codex.getOriginFilter());
+        assertEquals(MaterialRarity.RARE, codex.getRarityFilter());
+
+        codex.handleClick(player, SLOT_ORIGIN_FILTER);
+        String anyOption = plainText(codex.getInventory().getItem(CONTENT_START));
+        assertTrue(anyOption.contains("Any"), "The first option must clear the filter, got: " + anyOption);
+        codex.handleClick(player, CONTENT_START);
+        assertNull(codex.getOriginFilter(), "Any must clear the dimension");
+        assertEquals(MaterialRarity.RARE, codex.getRarityFilter(), "It must leave the other filters alone");
+
+        codex.handleClick(player, SLOT_RARITY_FILTER);
+        codex.handleClick(player, CONTENT_START);
+        assertFalse(codex.hasMaterialFilters(), "Picking Any on the last filter must restore the catalog");
+        assertEquals(materials.getAll().size(), codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+
+        // Each option announces how many materials it would leave, before clicking it.
+        codex.handleClick(player, SLOT_RARITY_FILTER);
+        String rare = plainText(codex.getInventory().getItem(CONTENT_START + 1 + MaterialRarity.RARE.ordinal()));
+        assertTrue(rare.contains(String.valueOf(matchingMaterials(null, MaterialRarity.RARE, null))),
+                "The option must show how many materials it leaves, got: " + rare);
+
+        // A picker never survives a section change: leaving the catalog drops it.
+        codex.handleClick(player, SLOT_SECTION_FIRST);
+        assertEquals(AlloyCodexGUI.Section.LEGENDARY, codex.getSection());
+        assertNull(codex.getFilterPicker(), "Switching sections must close the picker");
+    }
+
+    @Test
+    @DisplayName("Filters narrow the every-item scope and hide the items that belong to no material")
+    void filtersNarrowTheEveryItemScope() {
+        codex.handleClick(player, CATALOG_SECTION);
+        codex.handleClick(player, SLOT_SCOPE);
+        assertTrue(codex.isRegistryScope());
+
+        int unfiltered = codex.entryCount(AlloyCodexGUI.Section.MINERALS);
+        assertEquals(plugin.getItemRegistry().getAvailableItemIdCount(), unfiltered);
+        assertTrue(registryIdAt(0).startsWith("mvtink_"), "Ids are listed, not materials");
+
+        // The standalone items (the crucible, the brush and the casts) belong to no mineral, so they
+        // are the only ids a dimension filter can drop beyond the materials of the other dimensions.
+        long orphans = plugin.getItemRegistry().getAllItemIds().stream()
+                .filter(id -> materialOf(id) == null)
+                .count();
+        assertTrue(orphans >= 3, "The crucible, the brush and the casts must be registered, got " + orphans);
+        assertTrue(listedIds(unfiltered).contains("mvtink_smeltery"), "The crucible is listed while unfiltered");
+
+        codex.handleClick(player, SLOT_ORIGIN_FILTER);
+        codex.handleClick(player, CONTENT_START + 1 + MineralOrigin.OVERWORLD.ordinal());
+        assertEquals(MineralOrigin.OVERWORLD, codex.getOriginFilter());
+
+        int filtered = codex.entryCount(AlloyCodexGUI.Section.MINERALS);
+        long owned = plugin.getItemRegistry().getAllItemIds().stream()
+                .filter(id -> {
+                    TinkerMaterial owner = materialOf(id);
+                    return owner != null && owner.getOrigin() == MineralOrigin.OVERWORLD;
+                })
+                .count();
+        assertEquals(owned, filtered, "Only the ids of the Overworld materials may survive the filter");
+        assertTrue(filtered < unfiltered - orphans,
+                "Filtering must drop the ids of every other dimension as well as the standalone items");
+        List<String> ids = listedIds(filtered);
+        assertFalse(ids.contains("mvtink_smeltery"), "A filter must hide the items that belong to no material");
+        for (String id : ids) {
+            TinkerMaterial owner = materialOf(id);
+            assertNotNull(owner, id + " must belong to a material once a filter is applied");
+            assertEquals(MineralOrigin.OVERWORLD, owner.getOrigin(), id + " belongs to " + owner.getId());
+        }
+
+        // The kind filter and the catalog filters are independent and combine.
+        codex.handleClick(player, SLOT_KIND);
+        assertEquals(com.chagui68.multiversetinker.items.TinkerItemRegistry.ItemKind.RAW, codex.getKindFilter());
+        int rawOverworld = 0;
+        for (String id : ids) {
+            if (id.endsWith(com.chagui68.multiversetinker.items.TinkerItemRegistry.ItemKind.RAW.getSuffix())) rawOverworld++;
+        }
+        assertEquals(rawOverworld, codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+        assertTrue(rawOverworld > 0, "An Overworld material must have a raw id");
+
+        // The kind filter and the catalog filters combine: one raw id per material left.
+        codex.handleClick(player, SLOT_ESSENCE_FILTER);
+        codex.handleClick(player, CONTENT_START + 1 + TraitAffinity.TERRAIN.ordinal());
+        assertEquals(TraitAffinity.TERRAIN, codex.getEssenceFilter());
+        int terrain = matchingMaterials(MineralOrigin.OVERWORLD, null, TraitAffinity.TERRAIN);
+        assertTrue(terrain > 0, "Terrain is an Overworld essence");
+        assertEquals(terrain, codex.entryCount(AlloyCodexGUI.Section.MINERALS),
+                "With the RAW kind filter on, every material left contributes exactly one id");
+        for (String id : listedIds(terrain)) {
+            assertTrue(TraitAffinity.of(materialOf(id)).contains(TraitAffinity.TERRAIN), id + " must teach Terrain");
+        }
+    }
+
+    @Test
+    @DisplayName("A filter combination that matches nothing explains itself instead of showing a blank grid")
+    void emptyFilterCombinationExplainsItself() {
+        codex.handleClick(player, CATALOG_SECTION);
+
+        // Find a dimension/rarity/essence triple the registry cannot satisfy.
+        MineralOrigin origin = null;
+        MaterialRarity rarity = null;
+        TraitAffinity essence = null;
+        for (MineralOrigin candidateOrigin : MineralOrigin.values()) {
+            for (MaterialRarity candidateRarity : MaterialRarity.values()) {
+                for (TraitAffinity candidateEssence : TraitAffinity.values()) {
+                    if (matchingMaterials(candidateOrigin, candidateRarity, candidateEssence) != 0) continue;
+                    origin = candidateOrigin;
+                    rarity = candidateRarity;
+                    essence = candidateEssence;
+                    break;
+                }
+                if (origin != null) break;
+            }
+            if (origin != null) break;
+        }
+        assertNotNull(origin, "The registry must have at least one empty filter combination to test");
+
+        codex.handleClick(player, SLOT_ORIGIN_FILTER);
+        codex.handleClick(player, CONTENT_START + 1 + origin.ordinal());
+        codex.handleClick(player, SLOT_RARITY_FILTER);
+        codex.handleClick(player, CONTENT_START + 1 + rarity.ordinal());
+        codex.handleClick(player, SLOT_ESSENCE_FILTER);
+        codex.handleClick(player, CONTENT_START + 1 + essence.ordinal());
+
+        assertEquals(0, codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+        String hint = plainText(codex.getInventory().getItem(22));
+        assertTrue(hint.contains("No item matches this filter"), "The empty catalog must say so, got: " + hint);
+        assertTrue(hint.contains("Any"), "It must point at the way out, got: " + hint);
+
+        // Widening any of the three brings the catalog back.
+        codex.handleClick(player, SLOT_RARITY_FILTER);
+        codex.handleClick(player, CONTENT_START);
+        assertNull(codex.getRarityFilter());
+        assertEquals(matchingMaterials(origin, null, essence), codex.entryCount(AlloyCodexGUI.Section.MINERALS));
+    }
+
     // ==========================================
     // HELPERS
     // ==========================================
@@ -339,6 +558,50 @@ class AlloyCodexTest {
             if (alloys.isCraftablePair(target, candidate)) ids.add(candidate.getId());
         }
         return ids;
+    }
+
+    /** How many materials pass a dimension/rarity/essence combination, the definition of the filters. */
+    private int matchingMaterials(MineralOrigin origin, MaterialRarity rarity, TraitAffinity essence) {
+        int count = 0;
+        for (TinkerMaterial material : materials.getAll()) {
+            if (origin != null && material.getOrigin() != origin) continue;
+            if (rarity != null && material.getRarity() != rarity) continue;
+            if (essence != null && !TraitAffinity.of(material).contains(essence)) continue;
+            count++;
+        }
+        return count;
+    }
+
+    /**
+     * Material a registered id belongs to, resolved by the longest registered material id that prefixes
+     * it. Standalone ids (the crucible, the brush, the casts) resolve to {@code null}.
+     */
+    private TinkerMaterial materialOf(String id) {
+        String lower = id.toLowerCase(Locale.ROOT);
+        TinkerMaterial owner = null;
+        for (TinkerMaterial material : materials.getAll()) {
+            String base = material.getId().toLowerCase(Locale.ROOT);
+            if (!lower.startsWith(base)) continue;
+            if (owner == null || base.length() > owner.getId().length()) owner = material;
+        }
+        return owner;
+    }
+
+    /** First {@code count} ids the catalog is showing in its every-item scope. */
+    private List<String> listedIds(int count) {
+        List<String> ids = new ArrayList<>();
+        for (int index = 0; index < count; index++) {
+            String id = codex.registryIdAt(index);
+            assertNotNull(id, "The catalog must resolve the id at index " + index);
+            ids.add(id);
+        }
+        return ids;
+    }
+
+    private String registryIdAt(int index) {
+        String id = codex.registryIdAt(index);
+        assertNotNull(id, "The catalog must resolve the id at index " + index);
+        return id;
     }
 
     private int indexOfMixable(String materialId) {

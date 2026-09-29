@@ -3,6 +3,8 @@ package com.chagui68.multiversetinker.forge.gui;
 import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.alloys.TinkerAlloy;
+import com.chagui68.multiversetinker.api.MaterialRarity;
+import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.items.LoreWrap;
 import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
@@ -84,6 +86,23 @@ public class AlloyCodexGUI implements InventoryHolder {
     private static final int SLOT_PREV = 45;
     private static final int SLOT_INFO = 49;
     private static final int SLOT_NEXT = 53;
+    /** Catalog filter buttons: dimension, rarity and essence. */
+    private static final int SLOT_ORIGIN_FILTER = 50;
+    private static final int SLOT_RARITY_FILTER = 51;
+    private static final int SLOT_ESSENCE_FILTER = 52;
+
+    /**
+     * Which catalog filter the player is choosing.
+     *
+     * <p>Clicking a filter button swaps the content grid for the list of values it accepts, so a
+     * specific essence is two clicks away instead of twelve: cycling a button through 12 essences, 5
+     * rarities and 4 dimensions would have hidden the filter behind a dozen clicks.</p>
+     */
+    public enum FilterKind {
+        ORIGIN,
+        RARITY,
+        ESSENCE
+    }
 
     private final MultiverseTinker plugin;
     private final MaterialRegistry materialRegistry;
@@ -105,6 +124,18 @@ public class AlloyCodexGUI implements InventoryHolder {
     /** Material the catalog is drilled into, or {@code null} while listing materials. */
     @Nullable
     private TinkerMaterial catalogTarget;
+    /** Catalog filter by dimension, or {@code null} for every dimension. */
+    @Nullable
+    private MineralOrigin originFilter;
+    /** Catalog filter by rarity, or {@code null} for every rarity. */
+    @Nullable
+    private MaterialRarity rarityFilter;
+    /** Catalog filter by essence, or {@code null} for every essence. */
+    @Nullable
+    private TraitAffinity essenceFilter;
+    /** Filter the player is currently choosing, or {@code null} while browsing the catalog. */
+    @Nullable
+    private FilterKind filterPicker;
     /** True when the codex was opened from the forge GUI, so closing returns there. */
     private boolean cameFromForge;
 
@@ -147,12 +178,16 @@ public class AlloyCodexGUI implements InventoryHolder {
         inventory.clear();
         renderNavBar();
 
-        int entries;
+        if (isChoosingFilter()) {
+            renderContent(filterPickerEntries());
+            renderCatalogControls();
+            return;
+        }
+
         if (isFlatRegistry()) {
             // The registry holds thousands of ids, so only the visible page is ever turned into items.
             List<String> ids = registryIds();
-            entries = ids.size();
-            int pages = Math.max(1, (int) Math.ceil(entries / (double) CONTENT_SLOTS));
+            int pages = Math.max(1, (int) Math.ceil(ids.size() / (double) CONTENT_SLOTS));
             page = Math.max(0, Math.min(page, pages - 1));
 
             int from = page * CONTENT_SLOTS;
@@ -163,14 +198,21 @@ public class AlloyCodexGUI implements InventoryHolder {
                 inventory.setItem(22, emptyState(section));
             }
             renderPager(pages);
-            renderInfo(entries, pages);
+            renderInfo(ids.size(), pages);
             renderCatalogControls();
             return;
         }
 
-        List<ItemStack> content = contentFor(section);
-        entries = content.size();
-        int pages = Math.max(1, (int) Math.ceil(entries / (double) CONTENT_SLOTS));
+        renderContent(contentFor(section));
+    }
+
+    /**
+     * Draws one page of a content list and its pager, clamping the page to the available range.
+     *
+     * <p>Shared by every section, including the catalog filter picker and the flat registry.</p>
+     */
+    private void renderContent(@Nonnull List<ItemStack> content) {
+        int pages = Math.max(1, (int) Math.ceil(content.size() / (double) CONTENT_SLOTS));
         page = Math.max(0, Math.min(page, pages - 1));
 
         int from = page * CONTENT_SLOTS;
@@ -183,7 +225,7 @@ public class AlloyCodexGUI implements InventoryHolder {
         }
 
         renderPager(pages);
-        renderInfo(entries, pages);
+        renderInfo(content.size(), pages);
         renderCatalogControls();
     }
 
@@ -203,11 +245,18 @@ public class AlloyCodexGUI implements InventoryHolder {
         lore.add("<gray>Entries: <yellow>" + entries + "</yellow> · Page <yellow>" + (page + 1)
                 + "</yellow>/<yellow>" + pages + "</yellow></gray>");
         if (section == Section.MINERALS) {
-            lore.add("<gray>Scope: <yellow>" + (registryScope ? "every item id" : "materials") + "</yellow>"
-                    + (catalogTarget != null ? " · drilled into <yellow>" + catalogTarget.getName() + "</yellow>" : "")
-                    + "</gray>");
-            if (registryScope) {
-                lore.add("<gray>Kind filter: <yellow>" + (kindFilter != null ? kindFilter.name() : "ALL") + "</yellow></gray>");
+            if (isChoosingFilter()) {
+                lore.add("<yellow>Choosing " + filterPicker.name().toLowerCase(Locale.ROOT)
+                        + ":</yellow> <gray>click an option to apply it.</gray>");
+                lore.add("<gray>Next page for more values.</gray>");
+            } else {
+                lore.add("<gray>Scope: <yellow>" + (registryScope ? "every item id" : "materials") + "</yellow>"
+                        + (catalogTarget != null ? " · drilled into <yellow>" + catalogTarget.getName() + "</yellow>" : "")
+                        + "</gray>");
+                if (registryScope) {
+                    lore.add("<gray>Kind filter: <yellow>" + (kindFilter != null ? kindFilter.name() : "ALL") + "</yellow></gray>");
+                }
+                lore.add("<gray>Filters: " + filterSummary() + "</gray>");
             }
         }
         inventory.setItem(SLOT_INFO, button(Material.PAPER,
@@ -236,6 +285,252 @@ public class AlloyCodexGUI implements InventoryHolder {
         kindLore.add(flat ? "<yellow>Click to cycle the kind.</yellow>" : "<dark_gray>Switch scope to use it.</dark_gray>");
         inventory.setItem(SLOT_KIND, button(flat ? Material.HOPPER : Material.GRAY_DYE,
                 "<gold><b>Kind: " + (kindFilter != null ? kindFilter.name() : "ALL") + "</b></gold>", kindLore));
+
+        // The three catalog filters. Each one is a picker: cycling 12 essences on click would hide the
+        // filter behind a dozen presses.
+        inventory.setItem(SLOT_ORIGIN_FILTER, button(originFilter == null ? Material.COMPASS : Material.FILLED_MAP,
+                "<gold><b>Dimension: " + (originFilter == null ? "Any" : originFilter.getDescription()) + "</b></gold>",
+                filterLore(FilterKind.ORIGIN, originFilter == null ? null : originFilter.getDescription(),
+                        countMatching(originFilter, rarityFilter, essenceFilter))));
+        inventory.setItem(SLOT_RARITY_FILTER, button(rarityFilter == null ? Material.PAPER : Material.NAME_TAG,
+                "<gold><b>Rarity: " + (rarityFilter == null ? "Any" : rarityFilter.getDisplayName()) + "</b></gold>",
+                filterLore(FilterKind.RARITY, rarityFilter == null ? null : rarityFilter.getDisplayName(),
+                        countMatching(originFilter, rarityFilter, essenceFilter))));
+        inventory.setItem(SLOT_ESSENCE_FILTER, button(essenceFilter == null ? Material.AMETHYST_SHARD : Material.GLOWSTONE_DUST,
+                "<gold><b>Essence: " + (essenceFilter == null ? "Any" : essenceFilter.getDisplayName()) + "</b></gold>",
+                filterLore(FilterKind.ESSENCE, essenceFilter == null ? null : essenceFilter.getDisplayName(),
+                        countMatching(originFilter, rarityFilter, essenceFilter))));
+    }
+
+    /** Lore shared by the three filter buttons: what it narrows, what is active and how many match. */
+    @Nonnull
+    private List<String> filterLore(@Nonnull FilterKind kind, @Nullable String current, int matches) {
+        List<String> lore = new ArrayList<>();
+        lore.add(switch (kind) {
+            case ORIGIN -> "<gray>Narrows the catalog to one <yellow>dimension</yellow>.</gray>";
+            case RARITY -> "<gray>Narrows the catalog to one <yellow>rarity</yellow>.</gray>";
+            case ESSENCE -> "<gray>Narrows the catalog to the materials that teach</gray>\n<gray>one <yellow>essence</yellow>, whatever else they carry.</gray>";
+        });
+        lore.add(switch (kind) {
+            case ORIGIN -> "<dark_gray>Overworld · The Nether · The End · Vanilla ores</dark_gray>";
+            case RARITY -> "<dark_gray>Common · Uncommon · Rare · Epic · Legendary</dark_gray>";
+            case ESSENCE -> "<dark_gray>" + TraitAffinity.values().length + " essences, from Infernal to Ascendant</dark_gray>";
+        });
+        lore.add("");
+        lore.add("<gray>Current: " + (current == null ? "<yellow>Any</yellow>" : "<yellow>" + current + "</yellow>")
+                + " · Matching materials: <yellow>" + matches + "</yellow></gray>");
+        lore.add("");
+        lore.add(isChoosingFilter(kind)
+                ? "<green>✔ Choosing it right now — click an option above.</green>"
+                : "<yellow>Click to choose a value.</yellow>");
+        return lore;
+    }
+
+    /** True while the given filter is the one whose options are on screen. */
+    private boolean isChoosingFilter(@Nonnull FilterKind kind) {
+        return filterPicker == kind;
+    }
+
+    /** True while the catalog is listing the options of a filter instead of the catalog itself. */
+    private boolean isChoosingFilter() {
+        return section == Section.MINERALS && filterPicker != null;
+    }
+
+    /**
+     * Options of the filter being chosen: <b>Any</b> first, then every accepted value.
+     *
+     * <p>Each option announces how many materials it would leave, so the player can tell an empty
+     * combination from a populated one before clicking.</p>
+     */
+    @Nonnull
+    private List<ItemStack> filterPickerEntries() {
+        List<ItemStack> entries = new ArrayList<>();
+        FilterKind picking = filterPicker;
+        if (picking == null) return entries;
+
+        entries.add(button(Material.BARRIER, "<red><b>Any</b></red>",
+                List.of("<gray>Clear the " + picking.name().toLowerCase(Locale.ROOT) + " filter.</gray>",
+                        "<gray>Matching materials: <yellow>"
+                                + countMatching(picking == FilterKind.ORIGIN ? null : originFilter,
+                                        picking == FilterKind.RARITY ? null : rarityFilter,
+                                        picking == FilterKind.ESSENCE ? null : essenceFilter) + "</yellow></gray>",
+                        "",
+                        "<yellow>Click to list every material again.</yellow>")));
+
+        switch (picking) {
+            case ORIGIN -> {
+                for (MineralOrigin origin : MineralOrigin.values()) {
+                    boolean active = originFilter == origin;
+                    entries.add(button(originIcon(origin),
+                            "<gold><b>" + origin.getDescription() + "</b></gold>",
+                            List.of("<gray>Source: <yellow>" + origin.getSourceBlockName() + "</yellow></gray>",
+                                    "<gray>Materials: <yellow>" + countMatching(origin, rarityFilter, essenceFilter) + "</yellow></gray>",
+                                    "",
+                                    active ? "<green>✔ Active filter</green>" : "<yellow>Click to filter by this dimension.</yellow>")));
+                }
+            }
+            case RARITY -> {
+                for (MaterialRarity rarity : MaterialRarity.values()) {
+                    boolean active = rarityFilter == rarity;
+                    entries.add(button(rarityIcon(rarity),
+                            "<gold><b>" + rarity.getDisplayName() + "</b></gold>",
+                            List.of("<gray>Rarer materials drop less often and forge stronger.</gray>",
+                                    "<gray>Materials: <yellow>" + countMatching(originFilter, rarity, essenceFilter) + "</yellow></gray>",
+                                    "",
+                                    active ? "<green>✔ Active filter</green>" : "<yellow>Click to filter by this rarity.</yellow>")));
+                }
+            }
+            case ESSENCE -> {
+                for (TraitAffinity essence : TraitAffinity.values()) {
+                    boolean active = essenceFilter == essence;
+                    entries.add(button(essenceIcon(essence),
+                            "<gold><b>" + essence.getDisplayName() + "</b></gold>",
+                            List.of("<gray>On weapons: <yellow>" + essence.getWeaponEffect() + "</yellow></gray>",
+                                    "<gray>On tools: <yellow>" + essence.getToolEffect() + "</yellow></gray>",
+                                    "<gray>On armor: <yellow>" + essence.getArmorEffect() + "</yellow></gray>",
+                                    "<gray>Materials: <yellow>" + countMatching(originFilter, rarityFilter, essence) + "</yellow></gray>",
+                                    "",
+                                    active ? "<green>✔ Active filter</green>" : "<yellow>Click to filter by this essence.</yellow>")));
+                }
+            }
+        }
+        return entries;
+    }
+
+    /** Icon that identifies a dimension in the filter grid. */
+    @Nonnull
+    private static Material originIcon(@Nonnull MineralOrigin origin) {
+        return switch (origin) {
+            case OVERWORLD -> Material.GRASS_BLOCK;
+            case NETHER -> Material.NETHERRACK;
+            case THE_END -> Material.END_STONE;
+            case VANILLA -> Material.CRAFTING_TABLE;
+        };
+    }
+
+    /** Icon that identifies a rarity in the filter grid. */
+    @Nonnull
+    private static Material rarityIcon(@Nonnull MaterialRarity rarity) {
+        return switch (rarity) {
+            case COMMON -> Material.LIGHT_GRAY_DYE;
+            case UNCOMMON -> Material.LIME_DYE;
+            case RARE -> Material.LIGHT_BLUE_DYE;
+            case EPIC -> Material.PURPLE_DYE;
+            case LEGENDARY -> Material.ORANGE_DYE;
+        };
+    }
+
+    /** Icon that identifies an essence in the filter grid. */
+    @Nonnull
+    private static Material essenceIcon(@Nonnull TraitAffinity essence) {
+        return switch (essence) {
+            case INFERNAL -> Material.BLAZE_POWDER;
+            case VOID -> Material.ENDER_PEARL;
+            case PRIMAL -> Material.BONE;
+            case TEMPERED -> Material.IRON_INGOT;
+            case RADIANT -> Material.GLOWSTONE_DUST;
+            case RESONANT -> Material.AMETHYST_SHARD;
+            case VOLATILE -> Material.GUNPOWDER;
+            case TERRAIN -> Material.DIRT;
+            case SWIFT -> Material.SUGAR;
+            case BRUTAL -> Material.IRON_AXE;
+            case BULWARK -> Material.SHIELD;
+            case ASCENDANT -> Material.NETHER_STAR;
+        };
+    }
+
+    /** Applies the option the player clicked in the filter picker; index 0 clears that filter. */
+    private void applyFilterOption(int index) {
+        FilterKind picking = filterPicker;
+        if (picking == null || index < 0) return;
+
+        switch (picking) {
+            case ORIGIN -> {
+                if (index > MineralOrigin.values().length) return;
+                originFilter = (index == 0) ? null : MineralOrigin.values()[index - 1];
+            }
+            case RARITY -> {
+                if (index > MaterialRarity.values().length) return;
+                rarityFilter = (index == 0) ? null : MaterialRarity.values()[index - 1];
+            }
+            case ESSENCE -> {
+                if (index > TraitAffinity.values().length) return;
+                essenceFilter = (index == 0) ? null : TraitAffinity.values()[index - 1];
+            }
+        }
+
+        filterPicker = null;
+        page = 0;
+        render();
+    }
+
+    /** Materials that pass the three catalog filters, in registry order. */
+    @Nonnull
+    public List<TinkerMaterial> filteredMaterials() {
+        List<TinkerMaterial> materials = new ArrayList<>();
+        for (TinkerMaterial material : materialRegistry.getAll()) {
+            if (matchesFilters(material)) materials.add(material);
+        }
+        return materials;
+    }
+
+    /** True when at least one catalog filter is narrowing the list. */
+    public boolean hasMaterialFilters() {
+        return originFilter != null || rarityFilter != null || essenceFilter != null;
+    }
+
+    private boolean matchesFilters(@Nonnull TinkerMaterial material) {
+        if (originFilter != null && material.getOrigin() != originFilter) return false;
+        if (rarityFilter != null && material.getRarity() != rarityFilter) return false;
+        return essenceFilter == null || TraitAffinity.of(material).contains(essenceFilter);
+    }
+
+    /** How many materials the given combination of filters would leave. */
+    private int countMatching(@Nullable MineralOrigin origin, @Nullable MaterialRarity rarity,
+                              @Nullable TraitAffinity essence) {
+        int count = 0;
+        for (TinkerMaterial material : materialRegistry.getAll()) {
+            if (origin != null && material.getOrigin() != origin) continue;
+            if (rarity != null && material.getRarity() != rarity) continue;
+            if (essence != null && !TraitAffinity.of(material).contains(essence)) continue;
+            count++;
+        }
+        return count;
+    }
+
+    /** One-line description of the active filters, for the info button. */
+    @Nonnull
+    private String filterSummary() {
+        if (!hasMaterialFilters()) return "<yellow>none</yellow> <dark_gray>(click the buttons below)</dark_gray>";
+        List<String> parts = new ArrayList<>();
+        if (originFilter != null) parts.add("<yellow>" + originFilter.getDescription() + "</yellow>");
+        if (rarityFilter != null) parts.add("<yellow>" + rarityFilter.getDisplayName() + "</yellow>");
+        if (essenceFilter != null) parts.add("<yellow>" + essenceFilter.getDisplayName() + "</yellow>");
+        return String.join(" <gray>·</gray> ", parts);
+    }
+
+    /**
+     * Material an item id belongs to, or {@code null} for the standalone items that are not forged
+     * from a mineral (the crucible, the prospector brush and the thirteen casts).
+     */
+    @Nullable
+    private TinkerMaterial materialOfId(@Nonnull String id) {
+        String lower = id.toLowerCase(Locale.ROOT);
+        TinkerMaterial direct = materialRegistry.get(lower);
+        if (direct != null) return direct;
+
+        for (TinkerItemRegistry.ItemKind kind : TinkerItemRegistry.ItemKind.values()) {
+            String suffix = kind.getSuffix();
+            if (!lower.endsWith(suffix)) continue;
+            TinkerMaterial owner = materialRegistry.get(lower.substring(0, lower.length() - suffix.length()));
+            if (owner != null) return owner;
+        }
+        for (String alias : List.of("_processed", "_handle", "_pommel")) {
+            if (!lower.endsWith(alias)) continue;
+            TinkerMaterial owner = materialRegistry.get(lower.substring(0, lower.length() - alias.length()));
+            if (owner != null) return owner;
+        }
+        return null;
     }
 
     /** True when the catalog is showing the flat list of every registered id. */
@@ -302,10 +597,11 @@ public class AlloyCodexGUI implements InventoryHolder {
                             "<yellow>many pairs each mineral accepts.</yellow>"));
             case MINERALS -> button(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
                     "<gray><b>No item matches this filter</b></gray>",
-                    List.of("<gray>This material has no ids of the selected kind.",
+                    List.of("<gray>Nothing passes the filters set below.",
                             "",
-                            "<yellow>► Tip: click the Kind button to cycle the filter,</yellow>",
-                            "<yellow>or switch back to the Materials scope.</yellow>"));
+                            "<yellow>► Dimension, rarity and essence stack:</yellow>",
+                            "<gray>open one and pick <white>Any</white> to widen it again,</gray>",
+                            "<gray>and Kind cycles the item kinds of that scope.</gray>"));
             case EXPLORER -> button(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
                     "<gray><b>No partner for this material</b></gray>",
                     List.of("<gray>This material cannot be blended right now.</gray>",
@@ -345,9 +641,16 @@ public class AlloyCodexGUI implements InventoryHolder {
 
     /** Every registered id, narrowed by the kind filter. Strings only: nothing is built here. */
     private List<String> registryIds() {
+        boolean filtered = hasMaterialFilters();
         List<String> ids = new ArrayList<>();
         for (String id : itemRegistry.getAllItemIds()) {
             if (kindFilter != null && kindOfId(id) != kindFilter) continue;
+            if (filtered) {
+                // The dimension, rarity and essence of an id are the ones of the material it belongs to;
+                // the standalone items (crucible, brush, casts) belong to none, so a filter hides them.
+                TinkerMaterial owner = materialOfId(id);
+                if (owner == null || !matchesFilters(owner)) continue;
+            }
             ids.add(id);
         }
         return ids;
@@ -414,7 +717,7 @@ public class AlloyCodexGUI implements InventoryHolder {
      */
     private List<ItemStack> materialEntries() {
         List<ItemStack> entries = new ArrayList<>();
-        for (TinkerMaterial material : materialRegistry.getAll()) {
+        for (TinkerMaterial material : filteredMaterials()) {
             List<String> lore = new ArrayList<>();
             lore.add("<dark_gray>ID: " + material.getId() + "</dark_gray>");
             lore.add("<gray>Origin: <yellow>" + material.getOrigin().name() + "</yellow> · Rarity: <yellow>"
@@ -725,6 +1028,18 @@ public class AlloyCodexGUI implements InventoryHolder {
                 render();
                 return;
             }
+            case SLOT_ORIGIN_FILTER -> {
+                openFilterPicker(FilterKind.ORIGIN);
+                return;
+            }
+            case SLOT_RARITY_FILTER -> {
+                openFilterPicker(FilterKind.RARITY);
+                return;
+            }
+            case SLOT_ESSENCE_FILTER -> {
+                openFilterPicker(FilterKind.ESSENCE);
+                return;
+            }
             default -> {
                 // handled below
             }
@@ -737,6 +1052,7 @@ public class AlloyCodexGUI implements InventoryHolder {
             page = 0;
             explorerTarget = null;
             catalogTarget = null;
+            filterPicker = null;
             render();
             return;
         }
@@ -744,6 +1060,12 @@ public class AlloyCodexGUI implements InventoryHolder {
         if (rawSlot < CONTENT_START || rawSlot >= CONTENT_START + CONTENT_SLOTS) return;
 
         int index = page * CONTENT_SLOTS + (rawSlot - CONTENT_START);
+
+        if (isChoosingFilter()) {
+            // The grid is listing filter values, so a click applies one instead of opening an entry.
+            applyFilterOption(index);
+            return;
+        }
 
         if (section == Section.MINERALS) {
             if (isFlatRegistry()) {
@@ -789,8 +1111,20 @@ public class AlloyCodexGUI implements InventoryHolder {
     @Nullable
     private TinkerMaterial materialAt(int index) {
         if (index < 0) return null;
-        List<TinkerMaterial> materials = new ArrayList<>(materialRegistry.getAll());
+        // The filtered order, so a click opens the material that is actually on that slot.
+        List<TinkerMaterial> materials = filteredMaterials();
         return index < materials.size() ? materials.get(index) : null;
+    }
+
+    /**
+     * Swaps the catalog grid for the values of one filter, or closes it when the same button is
+     * clicked again.
+     */
+    private void openFilterPicker(@Nonnull FilterKind kind) {
+        if (section != Section.MINERALS) return;
+        filterPicker = (filterPicker == kind) ? null : kind;
+        page = 0;
+        render();
     }
 
     /** Cycles the registry kind filter: ALL → each item kind → ALL. */
@@ -925,10 +1259,35 @@ public class AlloyCodexGUI implements InventoryHolder {
 
     /** Number of entries the given section would show right now (used by tests and diagnostics). */
     public int entryCount(@Nonnull Section section) {
-        if (section == Section.MINERALS && registryScope && catalogTarget == null) {
-            return registryIds().size();
+        if (section == Section.MINERALS) {
+            if (isChoosingFilter()) return filterPickerEntries().size();
+            if (registryScope && catalogTarget == null) return registryIds().size();
         }
         return contentFor(section).size();
+    }
+
+    /** Filter by dimension currently applied to the catalog, or {@code null} for every dimension. */
+    @Nullable
+    public MineralOrigin getOriginFilter() {
+        return originFilter;
+    }
+
+    /** Filter by rarity currently applied to the catalog, or {@code null} for every rarity. */
+    @Nullable
+    public MaterialRarity getRarityFilter() {
+        return rarityFilter;
+    }
+
+    /** Filter by essence currently applied to the catalog, or {@code null} for every essence. */
+    @Nullable
+    public TraitAffinity getEssenceFilter() {
+        return essenceFilter;
+    }
+
+    /** Filter whose options are on screen, or {@code null} while browsing the catalog. */
+    @Nullable
+    public FilterKind getFilterPicker() {
+        return filterPicker;
     }
 
     /** True while the catalog lists every registered item id (tests and diagnostics). */

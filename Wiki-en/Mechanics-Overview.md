@@ -194,6 +194,15 @@ The catalog has two **scopes** (**Scope** button) — the curated material list 
 **every registered item id** (2,656 today) — a **Kind** filter, and a drill-down that lists every id a
 material owns, each entry spelling out the `/mvtink give <player> <id>` line.
 
+Finding one mineral among the 139 takes two clicks. The three filter buttons — **Dimension**,
+**Rarity** and **Essence** — swap the grid for a picker instead of cycling, because twelve essences
+behind repeated clicks would be worse than no filter at all. Every option announces how many
+materials it would leave, so an empty combination is obvious before clicking it. The filters
+**stack**: dimension, then rarity within it, then the essences that survive both, and the info button
+spells the active combination out. Choosing **Any** clears that one filter. In the every-item scope
+the same filters narrow the ids through the material each one belongs to — and, since the crucible,
+the brush and the casts belong to no material at all, any active filter hides them.
+
 ---
 
 ## 💻 Commands & permissions

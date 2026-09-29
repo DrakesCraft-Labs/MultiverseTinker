@@ -201,6 +201,15 @@ El catálogo tiene dos **alcances** (botón **Scope**) — la lista curada de ma
 de **todos los ids registrados** (2.656 hoy) —, un filtro **Kind**, y un despliegue que lista cada id
 de un material, con la línea `/mvtink give <jugador> <id>` lista para copiar.
 
+Encontrar un mineral entre los 139 son dos clics. Los tres botones de filtro — **Dimension**,
+**Rarity** y **Essence** — cambian la rejilla por un selector en vez de ir rotando, porque doce
+esencias detrás de clics repetidos serían peor que no tener filtro. Cada opción anuncia cuántos
+materiales dejaría, así una combinación vacía se ve antes de pulsarla. Los filtros **se acumulan**:
+dimensión, después rareza dentro de ella, después las esencias que sobreviven a ambas, y el botón de
+información escribe la combinación activa. Elegir **Any** limpia ese filtro. En el alcance de todos
+los ítems los mismos filtros reducen los ids según el material al que pertenecen — y, como el crisol,
+la brocha y los moldes no pertenecen a ningún material, cualquier filtro activo los oculta.
+
 ---
 
 ## 💻 Comandos y permisos
