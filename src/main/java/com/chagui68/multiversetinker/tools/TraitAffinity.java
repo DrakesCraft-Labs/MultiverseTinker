@@ -5,8 +5,12 @@ import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -118,10 +122,24 @@ public enum TraitAffinity {
     }
 
     /**
+     * Priority used when blending the essences of two parent minerals: dimensional origins come
+     * first so an alloy never loses the identity of the dimension it was forged from.
+     */
+    private static final List<TraitAffinity> INHERITANCE_PRIORITY = List.of(
+            INFERNAL, VOID, PRIMAL, TERRAIN, TEMPERED, RADIANT, RESONANT, VOLATILE, SWIFT, BRUTAL, BULWARK, ASCENDANT);
+
+    /**
      * Resolves the deterministic affinity set of a single material.
+     *
+     * <p>Forge alloys publish the essences inherited from their parent minerals, so a Manyullyn
+     * weapon reads as Infernal and a Void Damascus weapon as Void instead of every alloy sharing the
+     * generic alloy-metal essence.</p>
      */
     @Nonnull
     public static Set<TraitAffinity> of(@Nonnull TinkerMaterial material) {
+        Set<TraitAffinity> inherited = parseInherited(material);
+        if (inherited != null) return inherited;
+
         LinkedHashSet<TraitAffinity> ordered = new LinkedHashSet<>();
 
         // 1. Dimensional essence always takes priority.
@@ -165,5 +183,51 @@ public enum TraitAffinity {
             result.add(PRIMAL);
         }
         return result;
+    }
+
+    /**
+     * Blends the essences of two parent minerals into the inheritance string stored on an alloy.
+     * The result is capped at {@link #MAX_AFFINITIES} and always keeps the strongest identity first.
+     */
+    @Nonnull
+    public static String inherit(@Nonnull TinkerMaterial first, @Nonnull TinkerMaterial second) {
+        LinkedHashSet<TraitAffinity> union = new LinkedHashSet<>();
+        union.addAll(of(first));
+        union.addAll(of(second));
+
+        List<TraitAffinity> ordered = new ArrayList<>();
+        for (TraitAffinity candidate : INHERITANCE_PRIORITY) {
+            if (union.contains(candidate)) ordered.add(candidate);
+        }
+        for (TraitAffinity candidate : union) {
+            if (!ordered.contains(candidate)) ordered.add(candidate);
+        }
+
+        StringBuilder builder = new StringBuilder();
+        int taken = 0;
+        for (TraitAffinity affinity : ordered) {
+            if (taken++ >= MAX_AFFINITIES) break;
+            if (builder.length() > 0) builder.append(',');
+            builder.append(affinity.name());
+        }
+        return builder.toString();
+    }
+
+    @Nullable
+    private static Set<TraitAffinity> parseInherited(@Nonnull TinkerMaterial material) {
+        String raw = material.getInheritedAffinities();
+        if (raw == null || raw.isBlank()) return null;
+
+        Set<TraitAffinity> inherited = new LinkedHashSet<>();
+        for (String token : raw.split(",")) {
+            String name = token.trim().toUpperCase(Locale.ROOT);
+            if (name.isEmpty()) continue;
+            try {
+                inherited.add(TraitAffinity.valueOf(name));
+            } catch (IllegalArgumentException ignored) {
+                // Unknown essence name: skip the token instead of failing the whole material.
+            }
+        }
+        return inherited.isEmpty() ? null : inherited;
     }
 }

@@ -59,6 +59,13 @@ public class TinkerMaterial {
      */
     private final String alloyParents;
 
+    /**
+     * For alloys only: comma separated essences inherited from the parent minerals, in inheritance
+     * order. Published by the alloy registry so perks, lore and combat all agree on what an alloy
+     * is made of.
+     */
+    private final String inheritedAffinities;
+
     public int getDurability() {
         return durabilityBonus;
     }
@@ -100,6 +107,14 @@ public class TinkerMaterial {
     @Nullable
     public String getAlloyParents() {
         return alloyParents;
+    }
+
+    /**
+     * Comma separated essences inherited from the parent minerals, or {@code null} for base minerals.
+     */
+    @Nullable
+    public String getInheritedAffinities() {
+        return inheritedAffinities;
     }
 
     /**

@@ -67,6 +67,17 @@ Bronce (Cobre + Estaño) -> Terrain (Cobre) + Primal (Cobre)
                            + Terrain (Estaño) + Tempered (Estaño)
 ```
 
+**Además, una aleación *es* sus padres en cuanto a esencia.** Cuando se vierte un lingote forjado,
+las esencias de sus dos minerales se funden en la identidad propia de la aleación (hasta 3,
+ordenadas por prioridad dimensional), así que una cabeza de aleación nombra el perk del arma igual
+que lo haría su mineral:
+
+| Aleación | Padres | Identidad de esencia |
+|---|---|---|
+| Bronce | Cobre + Estaño (Overworld) | **Tempered / Terrain** |
+| Manyullyn | Ardita + Cobalto (Nether) | **Infernal** |
+| Void Damascus | Tungsteno (Nether) + Piedra del Vacío (End) | **Infernal / Void** |
+
 Como cada mezcla es pura y determinista, **cada par de minerales posee una combinación única de
 efectos**: mezclar Estaño con Zinc nunca se comportará como mezclar Estaño con Cobalto. Las 16
 recetas legendarias (Bronce, Electro, Invar, Manyullyn, Netherita Cósmica, …) además conservan su
@@ -97,6 +108,8 @@ Así, el perk se muestra como `<Esencia> <Mecánica>`:
 | Diamante (gema vanilla) | **Radiant Tajo Enlazado** — los enemigos alcanzados quedan marcados con Brillantez. |
 | Hierro (metal vanilla) | **Tempered Tajo Enlazado** — filo endurecido con daño extra. |
 | Rubí (gema del Overworld) | **Terrain Embestida de Justa** — los golpes terrosos ralentizan al objetivo. |
+| Manyullyn (aleación del Nether) | **Infernal Tajo Enlazado** — la aleación pelea con las esencias de sus minerales padre, no con una esencia metálica genérica. |
+| Void Damascus (aleación Nether + End) | **Void Tajo Enlazado** — la esencia de vacío del padre del End gana la identidad. |
 
 Justo debajo del perk verás `• Essence Focus: <Esencia> essence (<n>%)`, la proporción de la masa
 forjada del arma que porta la esencia de identidad. Un arma hecha íntegramente de un solo mineral

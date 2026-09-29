@@ -67,6 +67,16 @@ Bronze (Copper + Tin) -> Terrain (Copper) + Primal (Copper)
                          + Terrain (Tin)  + Tempered (Tin)
 ```
 
+**An alloy also *is* its parents, essence-wise.** When a forged ingot is poured, the essences of its
+two minerals are fused into the alloy's own identity (up to 3, ordered by dimensional priority), so
+an alloy head names the weapon perk exactly like its mineral would:
+
+| Alloy | Parents | Essence identity |
+|---|---|---|
+| Bronze | Copper + Tin (Overworld) | **Tempered / Terrain** |
+| Manyullyn | Ardite + Cobalt (Nether) | **Infernal** |
+| Void Damascus | Tungsten (Nether) + Voidstone (The End) | **Infernal / Void** |
+
 Because every blend is pure and deterministic, **each mineral pair owns a unique combination of
 effects** — mixing Tin with Zinc will never behave like mixing Tin with Cobalt. The 16 legendary
 recipes (Bronze, Electrum, Invar, Manyullyn, Cosmic Netherite, …) additionally keep their curated
@@ -97,6 +107,8 @@ The perk therefore reads `<Essence> <Signature>`:
 | Diamond (vanilla gem) | **Radiant Sweeping Cleave** — cleaved foes are marked with Glowing. |
 | Iron (vanilla metal) | **Tempered Sweeping Cleave** — hardened edge damage. |
 | Ruby (Overworld gem) | **Terrain Jousting Reach** — earthen blows slow the target. |
+| Manyullyn (Nether alloy) | **Infernal Sweeping Cleave** — the alloy fights with the essences of its parent minerals, not a generic metal one. |
+| Void Damascus (Nether + End alloy) | **Void Sweeping Cleave** — the End parent's void essence wins the identity. |
 
 Right under the perk you will find `• Essence Focus: <Essence> essence (<n>%)`, the share of the
 weapon's forged mass that carries the identity essence. A weapon built entirely from one mineral is

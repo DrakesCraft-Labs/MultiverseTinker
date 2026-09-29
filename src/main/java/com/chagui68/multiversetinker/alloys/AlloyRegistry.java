@@ -5,6 +5,7 @@ import com.chagui68.multiversetinker.api.MaterialType;
 import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
+import com.chagui68.multiversetinker.tools.TraitAffinity;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -245,6 +246,7 @@ public class AlloyRegistry {
                     .weaponTraitDescription("Dual Combat Synergy: Blends " + first.getWeaponTraitDescription() + " and " + second.getWeaponTraitDescription() + ".")
                     .armorTraitDescription("Dual Defensive Synergy: Blends " + first.getArmorTraitDescription() + " and " + second.getArmorTraitDescription() + ".")
                     .alloyParents(first.getId() + "," + second.getId())
+                    .inheritedAffinities(TraitAffinity.inherit(first, second))
                     .build();
             materialRegistry.register(tm);
         }
@@ -305,8 +307,22 @@ public class AlloyRegistry {
                 .traitName(alloy.traitName())
                 .traitDescription(alloy.traitDescription())
                 .alloyParents(alloy.mat1Id() + "," + alloy.mat2Id())
+                .inheritedAffinities(inheritedAffinitiesOf(materialRegistry, alloy.mat1Id(), alloy.mat2Id()))
                 .build();
         materialRegistry.register(tm);
+    }
+
+    /**
+     * Blends the essences of an alloy's two parent minerals so the alloy keeps their identity.
+     * Returns an empty string when a parent cannot be resolved (never fails registration).
+     */
+    @Nonnull
+    private String inheritedAffinitiesOf(@Nonnull MaterialRegistry registry, @Nullable String parentA, @Nullable String parentB) {
+        if (parentA == null || parentB == null) return "";
+        TinkerMaterial first = registry.get(parentA);
+        TinkerMaterial second = registry.get(parentB);
+        if (first == null || second == null) return "";
+        return TraitAffinity.inherit(first, second);
     }
 
     // ==========================================
