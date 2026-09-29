@@ -133,15 +133,15 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 * `/mvtink forge check` — Valida el yunque al que estás apuntando y muestra el porcentaje de coincidencia.
 * `/mvtink forge gui` — Abre directamente la interfaz gráfica de la Forja Multiverse.
 * `/mvtink craft <weapon|tool|armor> <tipo> <m1> <m2> [m3] [tier]` — Forja cualquier equipo modular al instante, sin la Forja multibloque. Cada argumento de material acepta tanto el id del material (`cobalt`) como cualquiera de sus ids de ítem (`mvtink_cobalt_ingot`, `cobalt_block`), así que un id copiado del codex funciona tal cual; el autocompletado los ofrece todos. Solo admins.
-* `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha). El prefijo `mvtink_` es opcional, los ids se resuelven bajo demanda y las aleaciones compuestas/primordiales forjadas después del arranque también se pueden entregar. El autocompletado entrega **todos los ids registrados de una vez** — más de 2.600, con sus tipos de ítem y alias heredados — y filtra según escribes, con el prefijo `mvtink_` opcional en ambos lados.
+* `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha). El prefijo `mvtink_` es opcional, los ids se resuelven bajo demanda y las aleaciones compuestas/primordiales forjadas después del arranque también se pueden entregar. El autocompletado entrega **todos los ids registrados de una vez** — más de 2.600, con sus tipos de ítem y alias heredados — y filtra según escribes, con el prefijo `mvtink_` opcional en ambos lados. Solo admins.
 * `/mvtink codex [jugador]` — Abre el **Codex de Aleaciones** navegable: el **Catálogo de Minerales**, que navega o bien la **lista de materiales** curada (cada material con su id, dimensión, rareza, rasgo y esencias) o bien el alcance plano **todos los ids de ítem** (los **2.656** ids que hoy entrega el registro — piezas, moldes, crisol, baldes y alias heredados —, opcionalmente filtrados con el botón **Kind**, y al hacer clic en un material se abre el **Explorador de Combinaciones** con él seleccionado, mientras que con shift-clic se despliegan todos sus ids, cada entrada con su id listo para `/mvtink give`), Encontrar un mineral entre los 139 son dos clics: los tres botones de filtro — **Dimension**, **Rarity** y **Essence** — abren un selector que lista cada valor aceptado junto a cuántos materiales dejaría, se **acumulan** entre sí y con Kind, y una combinación sin resultados lo dice en vez de mostrar una rejilla vacía. Recetas legendarias, catalizadores primordiales, compuestas y primordiales forjadas, un explorador de combinaciones y los totales. **Abierto a todos los jugadores** (apuntarlo a otro jugador es solo para admins) y también disponible in-game desde el botón del libro en la pestaña del Crisol — shift-clic en ese botón imprime los totales en el chat.
-* `/mvtink verify` — Diagnostica el registro de ítems: materiales registrados, tipos de ítem por material, ids distintos y una comprobación completa de resolubilidad (cada material × cada tipo).
-* `/mvtink reload` — Recarga la configuración y las tablas de arqueología.
+* `/mvtink verify` — Diagnostica el registro de ítems: materiales registrados, tipos de ítem por material, ids distintos y una comprobación completa de resolubilidad (cada material × cada tipo). Solo admins.
+* `/mvtink reload` — Recarga la configuración y las tablas de arqueología. Solo admins.
 
 > `/mvtink` es el único nombre de comando del plugin y **no registra alias** — ningún otro nombre responderá.
 
 **Permisos:**
-* `multiversetinker.admin` — Acceso a los subcomandos administrativos de `/mvtink` (`craft`, `give`, `forge`, `verify`, `reload`) y a apuntar el codex a otro jugador (por defecto: `op`).
+* `multiversetinker.admin` — Acceso a **todos** los subcomandos administrativos de `/mvtink` (`craft`, `give`, `forge`, `verify`, `reload`) y a apuntar el codex a otro jugador (por defecto: `op`, así que los operadores ya lo tienen). Este es **el único que nunca se configura**: `/mvtink codex` es el único comando pensado para los jugadores.
 * `multiversetinker.forge` — Permite usar la Forja multibloque, su GUI, el Crisol de Aleaciones y el caldero de moldeo (por defecto: `true`).
 * `multiversetinker.codex` — Permite abrir el Codex de Aleaciones, el menú público de referencia (por defecto: `true`).
 * `multiversetinker.archaeology` — Permite usar la brocha para extracción geológica (por defecto: `true`).
@@ -251,17 +251,17 @@ Que el codex, la forja o la brocha estén abiertos a todos es una decisión del 
 | `access.codex` | string | `public` | Abrir el Codex de Aleaciones — tanto `/mvtink codex` como el botón del libro en la pestaña del Crisol. |
 | `access.forge` | string | `public` | La Forja multibloque, su GUI, el Crisol de Aleaciones y el caldero de moldeo. |
 | `access.archaeology` | string | `public` | Cepillar un bloque geológico válido para extraer minerales. |
-| `access.admin-commands` | string | `permission` | Los subcomandos administrativos de `/mvtink`, y apuntar el codex a otro jugador. |
 
 ```yaml
 access:
   codex: public
   forge: public
   archaeology: public
-  admin-commands: permission
 ```
 
-Cualquier valor no reconocido (una errata como `flase`) **vuelve al valor por defecto** en lugar de dejarte sin forja, y se aceptan las palabras que un dueño de servidor escribiría: `everyone` y `all` significan `public`, `ops` y `admin` significan `op`, `node` significa `permission`. Los rechazos también son configurables — `messages.access-denied.codex`, `.forge`, `.archaeology` y `.admin-commands` son cadenas MiniMessage, así que cada servidor los redacta a su manera.
+Los subcomandos administrativos de `/mvtink` **no** están en esa tabla, y es a propósito. Dar ítems, forjar equipo, contar el registro y recargar el plugin son tareas de administración, así que `craft`, `give`, `forge`, `verify`, `reload` y apuntar el codex a otro jugador exigen siempre el nodo `multiversetinker.admin` — los operadores lo tienen por defecto y un plugin de permisos puede concedérselo a quien confíe. `/mvtink codex` es el único comando pensado para los jugadores, y `access.codex` decide si lo tienen. Un `config.yml` que aún lleve `access.admin-commands` se ignora en lugar de obedecerse, y el plugin lo dice en el log.
+
+Cualquier valor no reconocido (una errata como `flase`) **vuelve al valor por defecto** en lugar de dejarte sin forja, y se aceptan las palabras que un dueño de servidor escribiría: `everyone` y `all` significan `public`, `ops` y `admin` significan `op`, `node` significa `permission`. Los rechazos también son configurables — `messages.access-denied.codex`, `.forge` y `.archaeology` redactan las superficies de la tabla, y `.admin-commands` redacta el rechazo que recibe un jugador ante un comando reservado a la administración. Los cuatro son cadenas MiniMessage, así que cada servidor los redacta a su manera.
 
 El modo se aplica **antes** que el nodo: con `access.archaeology: op`, incluso un jugador con `multiversetinker.archaeology` es rechazado, con el mensaje configurado. Lo contrario también vale: `access.archaeology: public` nunca consulta el nodo. Un yunque vanilla normal no se toca para quien no puede usar la Forja — solo el multibloque reconocido responde a la regla.
 
@@ -269,7 +269,7 @@ El modo se aplica **antes** que el nodo: con `access.archaeology: op`, incluso u
 
 | Sección | Propósito |
 | --- | --- |
-| `access` | Quién puede usar cada superficie: el codex, la forja (GUI, crisol y moldeo), la arqueología y los comandos de admin, como `public`, `op` o `permission`. |
+| `access` | Quién puede usar las superficies configurables — el codex, la forja (GUI, crisol y moldeo) y la arqueología — como `public`, `op` o `permission`. Los comandos administrativos no se configuran: exigen siempre `multiversetinker.admin`. |
 | `archaeology` | Sistema de cepillado: interruptor, duración, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque, enfriamiento anti-macro y rendimientos de la brocha. |
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
 | `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado y si la armadura defiende con la protección calculada a partir de sus minerales, o con los valores vanilla (el desgaste vanilla siempre está desactivado). |

@@ -7,7 +7,9 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.StringJoiner;
 
@@ -40,7 +42,12 @@ public final class AccessControl {
         ARCHAEOLOGY("archaeology", "multiversetinker.archaeology", Mode.PUBLIC,
                 "<red>You do not have permission to perform geological archaeology.</red>"),
 
-        /** The administrative {@code /mvtink} subcommands, and aiming the codex at another player. */
+        /**
+         * The administrative {@code /mvtink} subcommands, and aiming the codex at another player.
+         *
+         * <p>The one surface a server cannot open: {@code /mvtink codex} is the only command a player
+         * is meant to have, and everything else stays behind the node. See {@link #isConfigurable()}.</p>
+         */
         ADMIN_COMMANDS("admin-commands", "multiversetinker.admin", Mode.PERMISSION,
                 "<red>You do not have permission to execute this command.</red>");
 
@@ -89,6 +96,18 @@ public final class AccessControl {
         @Nonnull
         public String getKey() {
             return key;
+        }
+
+        /**
+         * Whether {@code config.yml} may rule on this surface.
+         *
+         * <p>Every surface is configurable except {@link #ADMIN_COMMANDS}, which is always
+         * {@link Mode#PERMISSION}: the codex is the only command players are meant to have, so the way
+         * to hand a player the rest is a permissions plugin granting {@code multiversetinker.admin},
+         * never a config value. A config that still carries the old key is ignored, not obeyed.</p>
+         */
+        public boolean isConfigurable() {
+            return this != ADMIN_COMMANDS;
         }
     }
 
@@ -145,15 +164,25 @@ public final class AccessControl {
     /**
      * Applies the {@code access} and {@code messages.access-denied} sections of {@code config.yml}.
      * Called on enable and again by {@code /mvtink reload}, so a server never has to restart.
+     *
+     * @return the config keys that were ignored because their surface is not configurable, so the
+     *         caller can say so in the log instead of leaving a server wondering why nothing changed
      */
-    public static void configure(@Nullable ConfigurationSection config) {
+    @Nonnull
+    public static List<String> configure(@Nullable ConfigurationSection config) {
         reset();
-        if (config == null) return;
+        if (config == null) return List.of();
 
+        List<String> ignored = new ArrayList<>();
         for (Surface surface : Surface.values()) {
-            MODES.put(surface, Mode.parse(config.getString(surface.configKey()), surface.defaultMode()));
+            if (surface.isConfigurable()) {
+                MODES.put(surface, Mode.parse(config.getString(surface.configKey()), surface.defaultMode()));
+            } else if (config.isSet(surface.configKey())) {
+                ignored.add(surface.configKey());
+            }
             MESSAGES.put(surface, config.getString(surface.messageKey(), surface.defaultMessage()));
         }
+        return ignored;
     }
 
     /** Restores the shipped defaults, used before any config is read and by the tests. */
@@ -177,6 +206,11 @@ public final class AccessControl {
     /**
      * Whether this sender may use the surface under the configured mode. Console is always allowed:
      * a mode is about players, and the server console already has full access to plugin.yml.
+     *
+     * <p>An administrative surface always answers to its node, because {@link Surface#isConfigurable()}
+     * keeps a config from ever changing its mode: {@code /mvtink codex} is the one command players get,
+     * and {@code craft}, {@code give}, {@code verify} and {@code reload} stay behind
+     * {@code multiversetinker.admin} no matter what the file says.</p>
      */
     public static boolean allows(@Nonnull CommandSender sender, @Nonnull Surface surface) {
         return switch (mode(surface)) {

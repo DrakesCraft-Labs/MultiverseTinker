@@ -127,7 +127,14 @@ class MultiverseTinkerPluginTest {
         YamlConfiguration config = loadResource("config.yml");
 
         for (AccessControl.Surface surface : AccessControl.Surface.values()) {
-            assertTrue(config.isString(surface.configKey()), surface.configKey() + " must be a string");
+            if (surface.isConfigurable()) {
+                assertTrue(config.isString(surface.configKey()), surface.configKey() + " must be a string");
+            } else {
+                // The administrative subcommands are not a server setting, so the shipped config must not
+                // offer one: an entry there would read as "here is how you open craft and give to players".
+                assertFalse(config.isSet(surface.configKey()), surface.configKey()
+                        + " must not exist in config.yml, because the admin commands are never configurable");
+            }
             assertTrue(config.isString(surface.messageKey()), surface.messageKey() + " must be a string");
             assertEquals(surface.defaultMode(), AccessControl.mode(surface),
                     surface.configKey() + " must be the mode the plugin applied on enable");

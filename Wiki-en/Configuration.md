@@ -188,15 +188,20 @@ permissions plugin still decides who may forge:
 | `access.codex` | string | `public` | Opening the Alloy Codex — `/mvtink codex` and the book button in the crucible tab alike. |
 | `access.forge` | string | `public` | The multiblock Forge, its GUI, the Alloy Crucible and the casting cauldron. |
 | `access.archaeology` | string | `public` | Brushing a valid geological block for minerals. |
-| `access.admin-commands` | string | `permission` | The administrative `/mvtink` subcommands, and aiming the codex at another player. |
 
 ```yaml
 access:
   codex: public
   forge: public
   archaeology: public
-  admin-commands: permission
 ```
+
+The administrative `/mvtink` subcommands are deliberately absent from that table. Giving items, forging equipment,
+counting the registry and reloading the plugin are administrator work, so `craft`, `give`, `forge`, `verify`,
+`reload` and aiming the codex at another player always require the `multiversetinker.admin` node — operators hold it by
+default and a permissions plugin can grant it to a player it trusts. `/mvtink codex` is the only command meant for
+players, and `access.codex` is what decides whether they get it. A config that still carries `access.admin-commands` is
+therefore ignored, not obeyed, and the plugin warns about it on startup and on `/mvtink reload`.
 
 ```yaml
 messages:
@@ -222,6 +227,9 @@ means `permission`. Every decision is reported on startup and on `/mvtink reload
 ```
 [MultiverseTinker] Access control — codex: public · forge: public · archaeology: public · admin-commands: permission
 ```
+
+The `messages.access-denied.admin-commands` message stays configurable even though its surface is not, so the wording a player
+sees when a command is out of their reach is still a server's own.
 
 A plain vanilla **anvil** is left untouched for a player who may not use the Forge: only a recognised multiblock
 answers to the rule, so the plugin never gets in the way of ordinary anvil repairs.

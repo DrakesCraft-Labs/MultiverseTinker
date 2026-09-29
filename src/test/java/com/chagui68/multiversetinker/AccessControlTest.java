@@ -30,17 +30,19 @@ import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Covers the access rules of the plugin: which parts of it (codex, forge, archaeology, admin commands)
- * a server can open or close from {@code config.yml} alone, without depending on a permissions plugin.
+ * Covers the access rules of the plugin: which parts of it (codex, forge, archaeology) a server can open
+ * or close from {@code config.yml} alone, without depending on a permissions plugin — and that the
+ * administrative commands are <b>not</b> one of those parts, whatever a config says.
  *
- * <p>Each surface has three modes — {@code public}, {@code op} and {@code permission} — so the tests
- * check all three for a plain player, an operator and a granted node, and then that the rules actually
- * reach the command, the anvil, the crucible and the brush.</p>
+ * <p>Each configurable surface has three modes — {@code public}, {@code op} and {@code permission} — so
+ * the tests check all three for a plain player, an operator and a granted node, and then that the rules
+ * actually reach the command, the anvil, the crucible and the brush.</p>
  */
 class AccessControlTest {
 
@@ -78,16 +80,19 @@ class AccessControlTest {
         PlayerMock operator = server.addPlayer("keeper");
         operator.setOp(true);
 
-        // public: nobody needs anything, node or operator.
+        // public: nobody needs anything, node or operator. The administrative surface is deliberately not
+        // among the configurable ones, so it is never opened by this and is asserted on its own below.
         setEverySurface("public");
-        for (Surface surface : Surface.values()) {
+        for (Surface surface : configurableSurfaces()) {
             assertTrue(AccessControl.allows(guest, surface), surface + " must be open to everyone");
             assertTrue(AccessControl.isPublic(surface));
         }
+        assertFalse(AccessControl.allows(guest, Surface.ADMIN_COMMANDS),
+                "The administrative commands must survive even a config that opens everything");
 
         // op: only operators, without involving any permission node.
         setEverySurface("op");
-        for (Surface surface : Surface.values()) {
+        for (Surface surface : configurableSurfaces()) {
             assertFalse(AccessControl.allows(guest, surface), surface + " must refuse a plain player");
             assertTrue(AccessControl.allows(operator, surface), surface + " must allow an operator");
         }
@@ -357,12 +362,74 @@ class AccessControlTest {
         assertTrue(drain(operator).stream().anyMatch(line -> line.contains("reloaded successfully")));
     }
 
+    @Test
+    @DisplayName("Of every /mvtink subcommand, the codex is the only one a plain player may run")
+    void onlyTheCodexIsOpenToPlayers() {
+        PlayerMock guest = server.addPlayer("visitor");
+        PlayerMock operator = server.addPlayer("keeper");
+        operator.setOp(true);
+
+        // The codex is the one command a player gets: the shipped config leaves it open, and it must
+        // reach them without any node or operator flag.
+        assertTrue(AccessControl.allows(guest, Surface.CODEX), "The codex is public by default");
+        drain(guest);
+        assertTrue(guest.performCommand("mvtink codex"));
+        assertTrue(isCodexOpen(guest), "The codex must open for a plain player");
+        guest.closeInventory();
+
+        // Every administrative subcommand is refused, with the configured refusal and no side effect.
+        // The arguments are deliberately well-formed, so a refusal can only come from the admin gate.
+        List<String> invocations = List.of(
+                "craft weapon SWORD gold iron diamond",
+                "give visitor mvtink_tin_ingot",
+                "forge build 0",
+                "verify",
+                "reload");
+
+        for (String invocation : invocations) {
+            drain(guest);
+            assertTrue(guest.performCommand("mvtink " + invocation));
+            List<String> messages = drain(guest);
+            assertTrue(messages.stream().anyMatch(line -> line.contains("do not have permission to execute this command")),
+                    "/mvtink " + invocation + " must be refused for a plain player, got: " + messages);
+            assertTrue(messages.stream().noneMatch(line -> line.contains("reloaded successfully")
+                            || line.contains("Admin Crafted") || line.contains("Gave ")
+                            || line.contains("Every item id resolves")),
+                    "/mvtink " + invocation + " must do nothing for a plain player, got: " + messages);
+        }
+
+        // An operator holds the node by default and runs the whole surface without ever being refused.
+        for (String invocation : invocations) {
+            drain(operator);
+            operator.performCommand("mvtink " + invocation);
+            List<String> messages = drain(operator);
+            assertTrue(messages.stream().noneMatch(line -> line.contains("do not have permission")),
+                    "An operator must not be refused /mvtink " + invocation + ", got: " + messages);
+        }
+
+        // And the suggestions say the same thing: one command for a player, the whole surface for an
+        // operator, in the order the executor lists them.
+        TabCompleter completer = plugin.getCommand("mvtink").getTabCompleter();
+        assertNotNull(completer);
+        assertEquals(List.of("codex"),
+                completer.onTabComplete(guest, plugin.getCommand("mvtink"), "mvtink", new String[]{""}),
+                "A plain player must be offered the codex and nothing else");
+        assertEquals(List.of("craft", "give", "forge", "codex", "verify", "reload"),
+                completer.onTabComplete(operator, plugin.getCommand("mvtink"), "mvtink", new String[]{""}),
+                "An operator must be offered every subcommand");
+    }
+
     // ==========================================
     // HELPERS
     // ==========================================
 
+    /** The surfaces a server may rule on: everything but the administrative commands. */
+    private static List<Surface> configurableSurfaces() {
+        return Arrays.stream(Surface.values()).filter(Surface::isConfigurable).toList();
+    }
+
     private void setEverySurface(String mode) {
-        for (Surface surface : Surface.values()) {
+        for (Surface surface : configurableSurfaces()) {
             plugin.getConfig().set(surface.configKey(), mode);
         }
         plugin.applyAccessSettings();

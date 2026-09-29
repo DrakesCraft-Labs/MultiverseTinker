@@ -191,15 +191,20 @@ permisos decide igualmente quién puede forjar:
 | `access.codex` | string | `public` | Abrir el Codex de Aleaciones — tanto `/mvtink codex` como el botón del libro en la pestaña del Crisol. |
 | `access.forge` | string | `public` | La Forja multibloque, su GUI, el Crisol de Aleaciones y el caldero de moldeo. |
 | `access.archaeology` | string | `public` | Cepillar un bloque geológico válido para extraer minerales. |
-| `access.admin-commands` | string | `permission` | Los subcomandos administrativos de `/mvtink`, y apuntar el codex a otro jugador. |
 
 ```yaml
 access:
   codex: public
   forge: public
   archaeology: public
-  admin-commands: permission
 ```
+
+Los subcomandos administrativos de `/mvtink` faltan a propósito en esa tabla. Dar ítems, forjar equipo, contar el
+registro y recargar el plugin son tareas de administración, así que `craft`, `give`, `forge`, `verify`, `reload` y
+apuntar el codex a otro jugador exigen siempre el nodo `multiversetinker.admin` — los operadores lo tienen por defecto
+y un plugin de permisos puede concedérselo a quien confíe. `/mvtink codex` es el único comando pensado para los
+jugadores, y `access.codex` decide si lo tienen. Por eso un `config.yml` que aún lleve `access.admin-commands` se
+ignora en lugar de obedecerse, y el plugin lo advierte al arrancar y en `/mvtink reload`.
 
 ```yaml
 messages:
@@ -225,6 +230,9 @@ aceptan las palabras que un dueño escribiría: `everyone` y `all` significan `p
 ```
 [MultiverseTinker] Access control — codex: public · forge: public · archaeology: public · admin-commands: permission
 ```
+
+El mensaje `messages.access-denied.admin-commands` sigue siendo configurable aunque su superficie no lo sea, así que
+las palabras que ve un jugador cuando un comando le queda fuera de alcance siguen siendo las de su servidor.
 
 Un **yunque** vanilla normal no se toca para quien no puede usar la Forja: solo un multibloque reconocido responde a
 la regla, así que el plugin nunca estorba al reparar en un yunque cualquiera.

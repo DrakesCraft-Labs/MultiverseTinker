@@ -135,15 +135,15 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 * `/mvtink forge check` — Validate the targeted anvil and display structure match percentage and diagnostics.
 * `/mvtink forge gui` — Open the custom Multiverse Forge GUI directly.
 * `/mvtink craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]` — Forge any modular equipment instantly, without the multiblock Forge. Every material argument accepts either a material id (`cobalt`) or any of its item ids (`mvtink_cobalt_ingot`, `cobalt_block`), so an id copied straight out of the codex works as it is; tab completion offers all of them. Admin-only.
-* `/mvtink give <player> <mvtink_id> [amount]` — Give any item (raw, ingot, nugget, block, molten bucket, tool parts, casts, smeltery, prospector brush). The `mvtink_` prefix is optional, ids are resolved on demand, and composite/prime alloys forged after startup are givable too. Tab completion hands out **every registered id in one go** — all 2,600+ of them, item kinds and legacy aliases included — and filters as you type, with the `mvtink_` prefix optional on both sides.
+* `/mvtink give <player> <mvtink_id> [amount]` — Give any item (raw, ingot, nugget, block, molten bucket, tool parts, casts, smeltery, prospector brush). The `mvtink_` prefix is optional, ids are resolved on demand, and composite/prime alloys forged after startup are givable too. Tab completion hands out **every registered id in one go** — all 2,600+ of them, item kinds and legacy aliases included — and filters as you type, with the `mvtink_` prefix optional on both sides. Admin-only.
 * `/mvtink codex [player]` — Open the browsable **Alloy Codex GUI**: the **Mineral Catalog**, which browses either the curated **material list** (every material with its id, dimension, rarity, trait and essences) or the flat **every item id** scope (all **2,656** ids the registry hands out today — parts, casts, smeltery, buckets and legacy aliases — optionally narrowed with the **Kind** filter, and clicking a material opens the **Combination Explorer** on it, while shift-clicking drills into every id it owns, each entry spelling out its id for `/mvtink give`). Finding one mineral among the 139 is two clicks: the three filter buttons — **Dimension**, **Rarity** and **Essence** — open a picker that lists every accepted value next to how many materials it would leave, they **stack** with each other and with Kind, and a combination that matches nothing says so instead of showing a blank grid. Legendary recipes, prime catalysts, forged composites and primes, a combination explorer and the totals. **Open to every player** (targeting another player is admin-only) and also reachable in-game from the book button in the Alloy Crucible tab — sneak-click that button for the totals in chat.
-* `/mvtink verify` — Diagnose the item registry: registered materials, item kinds per material, distinct ids and a full resolvability check (every material × every kind).
-* `/mvtink reload` — Reload configuration, items, and loot tables.
+* `/mvtink verify` — Diagnose the item registry: registered materials, item kinds per material, distinct ids and a full resolvability check (every material × every kind). Admin-only.
+* `/mvtink reload` — Reload configuration, items, and loot tables. Admin-only.
 
 > `/mvtink` is the plugin's only command name and it registers **no aliases** — nothing else will ever respond to it.
 
 **Permissions:**
-* `multiversetinker.admin` — Access to the administrative `/mvtink` subcommands (`craft`, `give`, `forge`, `verify`, `reload`) and to aiming the codex at another player (default: `op`).
+* `multiversetinker.admin` — Access to **every** administrative `/mvtink` subcommand (`craft`, `give`, `forge`, `verify`, `reload`) and to aiming the codex at another player (default: `op`, so operators hold it out of the box). This one is **never configurable**: `/mvtink codex` is the only command players are meant to have.
 * `multiversetinker.forge` — Allows using the multiverse Forge, its GUI, the Alloy Crucible and the casting cauldron (default: `true`).
 * `multiversetinker.codex` — Allows opening the Alloy Codex, the public reference menu (default: `true`).
 * `multiversetinker.archaeology` — Allows using brushes for geological extraction (default: `true`).
@@ -252,17 +252,17 @@ Whether the codex, the forge or the brush is open to everyone is a server decisi
 | `access.codex` | string | `public` | Opening the Alloy Codex — both `/mvtink codex` and the book button in the crucible tab. |
 | `access.forge` | string | `public` | The multiblock Forge, its GUI, the Alloy Crucible and the casting cauldron. |
 | `access.archaeology` | string | `public` | Brushing a valid geological block for minerals. |
-| `access.admin-commands` | string | `permission` | The administrative `/mvtink` subcommands, and aiming the codex at another player. |
 
 ```yaml
 access:
   codex: public
   forge: public
   archaeology: public
-  admin-commands: permission
 ```
 
-Anything unrecognised (a typo such as `flase`) **falls back to the default** instead of locking the server out of its own forge, and the values a server owner is likely to write are accepted: `everyone` and `all` mean `public`, `ops` and `admin` mean `op`, `node` means `permission`. Refusals are configurable too — `messages.access-denied.codex`, `.forge`, `.archaeology` and `.admin-commands` are MiniMessage strings, so a Spanish server can word them its own way.
+The administrative `/mvtink` subcommands are deliberately **not** in that table. Giving items, forging equipment, counting the registry and reloading the plugin are administrator work, so `craft`, `give`, `forge`, `verify`, `reload` and aiming the codex at another player always require the `multiversetinker.admin` node — operators hold it by default and a permissions plugin can grant it to a player it trusts. `/mvtink codex` is the only command meant for players, and `access.codex` is what decides whether they get it. A config that still carries `access.admin-commands` is ignored rather than obeyed, and the plugin says so in the log.
+
+Anything unrecognised (a typo such as `flase`) **falls back to the default** instead of locking the server out of its own forge, and the values a server owner is likely to write are accepted: `everyone` and `all` mean `public`, `ops` and `admin` mean `op`, `node` means `permission`. Refusals are configurable too — `messages.access-denied.codex`, `.forge` and `.archaeology` word the surfaces above, and `.admin-commands` words the refusal a player meets on a command only administrators may run. All four are MiniMessage strings, so a Spanish server can phrase them its own way.
 
 The mode applies **before** the permission node: with `access.archaeology: op`, even a player holding `multiversetinker.archaeology` is turned away, and the refusal is the configured message. The opposite is equally true: `access.archaeology: public` never consults the node at all. A plain vanilla anvil is left untouched for players who are not allowed to use the Forge — only the recognised multiblock answers to the rule.
 
@@ -270,7 +270,7 @@ The mode applies **before** the permission node: with `access.archaeology: op`, 
 
 | Section | Purpose |
 | --- | --- |
-| `access` | Who may use each surface: the codex, the forge (GUI, crucible and casting), archaeology and the admin commands, as `public`, `op` or `permission`. |
+| `access` | Who may use the configurable surfaces — the codex, the forge (GUI, crucible and casting) and archaeology — as `public`, `op` or `permission`. The administrative commands are not configurable: they always need `multiversetinker.admin`. |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour, anti-macro cooldown and brush yields. |
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
 | `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage and whether armor defends with the protection rolled from its minerals, or the vanilla material values instead (vanilla wear is always disabled). |

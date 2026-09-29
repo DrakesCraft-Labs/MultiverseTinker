@@ -226,9 +226,13 @@ la brocha y los moldes no pertenecen a ningún material, cualquier filtro activo
 | `/mvtink verify` | admin | Diagnostica el registro de ítems |
 | `/mvtink reload` | admin | Recarga config, ítems y loot |
 
+`/mvtink codex` es el único comando pensado para los jugadores; todos los demás son tarea de administración y
+piden `multiversetinker.admin` antes de hacer nada, y **ningún config puede abrirlos** — los operadores tienen el
+nodo por defecto y un plugin de permisos puede concedérselo a un jugador.
+
 Permisos: `multiversetinker.admin` (op) · `multiversetinker.forge` (todos) ·
 `multiversetinker.codex` (todos) · `multiversetinker.archaeology` (todos) — y el bloque `access` de
-`config.yml` abre o cierra cada una de esas cuatro superficies como **public**, **op** o **permission**, así que
+`config.yml` abre o cierra el codex, la forja y la arqueología como **public**, **op** o **permission**, así que
 un servidor decide sin instalar un plugin de permisos. Ver **[Configuración](Configuracion.md#-quién-puede-usar-qué-access)**.
 
 El autocompletado ofrece **todos los ids de ítem registrados** en una sola lista y la filtra según

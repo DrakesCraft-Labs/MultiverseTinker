@@ -201,7 +201,11 @@ public class MultiverseTinker extends JavaPlugin {
      * here, and a server with one keeps the fine-grained nodes. Re-read by {@code /mvtink reload}.</p>
      */
     public void applyAccessSettings() {
-        AccessControl.configure(getConfig());
+        for (String ignored : AccessControl.configure(getConfig())) {
+            getLogger().warning("Ignoring " + ignored + ": the administrative /mvtink subcommands are always"
+                    + " behind " + MultiverseTinkerCommand.ADMIN_PERMISSION + " (operators by default, or whoever a"
+                    + " permissions plugin grants it to). Only the codex can be opened to players.");
+        }
         getLogger().info("Access control — " + AccessControl.summary());
     }
 

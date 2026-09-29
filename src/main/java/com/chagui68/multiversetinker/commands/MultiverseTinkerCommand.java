@@ -31,7 +31,13 @@ import java.util.*;
 
 public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
-    /** Full access to every administrative subcommand, while {@code access.admin-commands} says so. */
+    /**
+     * Full access to every administrative subcommand.
+     *
+     * <p>Always required, never configurable: {@code /mvtink codex} is the only command players are
+     * meant to have, so every other subcommand asks for this node before it does anything. Operators
+     * hold it by default and a permissions plugin can grant it to a player.</p>
+     */
     public static final String ADMIN_PERMISSION = Surface.ADMIN_COMMANDS.permission();
 
     /** Opens the Alloy Codex; granted to everyone by default, because it is reference material. */

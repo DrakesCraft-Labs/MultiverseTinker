@@ -219,10 +219,14 @@ the brush and the casts belong to no material at all, any active filter hides th
 | `/mvtink verify` | admin | Diagnoses the item registry |
 | `/mvtink reload` | admin | Reloads config, items and loot |
 
+`/mvtink codex` is the only command a player is meant to have; every other subcommand is administrator work and
+asks for `multiversetinker.admin` first, which **no config can open** — operators hold the node by default and a
+permissions plugin can grant it to a player.
+
 Permissions: `multiversetinker.admin` (op) · `multiversetinker.forge` (everyone) ·
 `multiversetinker.codex` (everyone) · `multiversetinker.archaeology` (everyone) — and the `access` block of
-`config.yml` opens or closes each of those four surfaces as **public**, **op** or **permission**, so a server
-decides without installing a permissions plugin. See **[Configuration](Configuration.md#-who-may-use-what-access)**.
+`config.yml` opens or closes the codex, the forge and archaeology as **public**, **op** or **permission**, so a
+server decides without installing a permissions plugin. See **[Configuration](Configuration.md#-who-may-use-what-access)**.
 
 Tab completion offers **every registered item id** in one list and filters it as you type, and the
 `mvtink_` prefix is optional everywhere — typing `tin` finds `mvtink_tin`, `mvtink_tin_ingot` and the

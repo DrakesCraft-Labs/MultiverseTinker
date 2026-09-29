@@ -7,20 +7,23 @@ description: Modular tools, weapons and armor with exclusive perks and animation
 website: https://github.com/DrakesCraft-Labs/MultiverseTinker
 
 # Single command, no aliases: /mvtink is the only name this plugin answers to.
-# The command itself carries no permission so /mvtink codex stays open to everyone; every other
-# subcommand enforces multiversetinker.admin on its own.
+#
+# The command itself carries no permission, because /mvtink codex is the one subcommand players are
+# meant to have and it must stay reachable. Every other subcommand enforces multiversetinker.admin
+# inside the executor, before it does anything, and that gate is not configurable: the codex is the
+# only command a server can open to players, and anything else needs the node.
 commands:
   mvtink:
     description: Main management command for MultiverseTinker.
     usage: /mvtink <craft|give|forge|codex|verify|reload>
 
-# Every surface can also be opened to everyone — or restricted to operators — from config.yml
-# (access.codex, access.forge, access.archaeology, access.admin-commands), so servers without a
-# permissions plugin never have to depend on one. These nodes only decide the surfaces left on
-# "permission".
+# The forge and the brush can be opened to everyone — or restricted to operators — from config.yml
+# (access.codex, access.forge, access.archaeology), so servers without a permissions plugin never have
+# to depend on one. Those settings only matter while the surface is left on "permission".
+# multiversetinker.admin is never configurable: it is what separates a player from an administrator.
 permissions:
   multiversetinker.admin:
-    description: Full administrative access to MultiverseTinker commands (/mvtink craft, give, forge, verify and reload).
+    description: Full administrative access to MultiverseTinker commands (/mvtink craft, give, forge, verify and reload). Granted to operators by default; a permissions plugin is the only way to give it to a player.
     default: op
   multiversetinker.codex:
     description: Allows opening the Alloy Codex (mineral catalog, recipes, forged alloys and the combination explorer).

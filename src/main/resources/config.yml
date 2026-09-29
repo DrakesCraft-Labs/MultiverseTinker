@@ -106,16 +106,21 @@ equipment:
 
 # Who may use each part of the plugin
 #
-# Every surface can be ruled on here, so a server decides with this file alone and needs no
+# Every surface below can be ruled on here, so a server decides with this file alone and needs no
 # permissions plugin:
 #
 #   public     -> every player, no permission node involved
 #   op         -> server operators only
-#   permission -> the node declared in plugin.yml (multiversetinker.codex, .forge, .archaeology,
-#                 .admin), so LuckPerms, PermissionsEx or a permissions.yml can still narrow it
+#   permission -> the node declared in plugin.yml (multiversetinker.codex, .forge, .archaeology),
+#                 so LuckPerms, PermissionsEx or a permissions.yml can still narrow it
 #
 # Anything unrecognised falls back to the default, so a typo can never lock a server out of its own
 # forge. Changing a value applies on /mvtink reload, no restart.
+#
+# The administrative /mvtink subcommands are NOT here, on purpose: giving items, forging equipment,
+# counting the registry and reloading the plugin are administrator work, so they always require
+# multiversetinker.admin (operators by default, or whoever a permissions plugin grants it to). The
+# only command meant for players is /mvtink codex, and this file decides whether they get it.
 access:
   # Browse the Alloy Codex (/mvtink codex, and the book button in the Alloy Crucible tab)
   codex: public
@@ -125,10 +130,6 @@ access:
 
   # Brush minerals out of valid geological blocks
   archaeology: public
-
-  # The administrative /mvtink subcommands (craft, give, forge, verify, reload) and aiming the
-  # codex at another player
-  admin-commands: permission
 
 # Rarity weights of the minerals geology hands out
 #

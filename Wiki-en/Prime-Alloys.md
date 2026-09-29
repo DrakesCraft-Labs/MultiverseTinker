@@ -141,9 +141,10 @@ tool or armor piece also shows a `✦ Prime Alloy:` line naming the ultimate and
 
 Everything above is browsable in game. Open the **Alloy Codex** with `/mvtink codex` or by clicking the
 book button in the Alloy Crucible tab (sneak-click it to print the totals in chat instead). The codex is
-**open to every player** — it is reference material, not an admin tool — and only aiming it at somebody
-else with `/mvtink codex <player>` requires the admin permission — both of those are what `access.codex` and
-`access.admin-commands` decide in `config.yml`. It is a paginated 54-slot menu with seven sections:
+**open to every player** — it is reference material, not an admin tool, and `/mvtink codex` is the one command a
+player is meant to have. Only aiming it at somebody else with `/mvtink codex <player>` requires the
+`multiversetinker.admin` node, which is not configurable (`access.codex` is what decides whether players get the
+codex at all). It is a paginated 54-slot menu with seven sections:
 
 | Section | What it shows |
 |---|---|
