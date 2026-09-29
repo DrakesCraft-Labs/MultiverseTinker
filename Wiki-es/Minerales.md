@@ -119,3 +119,30 @@ MultiverseTinker cuenta con **97 minerales geológicos**, repartidos entre las t
 | **Spatial Platinum** | `mvtink_spatial_platinum` | Épico | Metal | Transdimensional | Mina menas vinculadas adyacentes a la vez | 160t |
 | **Void Pyrite** | `mvtink_void_pyrite` | Poco Común | Mineral | Void Sparks | Detonaciones de plasma morado al golpear | 85t |
 | **Zero-Point Shard** | `mvtink_zero_point` | Legendario | Elemental | Absolute Zero | Congela e inmoviliza por completo a los objetivos | 240t |
+
+---
+
+## ❖ Catalizadores del Crisol (12 objetos vanilla)
+
+Los catalizadores **no** son minerales: no se pueden mezclar con otros minerales, pero sí se pueden
+colocar en el Crisol de Aleaciones junto a una de las 16 **aleaciones legendarias** para forjar una
+**aleación primordial**. Cada catalizador decide el ultimate que lanza el arma forjada y el estado con
+el que responde la armadura forjada.
+
+| Catalizador | Id del objeto | Ultimate otorgado | Estado de armadura |
+|---|---|---|---|
+| **Estrella del Nether** | `mvtink_catalyst_nether_star` | Supernova | Prime Aegis |
+| **Aliento de Dragón** | `mvtink_catalyst_dragon_breath` | Meteor Cascade ☄ | Ember Veil |
+| **Hielo Azul** | `mvtink_catalyst_blue_ice` | Absolute Zero ❄ | Frostbound |
+| **Hielo Compacto** | `mvtink_catalyst_packed_ice` | Glacier Tomb ❄ | Frostbound |
+| **Fragmento de Eco** | `mvtink_catalyst_echo_shard` | Event Horizon | Void Shell |
+| **Corazón del Mar** | `mvtink_catalyst_heart_of_the_sea` | Tectonic Rift | Gravitic Anchor |
+| **Tótem de Inmortalidad** | `mvtink_catalyst_totem_of_undying` | Prismatic Ascension | Prime Aegis |
+| **Cristal del End** | `mvtink_catalyst_end_crystal` | Supernova | Stormcall |
+| **Ancla de Reaparición** | `mvtink_catalyst_respawn_anchor` | Meteor Cascade ☄ | Ember Veil |
+| **Cristales de Prismarina** | `mvtink_catalyst_prismarine_crystals` | Prismatic Ascension | Prism Bulwark |
+| **Cúmulo de Amatista** | `mvtink_catalyst_amethyst_cluster` | Event Horizon | Prism Bulwark |
+| **Escombros Antiguos** | `mvtink_catalyst_ancient_debris` | Tectonic Rift | Tectonic Guard |
+
+Consulta **[Aleaciones Primordiales](Aleaciones-Primordiales.md)** para las reglas de fusión y todos los
+espectáculos.

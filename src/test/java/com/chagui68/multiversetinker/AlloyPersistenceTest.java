@@ -2,7 +2,9 @@ package com.chagui68.multiversetinker;
 
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.alloys.TinkerAlloy;
+import com.chagui68.multiversetinker.api.MaterialRarity;
 import com.chagui68.multiversetinker.api.MaterialType;
+import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import org.junit.jupiter.api.AfterEach;
@@ -69,5 +71,36 @@ class AlloyPersistenceTest {
         assertEquals(16, restored.getAllAlloys().size() - restored.getDynamicAlloyCount(),
                 "Only player-forged composites are persisted; the 16 curated recipes are always rebuilt");
         assertTrue(restored.getDynamicAlloyCount() >= 1);
+    }
+
+    @Test
+    @DisplayName("Prime alloys forged with a vanilla catalyst also survive a restart")
+    void forgedPrimesSurviveRestart() {
+        AlloyRegistry live = plugin.getAlloyRegistry();
+        TinkerMaterial manyullyn = registry.get("mvtink_manyullyn");
+        TinkerMaterial blueIce = registry.get("mvtink_catalyst_blue_ice");
+        assertNotNull(manyullyn, "Manyullyn must exist");
+        assertNotNull(blueIce, "Blue Ice must be registered as a catalyst");
+
+        TinkerAlloy prime = live.findOrCreateAlloy(manyullyn, blueIce, registry);
+        assertTrue(prime.id().startsWith(AlloyRegistry.PRIME_PREFIX), "Expected a prime id, got " + prime.id());
+        assertEquals(1, live.getPrimeAlloyCount(), "The forged prime must be counted separately");
+
+        live.flush();
+
+        // Restart exactly like the plugin does: catalysts first, then the persisted alloys.
+        MaterialRegistry freshMaterials = new MaterialRegistry();
+        AlloyRegistry restored = new AlloyRegistry();
+        restored.registerCatalystMaterials(freshMaterials);
+        restored.enablePersistence(plugin, freshMaterials);
+
+        TinkerMaterial restoredPrime = freshMaterials.get(prime.id());
+        assertNotNull(restoredPrime, "The prime material must exist again after a restart");
+        assertTrue(AlloyRegistry.isPrime(restoredPrime), "The restored alloy must still be a prime");
+        assertEquals(MaterialRarity.LEGENDARY, restoredPrime.getRarity(),
+                "Restored primes keep their legendary rarity");
+        assertFalse(TraitAffinity.of(restoredPrime).isEmpty(),
+                "A restored prime must keep inheriting its parents' essences");
+        assertEquals(1, restored.getPrimeAlloyCount());
     }
 }

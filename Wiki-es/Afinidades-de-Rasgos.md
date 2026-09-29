@@ -122,3 +122,25 @@ distintos se comportan de forma realmente diferente.
 > ⚡ Las armas cuyo enfoque de esencia alcanza el **80%** desatan además el
 > **[ultimate](Ultimates-de-Esencia.md)** cinematográfico de esa esencia — meteoritos, vórtices,
 > pilares de luz o jaulas que inmovilizan al enemigo — con 20 segundos de enfriamiento.
+
+---
+
+## 🌌 Afinidades primordiales y estados de armadura
+
+Las aleaciones primordiales heredan **ambos** padres legendarios (más la esencia Primal/Tempered del
+catalizador), así que una primordial sigue enseñando todas las esencias de sus ingredientes
+legendarios. Encima de eso, cada primordial porta un **espectáculo** y un **estado defensivo**:
+
+| Ingrediente primordial | Ultimate (arma) | Estado (armadura) |
+|---|---|---|
+| Hielo Azul / Hielo Compacto | Absolute Zero ❄ / Glacier Tomb ❄ | Frostbound *(congela a los atacantes)* |
+| Estrella del Nether / Tótem de Inmortalidad | Supernova / Prismatic Ascension | Prime Aegis |
+| Aliento de Dragón / Ancla de Reaparición | Meteor Cascade ☄ | Ember Veil |
+| Fragmento de Eco / Cúmulo de Amatista | Event Horizon | Void Shell |
+| Corazón del Mar / Escombros Antiguos | Tectonic Rift | Gravitic Anchor / Tectonic Guard |
+| Cristal del End | Supernova | Stormcall |
+| Cristales de Prismarina | Prismatic Ascension | Prism Bulwark |
+| Sin catalizador (respaldo de esencia) | sigue la esencia dominante | sigue la esencia dominante |
+
+Los estados de armadura son la nueva capa defensiva de endgame por encima de los procs de afinidad
+normales: mira el desglose completo en **[Aleaciones Primordiales](Aleaciones-Primordiales.md)**.

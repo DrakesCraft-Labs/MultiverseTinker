@@ -33,7 +33,7 @@ cast. The **Essence Focus** line in the weapon lore tells you exactly where you 
 
 | Essence | Ultimate | Animation | Root | Radius | Damage |
 |---|---|---|---|---|---|
-| **Infernal** | Meteor Shower | Meteors | 3.0s | 4.0 | 1.40x |
+| **Infernal** | Meteor Storm | Meteor storm | 3.0s | 4.0 | 1.40x |
 | **Void** | Singularity Collapse | Vortex | 3.0s | 4.0 | 1.35x |
 | **Primal** | Primal Outburst | Nova | 2.0s | 3.5 | 1.30x |
 | **Tempered** | Tempered Slam | Quake | 2.3s | 3.5 | 1.25x |
@@ -64,3 +64,38 @@ sound, so a Nether-forged crossbow and an End-forged crossbow look and sound not
 Alloy parents unfold into their two minerals at half potency, so an alloy forged from two Nether
 minerals is still fully Infernal — which makes alloy weapons the most reliable way to reach 100%
 focus while keeping curated abilities like *Phase Step* or *Hellfire Core*.
+
+---
+
+## 🌌 Prime ultimates
+
+Prime alloys add a second family of spectacles. They sit **above** the essence ultimates: a weapon
+forged with a prime alloy skips the 80% focus requirement (the legendary fusion is the gate instead),
+hits for **1.55×–1.75×** and reuses the same 20 second cooldown.
+
+| Prime ultimate | Animation | Damage | Root | Freeze | Source catalyst |
+|---|---|---|---|---|---|
+| **Absolute Zero** | **Ice field** ❄ | 1.60x | 70 t | **400 t** | Blue Ice |
+| **Glacier Tomb** | **Ice field** ❄ | 1.55x | 90 t | **300 t** | Packed Ice |
+| **Meteor Cascade** | **Meteor storm** ☄ | 1.75x | 70 t | — | Dragon Breath / Respawn Anchor |
+| **Supernova** | Nova | 1.70x | 60 t | — | Nether Star / End Crystal |
+| **Event Horizon** | Vortex | 1.65x | 80 t | — | Echo Shard / Amethyst Cluster |
+| **Tectonic Rift** | Quake | 1.65x | 60 t | — | Heart of the Sea / Ancient Debris |
+| **Prismatic Ascension** | Pillar | 1.60x | 60 t | — | Totem of Undying / Prismarine Crystals |
+
+### ❄️ Freezing: the CRYO animation
+
+The frost attacks wind up with snow falling and frost crawling across the floor, then **ten ice spikes
+erupt in a ring** around the epicentre — block dust of blue ice and packed ice, snowflake columns and
+a glass-shatter plus powder-snow crash. The victim takes **300–400 freeze ticks** (mobs fully freeze
+over) with Slowness VI, and during the hold phase a rotating frost cage re-applies 140 freeze ticks
+every tick while snowflakes pour off the body.
+
+### ☄️ Meteor cascade: the METEOR_STORM animation
+
+Instead of three lanes, **eight meteors** spiral down from 16 blocks, each leaving a flame and lava
+trail plus a smoke plume, converging into a double explosion that throws nearby enemies outward and
+splashes coloured dust across a 5-block radius.
+
+Full details, the 12 vanilla catalysts and the 9 new prime armor states live in
+**[Prime Alloys](Prime-Alloys.md)**.

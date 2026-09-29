@@ -14,9 +14,9 @@ import java.util.Locale;
  * spectacle: a multi-phase animation (wind-up, impact, root hold) that pins the struck enemy in
  * place while meteors, vortexes, light pillars or cages are rendered around it.</p>
  */
-public enum EssenceUltimate {
+public enum EssenceUltimate implements CinematicUltimate {
 
-    INFERNAL("Meteor Shower", Animation.METEOR, Particle.SOUL_FIRE_FLAME, Particle.LAVA,
+    INFERNAL("Meteor Storm", Animation.METEOR_STORM, Particle.SOUL_FIRE_FLAME, Particle.LAVA,
             Sound.ENTITY_BLAZE_SHOOT, Sound.ENTITY_GENERIC_EXPLODE, "#FF6B35",
             1.40, 4.0, 60, "Meteors crash down and pin the target in a ring of fire."),
 
@@ -64,13 +64,8 @@ public enum EssenceUltimate {
             Sound.BLOCK_BEACON_ACTIVATE, Sound.ENTITY_PLAYER_LEVELUP, "#D2B4DE",
             1.35, 3.5, 50, "Transcendent light descends, roots the target and mends the wielder.");
 
-    /** Shape of the rendered spectacle. */
-    public enum Animation {
-        METEOR, VORTEX, NOVA, PILLAR, CAGE, QUAKE
-    }
-
     private final String displayName;
-    private final Animation animation;
+    private final CinematicUltimate.Animation animation;
     private final Particle trailParticle;
     private final Particle accentParticle;
     private final Sound chargeSound;
@@ -82,7 +77,7 @@ public enum EssenceUltimate {
     private final int rootTicks;
     private final String description;
 
-    EssenceUltimate(String displayName, Animation animation,
+    EssenceUltimate(String displayName, CinematicUltimate.Animation animation,
                     Particle trailParticle, Particle accentParticle,
                     Sound chargeSound, Sound impactSound, String colorHex,
                     double damageMultiplier, double radius, int rootTicks, String description) {
@@ -134,7 +129,8 @@ public enum EssenceUltimate {
     }
 
     @Nonnull
-    public Animation getAnimation() {
+    @Override
+    public CinematicUltimate.Animation getAnimation() {
         return animation;
     }
 
@@ -181,6 +177,12 @@ public enum EssenceUltimate {
     /** How long the struck enemy is rooted, in ticks. */
     public int getRootTicks() {
         return rootTicks;
+    }
+
+    /** Essence ultimates do not freeze: frost belongs to the prime cryo spectacles. */
+    @Override
+    public int getFreezeTicks() {
+        return 0;
     }
 
     @Nonnull

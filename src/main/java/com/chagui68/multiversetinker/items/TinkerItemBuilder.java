@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker.items;
 
+import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.CastType;
 import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
@@ -8,6 +9,8 @@ import com.chagui68.multiversetinker.api.ToolPartType;
 import com.chagui68.multiversetinker.evolution.EvolutionTier;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.PrimeArmorState;
+import com.chagui68.multiversetinker.tools.PrimeUltimate;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.tools.WeaponPerkProfile;
 import net.kyori.adventure.text.Component;
@@ -129,6 +132,20 @@ public class TinkerItemBuilder {
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.text("  " + material.getTraitDescription(), NamedTextColor.DARK_AQUA)
                 .decoration(TextDecoration.ITALIC, false));
+
+        boolean prime = AlloyRegistry.isPrime(material);
+        if (prime) {
+            lore.add(Component.text("✦ Prime Alloy: ", NamedTextColor.GOLD)
+                    .append(Component.text(PrimeUltimate.of(material).getDisplayName() + " ultimate", NamedTextColor.AQUA))
+                    .append(Component.text("  ·  ", NamedTextColor.DARK_GRAY))
+                    .append(Component.text(PrimeArmorState.of(material).getDisplayName() + " state", NamedTextColor.LIGHT_PURPLE))
+                    .decoration(TextDecoration.ITALIC, false));
+        } else if (AlloyRegistry.isCatalyst(material)) {
+            lore.add(Component.text("❖ Crucible Catalyst: ", NamedTextColor.GOLD)
+                    .append(Component.text("pair with a legendary alloy", NamedTextColor.AQUA))
+                    .decoration(TextDecoration.ITALIC, false));
+        }
+
         lore.add(Component.empty());
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_ingot</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
@@ -434,6 +451,7 @@ public class TinkerItemBuilder {
         lore.add(Component.text("✦ Mineral Affinities: ", NamedTextColor.GOLD)
                 .append(Component.text(describeAffinities(collectAffinities(composition)), NamedTextColor.LIGHT_PURPLE))
                 .decoration(TextDecoration.ITALIC, false));
+        lore.addAll(primeLore(composition));
 
         lore.add(Component.empty());
         lore.add(Component.text("Combine in Multiverse Forge to assemble weapons & tools.", NamedTextColor.DARK_GRAY)
@@ -579,6 +597,7 @@ public class TinkerItemBuilder {
         lore.add(Component.text("✦ Mineral Affinities: ", NamedTextColor.GOLD)
                 .append(Component.text(describeAffinities(collectAffinities(part1, part2, part3)), NamedTextColor.LIGHT_PURPLE))
                 .decoration(TextDecoration.ITALIC, false));
+        lore.addAll(primeLore(part1, part2, part3));
 
         meta.lore(lore);
 
@@ -689,6 +708,7 @@ public class TinkerItemBuilder {
         lore.add(Component.text("✦ Mineral Affinities: ", NamedTextColor.GOLD)
                 .append(Component.text(describeAffinities(collectAffinities(head, rod, binding)), NamedTextColor.LIGHT_PURPLE))
                 .decoration(TextDecoration.ITALIC, false));
+        lore.addAll(primeLore(head, rod, binding));
 
         meta.lore(lore);
 
@@ -739,6 +759,36 @@ public class TinkerItemBuilder {
             }
         }
         return affinities;
+    }
+
+    /**
+     * Lore block for weapons, tools and armor forged with prime alloys: names the ultimate the
+     * piece unleashes and the armor state it answers with, so the endgame build is readable at a
+     * glance.
+     */
+    @Nonnull
+    private static List<Component> primeLore(@Nullable PartComposition... parts) {
+        LinkedHashSet<String> ultimates = new LinkedHashSet<>();
+        LinkedHashSet<String> states = new LinkedHashSet<>();
+        for (PartComposition part : parts) {
+            if (part == null) continue;
+            for (PartComposition.Entry entry : part.getEntries()) {
+                TinkerMaterial material = entry.material();
+                if (!AlloyRegistry.isPrime(material)) continue;
+                ultimates.add(PrimeUltimate.of(material).getDisplayName());
+                states.add(PrimeArmorState.of(material).getDisplayName());
+            }
+        }
+        if (ultimates.isEmpty()) return List.of();
+
+        List<Component> lore = new ArrayList<>(2);
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Prime Alloy: ", NamedTextColor.GOLD)
+                .append(Component.text(String.join(" · ", ultimates) + " ultimate", NamedTextColor.AQUA))
+                .append(Component.text("  ·  ", NamedTextColor.DARK_GRAY))
+                .append(Component.text(String.join(" · ", states) + " state", NamedTextColor.LIGHT_PURPLE))
+                .decoration(TextDecoration.ITALIC, false));
+        return lore;
     }
 
     @Nonnull
@@ -853,6 +903,7 @@ public class TinkerItemBuilder {
         lore.add(Component.text("✦ Mineral Affinities: ", NamedTextColor.GOLD)
                 .append(Component.text(describeAffinities(collectAffinities(plate, lining, trim)), NamedTextColor.LIGHT_PURPLE))
                 .decoration(TextDecoration.ITALIC, false));
+        lore.addAll(primeLore(plate, lining, trim));
 
         meta.lore(lore);
 

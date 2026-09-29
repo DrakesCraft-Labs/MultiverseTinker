@@ -83,7 +83,8 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 * **Redesigned 6-Section GUI**:
   * **[1. Codex & Guide]**: In-game encyclopedias covering multiblock structure, casting, alloy recipes, tier progression, and specialized perks.
   * **[2. Molds & Parts]**: Quick mold carving (1 Clay Brick = 1 reusable cast) and multi-material forging (place 1 to 3 materials for 100%, 50/50, or 33/33/33 concentration-based trait splitting!).
-  * **[3. Alloy Crucible]**: Blend **any 2 distinct brush-extracted or vanilla minerals** into a unique alloy — 110 blendable minerals and **5,997 distinct alloys** in total (5,995 mineral pairs + the 2 curated netherite recipes). All **16 legendary recipes** (Bronze, Electrum, Manyullyn, Void Damascus, Cosmic Netherite, etc.) are craftable; every other pair synthesizes its own dynamic composite alloy. Finished alloys cannot be re-blended, and vanilla netherite only blends inside its own two curated recipes. Every composite you forge is saved to `dynamic-alloys.yml` and restored on restart, so old ingots keep working.
+  * **[3. Alloy Crucible]**: Blend **any 2 distinct brush-extracted or vanilla minerals** into a unique alloy — 110 blendable minerals and **5,995 mineral pairs**. All **16 legendary recipes** (Bronze, Electrum, Manyullyn, Void Damascus, Cosmic Netherite, etc.) are craftable; every other pair synthesizes its own dynamic composite alloy. A fresh server exposes **8,085** forgeable combinations. Vanilla netherite only blends inside its own two curated recipes. Every composite you forge is saved to `dynamic-alloys.yml` and restored on restart, so old ingots keep working.
+  * **[3b. Prime Alloys]**: Fuse a **legendary alloy** with a second alloy, a mineral or one of the **12 vanilla catalysts** (Nether Star, Blue Ice, Echo Shard, Dragon Breath, Heart of the Sea…) to forge a **prime alloy** — Legendary rarity, boosted stats, and its own cinematic ultimate plus a brand new armor state. With every composite discovered the crucible reaches **103,781 distinct alloys**.
   * **[4. Weapon Assembly]**: Assemble 7 weapon types (Broadsword, Longbow, Heavy Crossbow, Elder Trident, Kinetic Spear, War Mace, Tower Shield) starting at **Wood Tier** and leveling up through **Combat Kills**!
   * **[5. Tool Assembly]**: Assemble 5 tool types (Pickaxe, Battleaxe, Excavator/Shovel, Scythe/Hoe, Fishing Rod) starting at **Wood Tier** and leveling up through **Blocks Broken**!
   * **[6. Armor Assembly]**: Assemble 4 armor types (Helmet, Chestplate, Leggings, Boots) from Plate, Lining and Trim parts, leveling up through **Damage Absorbed**.
@@ -91,6 +92,10 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
   * **War Mace**: Downward fall strikes trigger seismic ground shockwaves dealing AOE damage.
   * **Longbow**: Arrows inherit limb and string elemental traits.
   * **Heavy Crossbow**: Bolts trigger a real, block-safe kinetic explosion that damages and knocks back every creature in a 4-block radius, plus +6.0 armor-piercing direct damage.
+* **Cinematic Attack Spectacles**:
+  * **12 essence ultimates** triggered by a focused weapon, each with its own particles, sounds, root and damage multiplier.
+  * **7 prime ultimates**: **Absolute Zero** and **Glacier Tomb** erupt **ten ice spikes** in a ring and freeze the victim for **300–400 freeze ticks**, while **Meteor Cascade** spirals **8 meteors** down in flame and lava. Supernova, Event Horizon, Tectonic Rift and Prismatic Ascension complete the set.
+* **New Armor States (9)**: Frostbound, Meteor Ward, Gravitic Anchor, Prime Aegis, Stormcall, Ember Veil, Void Shell, Prism Bulwark and Tectonic Guard — prime armor answers every hit with its own reaction (freezing blasts, meteor wards, lightning, reflected damage…).
   * **Elder Trident**: Water/rain strikes summon hydraulic lightning (+5.0 damage).
   * **Kinetic Spear**: Extended attack reach and +30% charge damage while sprinting.
   * **Tower Shield**: Reflects 35% blocked damage back to attackers.

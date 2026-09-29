@@ -6,6 +6,7 @@ import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
+import com.chagui68.multiversetinker.tools.VanillaCatalyst;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -22,6 +23,19 @@ public class AlloyRegistry {
 
     /** File holding every composite alloy the players have forged so far. */
     private static final String DYNAMIC_FILE = "dynamic-alloys.yml";
+
+    /** Id prefix of the new prime category (legendary alloy fused with an alloy, mineral or catalyst). */
+    public static final String PRIME_PREFIX = "mvtink_prime_";
+
+    /**
+     * The 16 curated legendary recipes. Every prime alloy must have at least one of these as a
+     * parent, which is what keeps the prime category finite instead of an infinite alloy ladder.
+     */
+    public static final Set<String> LEGENDARY_IDS = Set.of(
+            "mvtink_bronze", "mvtink_electrum", "mvtink_invar", "mvtink_manyullyn", "mvtink_rose_gold",
+            "mvtink_astral_brass", "mvtink_void_damascus", "mvtink_cinder_steel", "mvtink_prismatic_quartz",
+            "mvtink_shadow_platinum", "mvtink_ender_brass", "mvtink_adamant_steel", "mvtink_hellfire_bismuth",
+            "mvtink_glacial_silver", "mvtink_sanguine_gold", "mvtink_cosmic_netherite");
 
     private final Map<String, TinkerAlloy> alloys = new LinkedHashMap<>();
     /** Ids of the 16 curated recipes: everything else is player-forged and must be persisted. */
@@ -191,23 +205,42 @@ public class AlloyRegistry {
         TinkerMaterial first = m1.getId().compareTo(m2.getId()) <= 0 ? m1 : m2;
         TinkerMaterial second = first == m1 ? m2 : m1;
 
+        boolean prime = isPrimePair(first, second);
+
         String id1 = first.getId().replace("mvtink_", "");
         String id2 = second.getId().replace("mvtink_", "");
-        String dynamicAlloyId = "mvtink_alloy_" + id1 + "_" + id2;
+        String dynamicAlloyId = (prime ? PRIME_PREFIX : "mvtink_alloy_") + id1 + "_" + id2;
 
         TinkerAlloy cached = alloys.get(dynamicAlloyId.toLowerCase(Locale.ROOT));
         if (cached != null) {
             return cached;
         }
 
-        String alloyName = first.getName() + "-" + second.getName() + " Alloy";
+        String alloyName = prime
+                ? first.getName() + " " + second.getName() + " Prime"
+                : first.getName() + "-" + second.getName() + " Alloy";
         String blendedColor = blendHexColors(first.getColorHex(), second.getColorHex());
-        int durabilityBonus = (int) Math.round((first.getDurability() + second.getDurability()) * 0.70) + 60;
-        float miningSpeed = ((first.getMiningSpeed() + second.getMiningSpeed()) / 2.0f) + 0.6f;
-        double attackDamageBonus = ((first.getAttackDamage() + second.getAttackDamage()) / 2.0) + 1.2;
 
-        String traitName = first.getTraitName() + "-" + second.getTraitName();
-        String traitDesc = "Composite metallurgy combining " + first.getName() + " and " + second.getName() + " properties.";
+        // Catalysts carry no metallurgical mass: a prime forged with one is built from the alloy it
+        // catalysed, boosted by the fusion itself.
+        TinkerMaterial statA = isCatalyst(first) ? second : first;
+        TinkerMaterial statB = isCatalyst(second) ? first : second;
+        int durabilityBonus = prime
+                ? (int) Math.round((statA.getDurability() + statB.getDurability()) * 0.78) + 120
+                : (int) Math.round((statA.getDurability() + statB.getDurability()) * 0.70) + 60;
+        float miningSpeed = prime
+                ? ((statA.getMiningSpeed() + statB.getMiningSpeed()) / 2.0f) + 1.1f
+                : ((statA.getMiningSpeed() + statB.getMiningSpeed()) / 2.0f) + 0.6f;
+        double attackDamageBonus = prime
+                ? ((statA.getAttackDamage() + statB.getAttackDamage()) / 2.0) + 2.2
+                : ((statA.getAttackDamage() + statB.getAttackDamage()) / 2.0) + 1.2;
+
+        String traitName = prime
+                ? "Prime " + first.getTraitName()
+                : first.getTraitName() + "-" + second.getTraitName();
+        String traitDesc = prime
+                ? primeDescription(first, second)
+                : "Composite metallurgy combining " + first.getName() + " and " + second.getName() + " properties.";
 
         TinkerAlloy dynamicAlloy = new TinkerAlloy(
                 dynamicAlloyId,
@@ -229,7 +262,7 @@ public class AlloyRegistry {
                     .id(dynamicAlloyId)
                     .name(alloyName)
                     .origin(MineralOrigin.OVERWORLD)
-                    .rarity(MaterialRarity.EPIC)
+                    .rarity(prime ? MaterialRarity.LEGENDARY : MaterialRarity.EPIC)
                     .type(MaterialType.ALLOY)
                     .baseVanillaMaterial(Material.RAW_IRON)
                     .processedVanillaMaterial(Material.IRON_INGOT)
@@ -237,7 +270,7 @@ public class AlloyRegistry {
                     .blockVanillaMaterial(Material.IRON_BLOCK)
                     .colorHex(blendedColor)
                     .description(traitDesc)
-                    .meltingDurationTicks(100)
+                    .meltingDurationTicks(prime ? 160 : 100)
                     .durabilityBonus(durabilityBonus)
                     .miningSpeed(miningSpeed)
                     .attackDamageBonus(attackDamageBonus)
@@ -252,6 +285,19 @@ public class AlloyRegistry {
         }
 
         return dynamicAlloy;
+    }
+
+    /** Narrative for a freshly fused prime alloy, naming the catalyst when it has one. */
+    @Nonnull
+    private static String primeDescription(@Nonnull TinkerMaterial first, @Nonnull TinkerMaterial second) {
+        for (TinkerMaterial parent : List.of(first, second)) {
+            VanillaCatalyst catalyst = VanillaCatalyst.byMaterialId(parent.getId());
+            if (catalyst != null) {
+                return "Prime fusion catalysed by " + catalyst.getDisplayName() + ". " + catalyst.getDescription();
+            }
+        }
+        return "Prime fusion of " + first.getName() + " and " + second.getName()
+                + ". Inherits the full essence of both legendary components.";
     }
 
     private String blendHexColors(String hex1, String hex2) {
@@ -288,11 +334,13 @@ public class AlloyRegistry {
     private void registerMaterial(@Nonnull MaterialRegistry materialRegistry, @Nonnull TinkerAlloy alloy) {
         if (materialRegistry.get(alloy.id()) != null) return;
 
+        boolean prime = isPrimeParents(alloy.mat1Id(), alloy.mat2Id());
+
         TinkerMaterial tm = TinkerMaterial.builder()
                 .id(alloy.id())
                 .name(alloy.name())
                 .origin(MineralOrigin.OVERWORLD)
-                .rarity(MaterialRarity.EPIC)
+                .rarity(prime ? MaterialRarity.LEGENDARY : MaterialRarity.EPIC)
                 .type(MaterialType.ALLOY)
                 .baseVanillaMaterial(Material.RAW_IRON)
                 .processedVanillaMaterial(Material.IRON_INGOT)
@@ -300,7 +348,7 @@ public class AlloyRegistry {
                 .blockVanillaMaterial(Material.IRON_BLOCK)
                 .colorHex(alloy.colorHex())
                 .description(alloy.traitDescription())
-                .meltingDurationTicks(100)
+                .meltingDurationTicks(prime ? 160 : 100)
                 .durabilityBonus(alloy.durabilityBonus())
                 .miningSpeed(alloy.miningSpeed())
                 .attackDamageBonus(alloy.attackDamageBonus())
@@ -381,6 +429,15 @@ public class AlloyRegistry {
         return count;
     }
 
+    /** Number of prime alloys (legendary fusions) players have forged. */
+    public int getPrimeAlloyCount() {
+        int count = 0;
+        for (TinkerAlloy alloy : alloys.values()) {
+            if (isPrimeParents(alloy.mat1Id(), alloy.mat2Id())) count++;
+        }
+        return count;
+    }
+
     /** Writes every player-forged composite alloy to disk. Safe to call at any time. */
     public void flush() {
         if (plugin == null) return;
@@ -422,11 +479,11 @@ public class AlloyRegistry {
     }
 
     /**
-     * Determines whether a material may be used as an Alloy Crucible input.
+     * Determines whether a material may be used as a free Alloy Crucible input.
      *
      * <p>Only minerals that can be excavated with the Prospector Brush (Overworld, Nether and
-     * End geology) or refined from vanilla Minecraft ores are blendable. Existing alloys and
-     * non-mineral tinker items are rejected so the crucible cannot be looped infinitely.</p>
+     * End geology) or refined from vanilla Minecraft ores are freely blendable. Alloys and
+     * catalysts are rejected here: they only enter the crucible through a prime fusion.</p>
      */
     public static boolean isMixable(@Nullable TinkerMaterial material) {
         if (material == null) return false;
@@ -435,6 +492,61 @@ public class AlloyRegistry {
         return switch (material.getOrigin()) {
             case OVERWORLD, NETHER, THE_END, VANILLA -> true;
         };
+    }
+
+    /** Whether this material is one of the 16 curated legendary recipes. */
+    public static boolean isLegendary(@Nullable TinkerMaterial material) {
+        return material != null && LEGENDARY_IDS.contains(material.getId().toLowerCase(Locale.ROOT));
+    }
+
+    /** Whether this material is a vanilla crucible catalyst (Nether Star, Blue Ice, Echo Shard…). */
+    public static boolean isCatalyst(@Nullable TinkerMaterial material) {
+        return material != null && material.getId().startsWith(VanillaCatalyst.ID_PREFIX);
+    }
+
+    /**
+     * Whether this material belongs to the prime category: an alloy forged with at least one
+     * legendary parent. Primes cannot seed another prime, so the ladder stops at two alloys deep.
+     */
+    public static boolean isPrime(@Nullable TinkerMaterial material) {
+        if (material == null) return false;
+        if (material.getId().startsWith(PRIME_PREFIX)) return true;
+        return hasLegendaryParent(material.getAlloyParents());
+    }
+
+    /**
+     * Whether the crucible accepts this exact pair as a <b>prime fusion</b>: at least one legendary
+     * parent fused with another legendary alloy, a composite alloy, a mineral or a vanilla catalyst.
+     */
+    public static boolean isPrimePair(@Nullable TinkerMaterial first, @Nullable TinkerMaterial second) {
+        if (first == null || second == null) return false;
+        if (first.getId().equalsIgnoreCase(second.getId())) return false;
+        if (isPrime(first) || isPrime(second)) return false;
+        if (isLegendary(first)) return isPrimePartner(second, first);
+        if (isLegendary(second)) return isPrimePartner(first, second);
+        return false;
+    }
+
+    private static boolean isPrimePartner(@Nonnull TinkerMaterial partner, @Nonnull TinkerMaterial legendary) {
+        if (partner.getId().equalsIgnoreCase(legendary.getId())) return false;
+        if (isLegendary(partner)) return true;
+        if (partner.getType() == MaterialType.ALLOY) return true;
+        return isMixable(partner);
+    }
+
+    private static boolean hasLegendaryParent(@Nullable String parents) {
+        if (parents == null || !parents.contains(",")) return false;
+        for (String parentId : parents.split(",")) {
+            if (LEGENDARY_IDS.contains(parentId.trim().toLowerCase(Locale.ROOT))) return true;
+        }
+        return false;
+    }
+
+    /** Prime status derived straight from the two parent ids, used while registering materials. */
+    public static boolean isPrimeParents(@Nullable String parentA, @Nullable String parentB) {
+        if (parentA == null || parentB == null) return false;
+        return LEGENDARY_IDS.contains(parentA.toLowerCase(Locale.ROOT))
+                || LEGENDARY_IDS.contains(parentB.toLowerCase(Locale.ROOT));
     }
 
     /**
@@ -449,7 +561,39 @@ public class AlloyRegistry {
         if (first == null || second == null) return false;
         if (first.getId().equalsIgnoreCase(second.getId())) return false;
         if (isMixable(first) && isMixable(second)) return true;
+        if (isPrimePair(first, second)) return true;
         return findAlloy(first.getId(), second.getId()) != null;
+    }
+
+    /**
+     * Registers the vanilla catalyst items as materials so they can carry essences, appear in lore
+     * and act as the parent of a prime alloy.
+     */
+    public void registerCatalystMaterials(@Nonnull MaterialRegistry materialRegistry) {
+        for (VanillaCatalyst catalyst : VanillaCatalyst.values()) {
+            if (materialRegistry.get(catalyst.getMaterialId()) != null) continue;
+            materialRegistry.register(TinkerMaterial.builder()
+                    .id(catalyst.getMaterialId())
+                    .name(catalyst.getDisplayName())
+                    .origin(MineralOrigin.VANILLA)
+                    .rarity(MaterialRarity.LEGENDARY)
+                    .type(MaterialType.ALLOY)
+                    .baseVanillaMaterial(catalyst.getItem())
+                    .processedVanillaMaterial(catalyst.getItem())
+                    .nuggetVanillaMaterial(catalyst.getItem())
+                    .blockVanillaMaterial(catalyst.getItem())
+                    .colorHex(catalyst.getColorHex())
+                    .description(catalyst.getLoreLine())
+                    .meltingDurationTicks(200)
+                    .durabilityBonus(400)
+                    .miningSpeed(8.0f)
+                    .attackDamageBonus(6.0)
+                    .traitName("Catalyst: " + catalyst.getDisplayName())
+                    .traitDescription(catalyst.getDescription())
+                    .weaponTraitDescription(catalyst.getUltimate().getDisplayName() + " — " + catalyst.getUltimate().getDescription())
+                    .armorTraitDescription(catalyst.getArmorState().getLoreLine())
+                    .build());
+        }
     }
 
     /**
@@ -457,6 +601,8 @@ public class AlloyRegistry {
      */
     @Nullable
     public static String mixRequirementMessage() {
-        return "Only minerals extracted with the Prospector Brush or refined vanilla ores can be blended in the Alloy Crucible (vanilla netherite is already an alloy, so it cannot be blended).";
+        return "The crucible blends two brush/vanilla minerals, or fuses a LEGENDARY alloy with another "
+                + "alloy, a mineral or a vanilla catalyst (Nether Star, Blue Ice, Echo Shard…). "
+                + "Prime alloys cannot be reforged.";
     }
 }

@@ -119,3 +119,28 @@ MultiverseTinker features **97 distinct geological minerals** spread across Mine
 | **Spatial Platinum** | `mvtink_spatial_platinum` | Epic | Metal | Transdimensional | Swinging the tool mines linked adjacent ore blocks | 160t |
 | **Void Pyrite** | `mvtink_void_pyrite` | Uncommon | Mineral | Void Sparks | Triggers purple plasma explosions upon impact | 85t |
 | **Zero-Point Shard** | `mvtink_zero_point` | Legendary | Elemental | Absolute Zero | Completely freezes and immobilizes targets on impact | 240t |
+
+---
+
+## ❖ Crucible Catalysts (12 vanilla items)
+
+Catalysts are **not** minerals: they cannot be blended with other minerals, but they can be dropped in
+the Alloy Crucible next to one of the 16 **legendary alloys** to forge a **prime alloy**. Each catalyst
+decides the ultimate the forged weapon casts and the state the forged armor answers with.
+
+| Catalyst | Item id | Ultimate granted | Armor state granted |
+|---|---|---|---|
+| **Nether Star** | `mvtink_catalyst_nether_star` | Supernova | Prime Aegis |
+| **Dragon Breath** | `mvtink_catalyst_dragon_breath` | Meteor Cascade ☄ | Ember Veil |
+| **Blue Ice** | `mvtink_catalyst_blue_ice` | Absolute Zero ❄ | Frostbound |
+| **Packed Ice** | `mvtink_catalyst_packed_ice` | Glacier Tomb ❄ | Frostbound |
+| **Echo Shard** | `mvtink_catalyst_echo_shard` | Event Horizon | Void Shell |
+| **Heart of the Sea** | `mvtink_catalyst_heart_of_the_sea` | Tectonic Rift | Gravitic Anchor |
+| **Totem of Undying** | `mvtink_catalyst_totem_of_undying` | Prismatic Ascension | Prime Aegis |
+| **End Crystal** | `mvtink_catalyst_end_crystal` | Supernova | Stormcall |
+| **Respawn Anchor** | `mvtink_catalyst_respawn_anchor` | Meteor Cascade ☄ | Ember Veil |
+| **Prismarine Crystals** | `mvtink_catalyst_prismarine_crystals` | Prismatic Ascension | Prism Bulwark |
+| **Amethyst Cluster** | `mvtink_catalyst_amethyst_cluster` | Event Horizon | Prism Bulwark |
+| **Ancient Debris** | `mvtink_catalyst_ancient_debris` | Tectonic Rift | Tectonic Guard |
+
+See **[Prime Alloys](Prime-Alloys.md)** for the full fusion rules and every spectacle.

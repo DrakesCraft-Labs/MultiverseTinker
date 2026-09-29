@@ -64,11 +64,14 @@ public class MultiverseTinker extends JavaPlugin {
         // Register Materials & Items
         this.materialRegistry = new MaterialRegistry();
         this.alloyRegistry = new AlloyRegistry();
+        // Vanilla catalysts (Nether Star, Blue Ice…) must exist before restored prime alloys resolve their parents.
+        this.alloyRegistry.registerCatalystMaterials(materialRegistry);
         // Composite alloys forged in previous sessions must come back before items and recipes are built.
         this.alloyRegistry.enablePersistence(this, materialRegistry);
         this.alloyRegistry.registerAlloysIntoMaterialRegistry(materialRegistry);
-        getLogger().info("Registered " + materialRegistry.getAll().size() + " geological and alloy materials ("
-                + alloyRegistry.getDynamicAlloyCount() + " player-forged composites restored).");
+        getLogger().info("Registered " + materialRegistry.getAll().size() + " geological, catalyst and alloy materials ("
+                + alloyRegistry.getDynamicAlloyCount() + " player-forged composites, "
+                + alloyRegistry.getPrimeAlloyCount() + " prime alloys restored).");
 
         this.itemRegistry = new TinkerItemRegistry(materialRegistry);
 

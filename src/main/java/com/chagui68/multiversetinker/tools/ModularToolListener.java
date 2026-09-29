@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.tools;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
@@ -66,6 +67,8 @@ public class ModularToolListener implements Listener {
     private final Random random = new Random();
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
     private final Set<UUID> fellingGuard = new HashSet<>();
+    /** Per-player cooldown of each prime armor state, so a full prime set cannot spam its answer. */
+    private final Map<UUID, Map<PrimeArmorState, Long>> primeStateCooldowns = new HashMap<>();
 
     /**
      * Effects may re-damage entities, which fires nested damage events. This depth counter caps
@@ -259,8 +262,27 @@ public class ModularToolListener implements Listener {
         // Material-driven signature: the perk channels the essence of the minerals the weapon was forged from.
         WeaponPerkProfile profile = applyWeaponPerkEcho(player, target, event, pdc);
         if (profile != null) {
-            // Rare cinematic payoff for weapons with a concentrated essence focus.
-            UltimateEffectEngine.tryTrigger(plugin, player, target, profile, Math.max(1.0, event.getFinalDamage()));
+            // Rare cinematic payoff for weapons with a concentrated essence focus or a prime alloy.
+            triggerWeaponUltimate(player, target, profile, pdc, Math.max(1.0, event.getFinalDamage()));
+        }
+    }
+
+    /**
+     * Picks the right cinematic payoff for the weapon: a prime alloy upgrades the spectacle to a
+     * {@link PrimeUltimate} (freezing ice fields, meteor storms…), otherwise the ordinary
+     * {@link EssenceUltimate} of the weapon's dominant essence plays.
+     */
+    private void triggerWeaponUltimate(@Nullable Player player,
+                                       @Nonnull LivingEntity target,
+                                       @Nullable WeaponPerkProfile profile,
+                                       @Nonnull PersistentDataContainer pdc,
+                                       double baseDamage) {
+        if (player == null || profile == null) return;
+        PrimeUltimate prime = PrimeUltimate.forWeapon(collectCompositions(pdc), profile);
+        if (prime != null) {
+            UltimateEffectEngine.tryPrimeTrigger(plugin, player, target, prime, baseDamage);
+        } else {
+            UltimateEffectEngine.tryTrigger(plugin, player, target, profile, baseDamage);
         }
     }
 
@@ -472,9 +494,7 @@ public class ModularToolListener implements Listener {
             triggerMultiMaterialTraits(shooter, target, null, pdc);
             // Material-driven weapon perk echo for projectile weapons (bow, crossbow, thrown trident).
             WeaponPerkProfile profile = applyWeaponPerkEcho(shooter, target, null, pdc);
-            if (shooter != null && profile != null) {
-                UltimateEffectEngine.tryTrigger(plugin, shooter, target, profile, 6.0);
-            }
+            triggerWeaponUltimate(shooter, target, profile, pdc, 6.0);
         }
     }
 
@@ -953,6 +973,39 @@ public class ModularToolListener implements Listener {
                 }
             }
         }
+
+        triggerPrimeArmorState(player, attacker, rawCompositions);
+    }
+
+    /**
+     * Prime armor answers a hit with its own defensive state (freezing blast, meteor ward, gravitic
+     * pull…). The state comes from the first prime alloy in the set, so the build defines it.
+     */
+    private void triggerPrimeArmorState(@Nonnull Player player, @Nullable LivingEntity attacker,
+                                        @Nonnull List<String> rawCompositions) {
+        if (attacker == null) return;
+
+        PrimeArmorState state = null;
+        for (String raw : rawCompositions) {
+            PartComposition comp = PartComposition.deserialize(raw, materialRegistry);
+            if (comp == null) continue;
+            for (PartComposition.Entry entry : comp.getEntries()) {
+                if (AlloyRegistry.isPrime(entry.material())) {
+                    state = PrimeArmorState.of(entry.material());
+                    break;
+                }
+            }
+            if (state != null) break;
+        }
+        if (state == null) return;
+
+        long now = System.currentTimeMillis();
+        Map<PrimeArmorState, Long> perState = primeStateCooldowns.computeIfAbsent(player.getUniqueId(), k -> new EnumMap<>(PrimeArmorState.class));
+        long readyAt = perState.getOrDefault(state, 0L);
+        if (now < readyAt) return;
+        perState.put(state, now + (state.getCooldownTicks() * 50L));
+
+        state.apply(player, attacker);
     }
 
     @Nonnull

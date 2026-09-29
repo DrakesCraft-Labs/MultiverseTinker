@@ -33,7 +33,7 @@ no lanzará nada. La línea **Essence Focus** del lore te indica exactamente en 
 
 | Esencia | Ultimate | Animación | Retención | Radio | Daño |
 |---|---|---|---|---|---|
-| **Infernal** | Lluvia de Meteoritos | Meteoritos | 3,0s | 4,0 | 1,40x |
+| **Infernal** | Tormenta de Meteoritos | Tormenta de meteoritos | 3,0s | 4,0 | 1,40x |
 | **Void** | Colapso de Singularidad | Vórtice | 3,0s | 4,0 | 1,35x |
 | **Primal** | Estallido Primigenio | Nova | 2,0s | 3,5 | 1,30x |
 | **Tempered** | Golpe Templado | Terremoto | 2,3s | 3,5 | 1,25x |
@@ -64,3 +64,40 @@ parecen en nada. **Ascendant** además cura al portador 4 de vida al impactar.
 Los progenitores de una aleación se despliegan a media potencia, así que una aleación forjada con dos
 minerales del Nether sigue siendo plenamente Infernal: es la forma más fiable de llegar al 100% de
 enfoque sin renunciar a habilidades curadas como *Phase Step* o *Hellfire Core*.
+
+---
+
+## 🌌 Ultimates primordiales
+
+Las aleaciones primordiales añaden una segunda familia de espectáculos. Están **por encima** de los
+ultimates de esencia: un arma forjada con una aleación primordial se salta el requisito del 80% de
+enfoque (la fusión legendaria es el requisito), pega **1,55×–1,75×** y comparte el mismo enfriamiento
+de 20 segundos.
+
+| Ultimate primordial | Animación | Daño | Retención | Congelación | Catalizador |
+|---|---|---|---|---|---|
+| **Absolute Zero** | **Campo de hielo** ❄ | 1,60x | 70 t | **400 t** | Hielo Azul |
+| **Glacier Tomb** | **Campo de hielo** ❄ | 1,55x | 90 t | **300 t** | Hielo Compacto |
+| **Meteor Cascade** | **Tormenta de meteoritos** ☄ | 1,75x | 70 t | — | Aliento de Dragón / Ancla de Reaparición |
+| **Supernova** | Nova | 1,70x | 60 t | — | Estrella del Nether / Cristal del End |
+| **Event Horizon** | Vórtice | 1,65x | 80 t | — | Fragmento de Eco / Cúmulo de Amatista |
+| **Tectonic Rift** | Terremoto | 1,65x | 60 t | — | Corazón del Mar / Escombros Antiguos |
+| **Prismatic Ascension** | Pilar | 1,60x | 60 t | — | Tótem de Inmortalidad / Cristales de Prismarina |
+
+### ❄️ Congelación: la animación CRYO
+
+Los ataques de escarcha cargan con nieve cayendo y escarcha arrastrándose por el suelo, y después
+**diez pinchos de hielo brotan en anillo** alrededor del epicentro — partículas de bloque de hielo azul
+y compacto, columnas de copos y un cristal rompiéndose junto a un golpe de nieve en polvo. La víctima
+recibe **300–400 ticks de congelación** (los mobs se congelan del todo) con Lentitud VI, y durante la
+fase de retención una jaula de escarcha giratoria re-aplica 140 ticks de congelación cada tick
+mientras caen copos de su cuerpo.
+
+### ☄️ Cascada de meteoritos: la animación METEOR_STORM
+
+En lugar de tres carriles, **ocho meteoritos** caen en espiral desde 16 bloques, cada uno con estela de
+fuego y lava más humo, convergiendo en una doble explosión que lanza a los enemigos cercanos hacia
+fuera y salpica polvo de color en un radio de 5 bloques.
+
+Todos los detalles, los 12 catalizadores vanilla y los 9 estados de armadura primordiales están en
+**[Aleaciones Primordiales](Aleaciones-Primordiales.md)**.

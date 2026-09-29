@@ -66,7 +66,8 @@ Cycle through available casting molds using a single, uncluttered selector in Ro
 - Click **♨ Ignite Crucible & Smelt Alloy** (Slot 31).
 - Yields **2x Finished Alloy Ingots** in **Slot 40**.
 - Click the **Alloy Recipes Codex** (Slot 49) to browse all 16 registered alloy formulas in chat.
-- Every pair of the **110 blendable minerals** (97 geological + 13 non-netherite vanilla) yields its own alloy: 5,995 blendable pairs, of which 14 resolve to a legendary recipe. Vanilla netherite is the one vanilla material that cannot be freely blended (it is already an alloy), but it still works inside its own two curated recipes (**Cinder Steel** and **Cosmic Netherite**), so the crucible can produce **5,997 distinct alloys** in total.
+- Every pair of the **110 blendable minerals** (97 geological + 13 non-netherite vanilla) yields its own alloy: 5,995 blendable pairs, of which 14 resolve to a legendary recipe. Vanilla netherite is the one vanilla material that cannot be freely blended (it is already an alloy), but it still works inside its own two curated recipes (**Cinder Steel** and **Cosmic Netherite**), so the crucible can produce **5,997 distinct mineral alloys** in total.
+- **Prime fusion**: a legendary alloy can be dropped in again alongside another alloy, any mineral, or one of the **12 vanilla catalyst items** (Nether Star, Dragon Breath, Blue Ice, Packed Ice, Echo Shard, Heart of the Sea, Totem of Undying, End Crystal, Respawn Anchor, Prismarine Crystals, Amethyst Cluster, Ancient Debris). The prime alloy that comes out is Legendary rarity, outscales every composite, and unlocks prime ultimates plus the 9 prime armor states. See [Prime Alloys](Prime-Alloys.md). A fresh server exposes **8,085** forgeable combinations, up to **103,781** once every composite is discovered.
 - See [Alloy Mixing Guide](Alloy-Mixing.md) for full details.
 
 ---

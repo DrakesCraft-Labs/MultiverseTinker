@@ -15,6 +15,9 @@ import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.PrimeArmorState;
+import com.chagui68.multiversetinker.tools.PrimeUltimate;
+import com.chagui68.multiversetinker.tools.VanillaCatalyst;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -288,7 +291,12 @@ public class ForgeGUI implements InventoryHolder {
                         "  - Bronze (Copper + Tin): Durability & Knockback Res.",
                         "  - Electrum (Gold + Silver): Swift attack speed & Luck.",
                         "  - Invar (Iron + Nickel): Extreme armor toughness.",
-                        "• Alloy effects adapt to weapons, tools and armor!"
+                        "• Alloy effects adapt to weapons, tools and armor!",
+                        "",
+                        "<gold>• PRIME FUSION:</gold> fuse a legendary alloy with another",
+                        "  alloy, a mineral or a vanilla catalyst to forge a prime",
+                        "  alloy: Legendary rarity, boosted stats, its own ultimate",
+                        "  (ice fields, meteor storms…) and a new armor state."
                 )));
 
         inventory.setItem(24, createGuideItem(Material.EXPERIENCE_BOTTLE,
@@ -452,7 +460,12 @@ public class ForgeGUI implements InventoryHolder {
                         "All 16 legendary recipes work, netherite included in its two.",
                         "",
                         "Every mineral combination yields its own unique alloy.",
-                        "Consumes 1 of each item to produce 2 alloy ingots."
+                        "Consumes 1 of each item to produce 2 alloy ingots.",
+                        "",
+                        "<gold>PRIME FUSION:</gold> pair one LEGENDARY alloy with a",
+                        "second alloy, a mineral or a vanilla catalyst item",
+                        "(Nether Star, Blue Ice, Echo Shard…) for a prime alloy",
+                        "that unlocks freezing/meteor ultimates and armor states."
                 )));
         inventory.setItem(SLOT_ALLOY_MAT2, null);
 
@@ -468,7 +481,9 @@ public class ForgeGUI implements InventoryHolder {
                         "Click to browse every registered alloy in chat.",
                         "Any 2 brush or vanilla minerals can be blended together!",
                         "16 legendary recipes are predefined; all other pairs",
-                        "synthesize their own unique composite alloy on the spot."
+                        "synthesize their own unique composite alloy on the spot.",
+                        "Fuse a legendary alloy with an alloy, a mineral or one of",
+                        "the 12 vanilla catalysts to forge a PRIME alloy."
                 )));
     }
 
@@ -926,10 +941,22 @@ public class ForgeGUI implements InventoryHolder {
         player.playSound(player.getLocation(), Sound.BLOCK_BREWING_STAND_BREW, 1.0f, 1.0f);
         player.spawnParticle(Particle.FLAME, player.getLocation().add(0, 1.2, 0), 20, 0.3, 0.3, 0.3, 0.05);
 
-        player.sendMessage(miniMessage.deserialize("<gold>♨ Crucible Synthesized: </gold>"
+        boolean prime = AlloyRegistry.isPrimeParents(alloy.mat1Id(), alloy.mat2Id());
+        String headline = prime ? "<gold>♨ PRIME FUSION: </gold>" : "<gold>♨ Crucible Synthesized: </gold>";
+        player.sendMessage(miniMessage.deserialize(headline
                 + "<gradient:" + resultMaterial.getColorHex() + ":#ffffff><b>" + resultMaterial.getName() + " Ingot</b></gradient>"
                 + " <gray>(x2)</gray>!"));
         player.sendMessage(miniMessage.deserialize("<gray>  ➤ " + alloy.traitName() + ": </gray><dark_aqua>" + alloy.traitDescription() + "</dark_aqua>"));
+        if (prime) {
+            PrimeArmorState armorState = PrimeArmorState.of(resultMaterial);
+            PrimeUltimate ultimate = PrimeUltimate.forWeapon(
+                    List.of(PartComposition.fromMaterials(List.of(resultMaterial))), null);
+            player.sendMessage(miniMessage.deserialize("<gray>  ⚡ Prime ultimate: </gray><white>"
+                    + (ultimate != null ? ultimate.getDisplayName() : "Supernova") + "</white><gray> · armor state: </gray><white>"
+                    + armorState.getDisplayName() + "</white>"));
+            player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.6f, 1.6f);
+            player.spawnParticle(Particle.END_ROD, player.getLocation().add(0, 1.5, 0), 40, 0.6, 0.6, 0.6, 0.05);
+        }
     }
 
     /**
@@ -962,7 +989,10 @@ public class ForgeGUI implements InventoryHolder {
         player.sendMessage(miniMessage.deserialize("<gray>Blend any two brush-extracted or vanilla minerals. Every pair yields a unique alloy whose trait adapts to weapons, tools and armor.</gray>"));
         player.sendMessage(miniMessage.deserialize("<gray>Curated recipes: <yellow>" + (alloyRegistry.getAllAlloys().size() - alloyRegistry.getDynamicAlloyCount())
                 + "</yellow> · player-forged composites: <yellow>" + alloyRegistry.getDynamicAlloyCount()
+                + "</yellow> · prime alloys: <yellow>" + alloyRegistry.getPrimeAlloyCount()
                 + "</yellow> of <yellow>" + possibleAlloyPairs() + "</yellow> possible alloy combinations.</gray>"));
+        player.sendMessage(miniMessage.deserialize("<gray>Prime fusion: pair a <yellow>legendary alloy</yellow> with another alloy, a mineral or one of the "
+                + VanillaCatalyst.values().length + " vanilla catalysts to unlock prime ultimates and armor states.</gray>"));
         for (TinkerAlloy alloy : alloyRegistry.getAllAlloys()) {
             TinkerMaterial res = materialRegistry.get(alloy.id());
             String resName = (res != null) ? res.getName() : alloy.name();
@@ -1207,6 +1237,13 @@ public class ForgeGUI implements InventoryHolder {
                 TinkerMaterial tm = materialRegistry.get(matId);
                 if (tm != null) return tm;
             }
+        }
+
+        // Vanilla catalyst items (Nether Star, Blue Ice, Echo Shard…) fuel prime fusions.
+        VanillaCatalyst catalyst = VanillaCatalyst.byItem(item.getType());
+        if (catalyst != null) {
+            TinkerMaterial catalystMaterial = materialRegistry.get(catalyst.getMaterialId());
+            if (catalystMaterial != null) return catalystMaterial;
         }
 
         // Direct vanilla material fallback

@@ -121,3 +121,25 @@ fight differently.
 > ⚡ Weapons whose essence focus reaches **80%** also unleash that essence' cinematic
 > **[ultimate](Essence-Ultimates.md)** — meteors, vortexes, light pillars or cages that pin the enemy
 > in place — on a 20 second cooldown.
+
+---
+
+## 🌌 Prime affinities and armor states
+
+Prime alloys inherit **both** legendary parents (plus the catalyst's Primal/Tempered essence), so a
+prime keeps teaching every essence its legendary ingredients taught. On top of that, each prime
+carries a **spectacle** and a **defensive state**:
+
+| Prime ingredient | Ultimate (weapon) | State (armor) |
+|---|---|---|
+| Blue Ice / Packed Ice | Absolute Zero ❄ / Glacier Tomb ❄ | Frostbound *(freezes attackers)* |
+| Nether Star / Totem of Undying | Supernova / Prismatic Ascension | Prime Aegis |
+| Dragon Breath / Respawn Anchor | Meteor Cascade ☄ | Ember Veil |
+| Echo Shard / Amethyst Cluster | Event Horizon | Void Shell |
+| Heart of the Sea / Ancient Debris | Tectonic Rift | Gravitic Anchor / Tectonic Guard |
+| End Crystal | Supernova | Stormcall |
+| Prismarine Crystals | Prismatic Ascension | Prism Bulwark |
+| No catalyst (essence fallback) | follows the dominant essence | follows the dominant essence |
+
+Armor states are the new endgame defensive layer above the ordinary affinity procs: see the full
+breakdown in **[Prime Alloys](Prime-Alloys.md)**.

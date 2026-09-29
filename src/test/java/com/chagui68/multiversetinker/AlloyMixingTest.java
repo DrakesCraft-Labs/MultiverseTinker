@@ -94,7 +94,7 @@ class AlloyMixingTest {
     }
 
     @Test
-    @DisplayName("Vanilla netherite may only be blended inside its curated legendary recipes")
+    @DisplayName("Vanilla netherite may only be blended inside curated or prime recipes")
     void testNetheriteOnlyWorksInCuratedRecipes() {
         TinkerMaterial netherite = materialRegistry.get("mvtink_netherite");
         TinkerMaterial steel = materialRegistry.get("mvtink_steel");
@@ -109,8 +109,20 @@ class AlloyMixingTest {
         assertFalse(alloyRegistry.isCraftablePair(netherite, tin),
                 "Netherite must still refuse arbitrary blends with unrelated minerals");
         assertFalse(alloyRegistry.isCraftablePair(tin, tin), "A mineral cannot be paired with itself");
-        assertFalse(alloyRegistry.isCraftablePair(materialRegistry.get("mvtink_bronze"), tin),
-                "Finished alloys cannot be re-blended");
+        // Legendary alloys can be reforged, but only as PRIME fusions with a valid second input.
+        assertTrue(alloyRegistry.isCraftablePair(materialRegistry.get("mvtink_bronze"), tin),
+                "A legendary alloy may be fused with a mineral into a prime alloy");
+        assertTrue(alloyRegistry.isCraftablePair(materialRegistry.get("mvtink_bronze"),
+                        materialRegistry.get("mvtink_manyullyn")),
+                "Two legendary alloys fuse into a prime alloy");
+        // Plain composites still cannot seed a prime: only a legendary parent may.
+        TinkerAlloy composite = alloyRegistry.findOrCreateAlloy(
+                materialRegistry.get("mvtink_copper"), materialRegistry.get("mvtink_zinc"), materialRegistry);
+        TinkerMaterial compositeMaterial = materialRegistry.get(composite.id());
+        assertNotNull(compositeMaterial, "The composite must be registered as a material");
+        assertFalse(AlloyRegistry.isPrime(compositeMaterial), "A composite is not a prime alloy");
+        assertFalse(alloyRegistry.isCraftablePair(compositeMaterial, materialRegistry.get("mvtink_silver")),
+                "A composite fused with a mineral is not a valid crucible pair");
     }
 
     @Test
