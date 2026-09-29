@@ -932,10 +932,29 @@ public class ForgeGUI implements InventoryHolder {
         player.sendMessage(miniMessage.deserialize("<gray>  ➤ " + alloy.traitName() + ": </gray><dark_aqua>" + alloy.traitDescription() + "</dark_aqua>"));
     }
 
-    /** Total distinct mineral pairs that the crucible can fuse into an alloy. */
+    /**
+     * Total distinct alloy combinations the crucible can fuse: every pair of brush/vanilla minerals
+     * plus the curated recipes whose parent is itself an alloy (Cinder Steel, Cosmic Netherite).
+     */
     private long possibleAlloyPairs() {
         long blendable = materialRegistry.getAll().stream().filter(AlloyRegistry::isMixable).count();
-        return blendable * (blendable - 1) / 2;
+        long pairs = blendable * (blendable - 1) / 2;
+        return pairs + curatedOnlyPairs();
+    }
+
+    /** Pairs accepted by the crucible that are not two freely blendable minerals. */
+    private long curatedOnlyPairs() {
+        java.util.List<TinkerMaterial> all = new java.util.ArrayList<>(materialRegistry.getAll());
+        long count = 0;
+        for (int i = 0; i < all.size(); i++) {
+            for (int j = i + 1; j < all.size(); j++) {
+                TinkerMaterial a = all.get(i);
+                TinkerMaterial b = all.get(j);
+                if (AlloyRegistry.isMixable(a) && AlloyRegistry.isMixable(b)) continue;
+                if (alloyRegistry.isCraftablePair(a, b)) count++;
+            }
+        }
+        return count;
     }
 
     private void displayAlloyRecipes(Player player) {
@@ -943,7 +962,7 @@ public class ForgeGUI implements InventoryHolder {
         player.sendMessage(miniMessage.deserialize("<gray>Blend any two brush-extracted or vanilla minerals. Every pair yields a unique alloy whose trait adapts to weapons, tools and armor.</gray>"));
         player.sendMessage(miniMessage.deserialize("<gray>Curated recipes: <yellow>" + (alloyRegistry.getAllAlloys().size() - alloyRegistry.getDynamicAlloyCount())
                 + "</yellow> · player-forged composites: <yellow>" + alloyRegistry.getDynamicAlloyCount()
-                + "</yellow> of <yellow>" + possibleAlloyPairs() + "</yellow> possible mineral pairs.</gray>"));
+                + "</yellow> of <yellow>" + possibleAlloyPairs() + "</yellow> possible alloy combinations.</gray>"));
         for (TinkerAlloy alloy : alloyRegistry.getAllAlloys()) {
             TinkerMaterial res = materialRegistry.get(alloy.id());
             String resName = (res != null) ? res.getName() : alloy.name();
