@@ -118,7 +118,7 @@ public class ForgeListener implements Listener {
         }
         if (event.getInventory().getHolder() instanceof AlloyCodexGUI codex) {
             event.setCancelled(true);
-            codex.handleClick((Player) event.getWhoClicked(), event.getRawSlot());
+            codex.handleClick((Player) event.getWhoClicked(), event.getRawSlot(), event.isShiftClick());
         }
     }
 

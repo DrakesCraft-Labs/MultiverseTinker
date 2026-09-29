@@ -166,10 +166,15 @@ El catálogo tiene dos **alcances**, que se cambian con el botón **Scope** de l
   `_handle` / `_pommel`. El botón **Kind** recorre esa lista por tipo de ítem (en bruto, lingote, pepita,
   bloque, balde fundido y los diez tipos de pieza) para saltar directo, por ejemplo, a todos los minerales en bruto.
 
-Al hacer clic en un material del alcance **Materiales** se **despliega** ese material y se listan todos los ids
-que posee, así compruebas de un vistazo que el cobre no es un solo ítem sino su mineral en bruto, lingote, pepita,
-bloque, balde y piezas. Cada entrada del registro escribe su propio id en el lore, y al hacer clic imprime en el
-chat la línea `/mvtink give <jugador> <id>` correspondiente — el catálogo es una herramienta de consulta, no una forja.
+Al hacer clic en un material del alcance **Materiales** se abre el **Explorador de Combinaciones** con ese
+mineral ya seleccionado: el mineral que acabas de encontrar es aquel cuyos socios estás leyendo — el catálogo es
+donde encuentras un mineral, el explorador es donde averiguas con qué se mezcla. Con **shift-clic** sobre la
+misma entrada, en cambio, se **despliega** el material y se listan todos los ids que posee, así compruebas de un
+vistazo que el cobre no es un solo ítem sino su mineral en bruto, lingote, pepita, bloque, balde y piezas.
+
+Cada entrada del registro — tanto en el desplegado como en el alcance plano **Todos los ítems** — escribe su
+propio id en el lore, y al hacer clic imprime en el chat la línea `/mvtink give <jugador> <id>` correspondiente:
+el catálogo es una herramienta de consulta, no una forja.
 
 > 🔍 El explorador no tiene efectos secundarios: previsualiza el id, el nombre y las esencias del
 > resultado sin forjar nada, así puedes planificar una build antes de gastar un solo lingote. Las

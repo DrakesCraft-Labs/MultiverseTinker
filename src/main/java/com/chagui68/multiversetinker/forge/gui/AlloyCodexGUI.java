@@ -743,6 +743,9 @@ public class AlloyCodexGUI implements InventoryHolder {
             addEpithet(lore, material);
             lore.add("");
             lore.add("<dark_gray>" + material.getDescription() + "</dark_gray>");
+            lore.add("");
+            lore.add("<yellow>▶ Click: open it in the <b>Combination Explorer</b></yellow>");
+            lore.add("<dark_gray>Shift-click: list every item id it owns.</dark_gray>");
 
             // Show the material as it drops in the world, so the catalog is recognisable at a glance;
             // alloys have no raw form, so they fall back to their ingot and then to a generic shard.
@@ -995,7 +998,18 @@ public class AlloyCodexGUI implements InventoryHolder {
     // ==========================================
     // CLICKS
     // ==========================================
+    /** Handles a plain click, which opens what the entry stands for rather than listing its ids. */
     public void handleClick(@Nonnull Player player, int rawSlot) {
+        handleClick(player, rawSlot, false);
+    }
+
+    /**
+     * Handles a click, told apart by whether the player asked for the entry's ids.
+     *
+     * @param drill {@code true} when the click is a shift-click, which asks for the item ids of the
+     *              material under it instead of what that material can be blended with
+     */
+    public void handleClick(@Nonnull Player player, int rawSlot, boolean drill) {
         switch (rawSlot) {
             case SLOT_CLOSE -> {
                 player.closeInventory();
@@ -1096,10 +1110,15 @@ public class AlloyCodexGUI implements InventoryHolder {
                 render();
             } else {
                 TinkerMaterial clicked = materialAt(index);
-                if (clicked != null) {
+                if (clicked == null) return;
+                if (drill) {
+                    // Shift-click still reaches the ids, because that is how a player copies one into a
+                    // command; a plain click answers the question the entry raises.
                     catalogTarget = clicked;
                     page = 0;
                     render();
+                } else {
+                    openExplorerFor(clicked);
                 }
             }
             return;
@@ -1119,6 +1138,25 @@ public class AlloyCodexGUI implements InventoryHolder {
                 render();
             }
         }
+    }
+
+    /**
+     * Hands a mineral from the catalog to the Combination Explorer, already selected.
+     *
+     * <p>The catalog is where a player discovers a mineral and the explorer is where they learn what it
+     * blends with, so the click carries the mineral across rather than making them find it again among
+     * the sixteen legendaries, twelve catalysts and hundred-odd minerals of the picker.</p>
+     *
+     * <p>A prime has no partner left to offer and lands on the explorer's own explanation, which says
+     * exactly that — it is still a true answer to the click, and shift-click reaches its ids.</p>
+     */
+    private void openExplorerFor(@Nonnull TinkerMaterial material) {
+        section = Section.EXPLORER;
+        explorerTarget = material;
+        catalogTarget = null;
+        filterPicker = null;
+        page = 0;
+        render();
     }
 
     /** Material shown at the given index of the catalog's material list, or {@code null}. */

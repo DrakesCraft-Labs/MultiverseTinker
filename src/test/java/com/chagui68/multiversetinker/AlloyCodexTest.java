@@ -13,7 +13,12 @@ import com.chagui68.multiversetinker.tools.VanillaCatalyst;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -180,7 +185,98 @@ class AlloyCodexTest {
     }
 
     @Test
-    @DisplayName("Clicking a material drills into every id that belongs to it")
+    @DisplayName("A plain click hands the mineral to the explorer, already selected for blending")
+    void catalogClickOpensTheExplorerForThatMineral() {
+        codex.handleClick(player, CATALOG_SECTION);
+        assertEquals(AlloyCodexGUI.Section.MINERALS, codex.getSection());
+
+        TinkerMaterial copper = materials.get("mvtink_copper");
+        assertNotNull(copper);
+        int index = codex.filteredMaterials().indexOf(copper);
+        assertTrue(index >= 0, "Copper must be in the catalog");
+
+        // Walk to the page the entry sits on, exactly as a player would.
+        for (int page = 0; page < index / 36; page++) {
+            codex.handleClick(player, SLOT_NEXT);
+        }
+        int slot = CONTENT_START + (index % 36);
+
+        // The entry says where a click goes, so the behaviour is discoverable without the wiki.
+        String entry = plainText(codex.getInventory().getItem(slot));
+        assertTrue(entry.contains("Combination Explorer"),
+                "The catalog entry must name the section a click opens, got: " + entry);
+        assertTrue(entry.contains("Shift-click"), "The entry must mention the id drill-down, got: " + entry);
+
+        codex.handleClick(player, slot);
+
+        assertEquals(AlloyCodexGUI.Section.EXPLORER, codex.getSection(),
+                "Clicking a mineral must open the Combination Explorer");
+        assertNotNull(codex.getExplorerTarget(), "The explorer must arrive with the mineral selected");
+        assertEquals(copper.getId(), codex.getExplorerTarget().getId(),
+                "The explorer must select the mineral that was clicked, not another one");
+        assertNull(codex.getCatalogTarget(),
+                "The click carries the mineral across; it does not drill into its ids");
+
+        // And the explorer is already listing what that mineral can be blended with.
+        List<String> partners = partnerIds(copper);
+        assertTrue(partners.size() > 1, "Copper must accept more than one partner");
+        assertEquals(partners.size(), codex.entryCount(AlloyCodexGUI.Section.EXPLORER),
+                "The explorer must open on the partners of the clicked mineral");
+        String firstPartner = pageText();
+        assertTrue(firstPartner.contains(materials.get(partners.get(0)).getName()),
+                "The partner list must name the alloys copper forms, got: " + firstPartner);
+    }
+
+    @Test
+    @DisplayName("The click resolves through the active filters, not the raw registry order")
+    void catalogClickFollowsTheFilteredOrder() {
+        codex.handleClick(player, CATALOG_SECTION);
+
+        // Narrow the catalog to one dimension, so its first entry is no longer the registry's first.
+        codex.handleClick(player, SLOT_ORIGIN_FILTER);
+        codex.handleClick(player, CONTENT_START + 1);
+        assertEquals(MineralOrigin.values()[0], codex.getOriginFilter(), "The picker must apply the first option");
+        assertEquals(AlloyCodexGUI.Section.MINERALS, codex.getSection(), "Applying a filter must return to the catalog");
+
+        List<TinkerMaterial> listed = codex.filteredMaterials();
+        assertTrue(listed.size() > 1 && listed.size() < materials.getAll().size(),
+                "The filter must leave a strict subset, got " + listed.size());
+        assertNotEquals(new ArrayList<>(materials.getAll()).get(0).getId(), listed.get(0).getId(),
+                "The filter must reorder the list for the test to mean anything");
+
+        codex.handleClick(player, CONTENT_START);
+
+        assertNotNull(codex.getExplorerTarget());
+        assertEquals(listed.get(0).getId(), codex.getExplorerTarget().getId(),
+                "The click must open the material actually on that slot");
+    }
+
+    @Test
+    @DisplayName("The in-game listener forwards the modifier, so shift-click still means ids (regression)")
+    void listenerForwardsTheShiftClick() {
+        player.openInventory(codex.getInventory());
+        codex.handleClick(player, CATALOG_SECTION);
+
+        TinkerMaterial first = codex.filteredMaterials().get(0);
+
+        // A plain click travels the real event path: listener, then the catalog.
+        clickCodex(CONTENT_START, ClickType.LEFT);
+        assertEquals(AlloyCodexGUI.Section.EXPLORER, codex.getSection(),
+                "A plain click must reach the explorer through the listener");
+        assertEquals(first.getId(), codex.getExplorerTarget().getId(),
+                "The listener must pass the click on unchanged");
+
+        // And the shift modifier survives the listener too, so the ids are still one click away.
+        codex.handleClick(player, CATALOG_SECTION);
+        clickCodex(CONTENT_START, ClickType.SHIFT_LEFT);
+        assertEquals(AlloyCodexGUI.Section.MINERALS, codex.getSection(),
+                "A shift-click must stay in the catalog");
+        assertNotNull(codex.getCatalogTarget(), "A shift-click must still drill into the ids");
+        assertEquals(first.getId(), codex.getCatalogTarget().getId());
+    }
+
+    @Test
+    @DisplayName("Shift-clicking a material drills into every id that belongs to it")
     void catalogDrillsIntoAMaterial() {
         codex.handleClick(player, SLOT_SECTION_FIRST + 6);
 
@@ -193,9 +289,11 @@ class AlloyCodexTest {
         for (int page = 0; page < copperIndex / 36; page++) {
             codex.handleClick(player, SLOT_NEXT);
         }
-        codex.handleClick(player, slot);
+        codex.handleClick(player, slot, true);
 
-        assertNotNull(codex.getCatalogTarget(), "Clicking a material must drill into it");
+        assertNotNull(codex.getCatalogTarget(), "Shift-clicking a material must drill into its ids");
+        assertEquals(AlloyCodexGUI.Section.MINERALS, codex.getSection(),
+                "Drilling into ids must stay in the catalog");
         assertEquals(copper.getId(), codex.getCatalogTarget().getId());
 
         long expected = plugin.getItemRegistry().getAllItemIds().stream()
@@ -432,9 +530,9 @@ class AlloyCodexTest {
                         material.getId() + " must teach the filtered essence"));
 
         // Filters must never move the entries around: the first slot is the first material left.
-        codex.handleClick(player, CONTENT_START);
+        codex.handleClick(player, CONTENT_START, true);
         assertEquals(codex.filteredMaterials().get(0).getId(), codex.getCatalogTarget().getId(),
-                "Clicking a filtered entry must drill into the material on that slot");
+                "Shift-clicking a filtered entry must drill into the material on that slot");
         codex.handleClick(player, CONTENT_START);
         assertNull(codex.getCatalogTarget());
 
@@ -600,6 +698,14 @@ class AlloyCodexTest {
     // ==========================================
     // HELPERS
     // ==========================================
+    /** Fires a real inventory click, so the listener is what turns it into a catalog action. */
+    private void clickCodex(int slot, ClickType clickType) {
+        InventoryView view = player.getOpenInventory();
+        assertNotNull(view, "The codex must be open for a click to arrive");
+        server.getPluginManager().callEvent(new InventoryClickEvent(view, InventoryType.SlotType.CONTAINER,
+                slot, clickType, InventoryAction.PICKUP_ALL));
+    }
+
     private String plainText(ItemStack item) {
         assertNotNull(item, "Expected an item in the codex slot");
         StringBuilder builder = new StringBuilder(
