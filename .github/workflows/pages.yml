@@ -42,6 +42,11 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Turns Pages on for the repository if nobody has opened the setting yet, so the first deploy
+          # needs no manual step. If the organisation blocks it, enable Pages by hand instead
+          # (Settings → Pages → Source → "GitHub Actions") and this step succeeds as it is.
+          enablement: true
 
       - name: Upload the site
         uses: actions/upload-pages-artifact@v3
