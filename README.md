@@ -266,6 +266,11 @@ Anything unrecognised (a typo such as `flase`) **falls back to the default** ins
 
 The mode applies **before** the permission node: with `access.archaeology: op`, even a player holding `multiversetinker.archaeology` is turned away, and the refusal is the configured message. The opposite is equally true: `access.archaeology: public` never consults the node at all. A plain vanilla anvil is left untouched for players who are not allowed to use the Forge — only the recognised multiblock answers to the rule.
 
+Two rules are called out on startup **and** on `/mvtink reload`, because neither is something a player would report:
+
+* `UNUSABLE` — a surface set to `op` on a server with **no operators at all** can never be reached, so the warning names the key and the surface (closing `access.codex` that way is reported as having closed every `/mvtink` command players had). Give someone the operator flag, or move the mode back to `public`.
+* `DANGEROUS` — a leftover `access.admin-commands` left at a value that would have opened the administrative subcommands (`public`, `everyone`, `all`). It is ignored, but that is the value that used to hand every player the item giver and the instant forger, so it is worth deleting.
+
 ### 🧭 Other sections
 
 | Section | Purpose |

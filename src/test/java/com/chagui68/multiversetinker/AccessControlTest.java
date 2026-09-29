@@ -32,6 +32,10 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -419,9 +423,136 @@ class AccessControlTest {
                 "An operator must be offered every subcommand");
     }
 
+    @Test
+    @DisplayName("A rule a server cannot satisfy is reported, and an operator is enough to satisfy it")
+    void opOnlySurfacesAreReportedOnlyWhileNoOperatorExists() {
+        // The shipped defaults are usable either way: nothing is op-only, so there is nothing to say.
+        assertTrue(AccessControl.advisories(plugin.getConfig(), true).isEmpty());
+        assertTrue(AccessControl.advisories(plugin.getConfig(), false).isEmpty());
+
+        plugin.getConfig().set("access.forge", "op");
+        plugin.applyAccessSettings();
+
+        // With an operator around, an op-only surface is exactly what the server asked for.
+        assertTrue(AccessControl.advisories(plugin.getConfig(), true).isEmpty(),
+                "An operator satisfies an op-only surface");
+
+        // Without one, nobody can ever reach it, so the rule is dead and says so.
+        AccessControl.Advisory advisory = only(AccessControl.advisories(plugin.getConfig(), false));
+        assertEquals(AccessControl.Severity.UNUSABLE, advisory.severity());
+        assertEquals("access.forge", advisory.configKey(), "The report must point at the line to edit");
+        assertTrue(advisory.message().contains("no operators"), "Got: " + advisory.message());
+        assertTrue(advisory.message().contains("Forge"), "The report must say what was closed, got: " + advisory.message());
+        assertTrue(advisory.message().contains("\"op\""), "The report must quote the value, got: " + advisory.message());
+    }
+
+    @Test
+    @DisplayName("Closing the codex on a server with no operators says that no command is left either")
+    void theCodexLockoutNamesTheOnlyPlayerCommand() {
+        plugin.getConfig().set("access.codex", "op");
+        plugin.applyAccessSettings();
+
+        AccessControl.Advisory advisory = only(AccessControl.advisories(plugin.getConfig(), false));
+        assertEquals("access.codex", advisory.configKey());
+        assertTrue(advisory.message().contains("the only /mvtink command players have"),
+                "A server must know it has closed every player command, got: " + advisory.message());
+    }
+
+    @Test
+    @DisplayName("Only a leftover key that would open the admin commands is called dangerous")
+    void aStaleAdminKeyIsDangerousOnlyWhileItWouldOpenTheCommands() {
+        // The old shipped value: harmless, since nothing reads it any more.
+        plugin.getConfig().set("access.admin-commands", "permission");
+        plugin.applyAccessSettings();
+        assertTrue(AccessControl.advisories(plugin.getConfig(), true).isEmpty(),
+                "A stale key that changes nothing is not a warning");
+
+        // The value that used to hand every player /mvtink give: worth saying plainly, synonyms included.
+        for (String opening : List.of("public", "everyone", "all")) {
+            plugin.getConfig().set("access.admin-commands", opening);
+            plugin.applyAccessSettings();
+
+            AccessControl.Advisory advisory = only(AccessControl.advisories(plugin.getConfig(), true));
+            assertEquals(AccessControl.Severity.DANGEROUS, advisory.severity(), "for \"" + opening + "\"");
+            assertEquals("access.admin-commands", advisory.configKey());
+            assertTrue(advisory.message().contains(Surface.ADMIN_COMMANDS.permission()),
+                    "The message must name the node that is actually required, got: " + advisory.message());
+            assertEquals(Mode.PERMISSION, AccessControl.mode(Surface.ADMIN_COMMANDS),
+                    "And the dangerous value must still not have been obeyed");
+        }
+    }
+
+    @Test
+    @DisplayName("Startup warns about a rule the server cannot use, and stays quiet once it can")
+    void startupWarnsAboutRulesTheServerCannotUse() {
+        plugin.getConfig().set("access.archaeology", "op");
+
+        List<String> log = captureLog(plugin::applyAccessSettings);
+        assertTrue(log.stream().anyMatch(line -> line.contains("UNUSABLE") && line.contains("access.archaeology")),
+                "A dead rule must be warned about on enable and reload, got: " + log);
+
+        // An operator satisfies the rule, so the warning disappears — and the report itself stays.
+        PlayerMock operator = server.addPlayer("keeper");
+        operator.setOp(true);
+        List<String> quiet = captureLog(plugin::applyAccessSettings);
+        assertFalse(quiet.stream().anyMatch(line -> line.contains("UNUSABLE")),
+                "An operator makes the rule usable, got: " + quiet);
+        assertTrue(quiet.stream().anyMatch(line -> line.contains("Access control —")),
+                "The access report is logged either way, got: " + quiet);
+    }
+
+    @Test
+    @DisplayName("Startup warns sharply about a leftover key that would open the admin commands")
+    void startupWarnsAboutAStaleKeyThatWouldOpenTheCommands() {
+        plugin.getConfig().set("access.admin-commands", "public");
+
+        List<String> log = captureLog(plugin::applyAccessSettings);
+        assertTrue(log.stream().anyMatch(line -> line.contains("DANGEROUS") && line.contains("access.admin-commands")),
+                "Expected a dangerous-rule warning, got: " + log);
+        assertEquals(1, log.stream().filter(line -> line.contains("access.admin-commands")).count(),
+                "One key must not be reported twice, got: " + log);
+    }
+
     // ==========================================
     // HELPERS
     // ==========================================
+
+    /** The only advisory in a list, asserting there is exactly one. */
+    private AccessControl.Advisory only(List<AccessControl.Advisory> advisories) {
+        assertEquals(1, advisories.size(), "Expected exactly one advisory, got: " + advisories);
+        return advisories.get(0);
+    }
+
+    /** Captures what the plugin logs while an action runs, so a startup warning can be asserted on. */
+    private List<String> captureLog(Runnable action) {
+        List<String> lines = new ArrayList<>();
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                lines.add(record.getLevel() + " " + record.getMessage());
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        handler.setLevel(Level.ALL);
+        Logger logger = plugin.getLogger();
+        Level previous = logger.getLevel();
+        logger.setLevel(Level.ALL);
+        logger.addHandler(handler);
+        try {
+            action.run();
+        } finally {
+            logger.removeHandler(handler);
+            logger.setLevel(previous);
+        }
+        return lines;
+    }
 
     /** The surfaces a server may rule on: everything but the administrative commands. */
     private static List<Surface> configurableSurfaces() {

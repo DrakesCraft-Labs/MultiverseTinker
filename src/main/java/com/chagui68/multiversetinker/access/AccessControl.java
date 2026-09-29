@@ -151,6 +151,30 @@ public final class AccessControl {
         }
     }
 
+    /** How much an advisory matters. */
+    public enum Severity {
+
+        /** The rule could hand players something only an administrator should have. */
+        DANGEROUS,
+
+        /** The rule cannot be satisfied on this server, so the surface is dead. */
+        UNUSABLE
+    }
+
+    /**
+     * A rule worth saying out loud when the access settings are applied.
+     *
+     * <p>A server can close a door and forget it, so a rule that promises players the administrative
+     * commands, or that nobody on this server can satisfy, is reported on startup and on
+     * {@code /mvtink reload} instead of being left for a player to stumble into.</p>
+     *
+     * @param severity  how much it matters
+     * @param configKey the {@code config.yml} key responsible, so the report points at the line to edit
+     * @param message   what is wrong and what to do about it
+     */
+    public record Advisory(@Nonnull Severity severity, @Nonnull String configKey, @Nonnull String message) {
+    }
+
     private static final EnumMap<Surface, Mode> MODES = new EnumMap<>(Surface.class);
     private static final EnumMap<Surface, String> MESSAGES = new EnumMap<>(Surface.class);
 
@@ -183,6 +207,61 @@ public final class AccessControl {
             MESSAGES.put(surface, config.getString(surface.messageKey(), surface.defaultMessage()));
         }
         return ignored;
+    }
+
+    /**
+     * The rules worth a warning: one that would hand players the administrative commands, and one that
+     * nobody on this server can satisfy.
+     *
+     * <p>Call after {@link #configure(ConfigurationSection)}, whose modes this reads. A server with no
+     * operator at all can never reach an {@link Mode#OP} surface, and a leftover
+     * {@code access.admin-commands: public} is exactly the value that used to hand every player the item
+     * giver and the instant forger — neither is left for a player to discover, both are logged.</p>
+     *
+     * @param config             the section the modes were read from, so a stale key can be spotted
+     * @param serverHasOperators whether any operator exists to satisfy an {@link Mode#OP} surface
+     */
+    @Nonnull
+    public static List<Advisory> advisories(@Nullable ConfigurationSection config, boolean serverHasOperators) {
+        List<Advisory> advisories = new ArrayList<>();
+
+        // A key from before the administrative commands stopped being configurable. Left at any other
+        // value it does nothing at all; left at "public" it is the dangerous one, so that is said plainly.
+        if (config != null) {
+            for (Surface surface : Surface.values()) {
+                if (surface.isConfigurable() || !config.isSet(surface.configKey())) continue;
+                if (Mode.parse(config.getString(surface.configKey()), surface.defaultMode()) != Mode.PUBLIC) continue;
+
+                advisories.add(new Advisory(Severity.DANGEROUS, surface.configKey(),
+                        "config.yml still asks for " + surface.configKey() + ": public, which would give every"
+                                + " player the administrative /mvtink subcommands. It is ignored: they always require "
+                                + surface.permission() + " (operators by default, or whoever a permissions plugin"
+                                + " grants it to). Delete the key to silence this."));
+            }
+        }
+
+        if (serverHasOperators) return advisories;
+
+        // With no operator anywhere, an op-only surface is closed to everyone in practice.
+        for (Surface surface : Surface.values()) {
+            if (mode(surface) != Mode.OP) continue;
+
+            advisories.add(new Advisory(Severity.UNUSABLE, surface.configKey(),
+                    surface.configKey() + " is \"op\" and this server has no operators, so nobody can use "
+                            + describe(surface) + ". Give someone the operator flag, or set the mode to public."));
+        }
+        return advisories;
+    }
+
+    /** How a surface is named in a warning, so the message says what a server has just closed. */
+    @Nonnull
+    private static String describe(@Nonnull Surface surface) {
+        return switch (surface) {
+            case CODEX -> "the Alloy Codex, the only /mvtink command players have";
+            case FORGE -> "the Forge, the Alloy Crucible and the casting cauldron";
+            case ARCHAEOLOGY -> "the brush";
+            case ADMIN_COMMANDS -> "the administrative /mvtink subcommands";
+        };
     }
 
     /** Restores the shipped defaults, used before any config is read and by the tests. */

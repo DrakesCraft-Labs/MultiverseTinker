@@ -265,6 +265,11 @@ Cualquier valor no reconocido (una errata como `flase`) **vuelve al valor por de
 
 El modo se aplica **antes** que el nodo: con `access.archaeology: op`, incluso un jugador con `multiversetinker.archaeology` es rechazado, con el mensaje configurado. Lo contrario también vale: `access.archaeology: public` nunca consulta el nodo. Un yunque vanilla normal no se toca para quien no puede usar la Forja — solo el multibloque reconocido responde a la regla.
 
+Dos reglas se avisan al arrancar **y** en `/mvtink reload`, porque ninguna es de las que un jugador reportaría:
+
+* `UNUSABLE` — una superficie en `op` en un servidor **sin ningún operador** es inalcanzable para siempre, así que el aviso nombra la clave y la superficie (cerrar `access.codex` así se reporta como haber cerrado todos los comandos `/mvtink` que tenían los jugadores). Dale el flag de operador a alguien, o vuelve a `public`.
+* `DANGEROUS` — un `access.admin-commands` olvidado en un valor que habría abierto los subcomandos administrativos (`public`, `everyone`, `all`). Se ignora, pero ese es el valor que antes entregaba a cualquier jugador el dador de ítems y el forjado instantáneo, así que conviene borrarlo.
+
 ### 🧭 Otras secciones
 
 | Sección | Propósito |

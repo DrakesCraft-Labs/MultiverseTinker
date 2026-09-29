@@ -234,6 +234,18 @@ aceptan las palabras que un dueño escribiría: `everyone` y `all` significan `p
 El mensaje `messages.access-denied.admin-commands` sigue siendo configurable aunque su superficie no lo sea, así que
 las palabras que ve un jugador cuando un comando le queda fuera de alcance siguen siendo las de su servidor.
 
+### Cuando una regla no puede funcionar
+
+Dos reglas se avisan en ese mismo momento, porque ninguna es de las que un jugador reportaría:
+
+| Gravedad | Cuándo | Ejemplo |
+| --- | --- | --- |
+| `UNUSABLE` | Una superficie está en `op` y el servidor **no tiene ningún operador**, así que nadie podrá alcanzarla. | `access.forge` is `"op"` and this server has no operators, so nobody can use the Forge, the Alloy Crucible and the casting cauldron. |
+| `DANGEROUS` | Un `access.admin-commands` olvidado sigue en un valor que habría abierto los subcomandos administrativos. Se ignora, pero es el valor que antes entregaba a cualquier jugador el dador de ítems y el forjado instantáneo. | `config.yml` still asks for `access.admin-commands: public` … Delete the key to silence this. |
+
+Cerrar `access.codex` así se reporta por lo que es — nadie puede ejecutar un solo comando `/mvtink` —, porque el codex
+es el único comando que tienen los jugadores.
+
 Un **yunque** vanilla normal no se toca para quien no puede usar la Forja: solo un multibloque reconocido responde a
 la regla, así que el plugin nunca estorba al reparar en un yunque cualquiera.
 

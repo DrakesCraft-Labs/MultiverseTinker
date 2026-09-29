@@ -231,6 +231,18 @@ means `permission`. Every decision is reported on startup and on `/mvtink reload
 The `messages.access-denied.admin-commands` message stays configurable even though its surface is not, so the wording a player
 sees when a command is out of their reach is still a server's own.
 
+### When a rule cannot work
+
+Two rules are also called out at the same moment, because neither is something a player would report:
+
+| Severity | When | Example |
+| --- | --- | --- |
+| `UNUSABLE` | A surface is set to `op` and the server has **no operators at all**, so nobody can ever reach it. | `access.forge` is `"op"` and this server has no operators, so nobody can use the Forge, the Alloy Crucible and the casting cauldron. |
+| `DANGEROUS` | A leftover `access.admin-commands` is still set to a value that would have opened the administrative subcommands. It is ignored, but it is the value that used to hand every player the item giver and the instant forger. | `config.yml` still asks for `access.admin-commands: public` … Delete the key to silence this. |
+
+Closing `access.codex` that way is reported as what it is — nobody can run a single `/mvtink` command — since the codex
+is the only command players have.
+
 A plain vanilla **anvil** is left untouched for a player who may not use the Forge: only a recognised multiblock
 answers to the rule, so the plugin never gets in the way of ordinary anvil repairs.
 

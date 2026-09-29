@@ -31,6 +31,10 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class MultiverseTinker extends JavaPlugin {
 
     @Getter
@@ -199,12 +203,29 @@ public class MultiverseTinker extends JavaPlugin {
      * <p>Who may forge, browse or brush is a server decision, so it lives in the config rather than in
      * the permission nodes alone: a server without a permissions plugin can open or close each surface
      * here, and a server with one keeps the fine-grained nodes. Re-read by {@code /mvtink reload}.</p>
+     *
+     * <p>A rule that hands players too much or that nobody can satisfy is warned about here, at startup
+     * and on every reload, rather than being left for a player to discover: an op-only surface on a
+     * server without a single operator, or a leftover key still asking for the administrative commands
+     * to be public.</p>
      */
     public void applyAccessSettings() {
-        for (String ignored : AccessControl.configure(getConfig())) {
-            getLogger().warning("Ignoring " + ignored + ": the administrative /mvtink subcommands are always"
+        List<String> ignored = AccessControl.configure(getConfig());
+        List<AccessControl.Advisory> advisories = AccessControl.advisories(getConfig(),
+                !Bukkit.getOperators().isEmpty());
+        Set<String> reported = advisories.stream()
+                .map(AccessControl.Advisory::configKey)
+                .collect(Collectors.toSet());
+
+        for (String key : ignored) {
+            // A stale key that is also dangerous gets the sharper message below, not both.
+            if (reported.contains(key)) continue;
+            getLogger().warning("Ignoring " + key + ": the administrative /mvtink subcommands are always"
                     + " behind " + MultiverseTinkerCommand.ADMIN_PERMISSION + " (operators by default, or whoever a"
                     + " permissions plugin grants it to). Only the codex can be opened to players.");
+        }
+        for (AccessControl.Advisory advisory : advisories) {
+            getLogger().warning(advisory.severity() + " access rule — " + advisory.message());
         }
         getLogger().info("Access control — " + AccessControl.summary());
     }
