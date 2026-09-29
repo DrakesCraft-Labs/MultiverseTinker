@@ -8,6 +8,8 @@ mining, and grants Fire Resistance when worn.
 The mapping is 100% deterministic: the same mineral always teaches the same affinities, so a
 given forge combination always owns the same, reproducible signature blend.
 
+> 📚 The exact essence list of every material is printed in the **[Material Reference](Material-Reference.md)**, and the essence each blend inherits in the **[Alloy Recipe Index](Alloy-Recipe-Index.md)**.
+
 ---
 
 ## 🧭 How affinities are assigned

@@ -6,11 +6,14 @@ Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a soverei
 
 ## 📑 Wiki Navigation
 
+* **[Mechanics Overview](Mechanics-Overview.md)**: Start here — one page for "what does that do?": the six-step pipeline, every block, item, GUI tab, tier, perk, catalyst, command and permission at a glance.
 * **[Geological Archaeology](Archaeology.md)**: Prospector brush, brushing mechanics, drop tables, and dimension targets.
 * **[Smeltery & Cauldron Casting](Smeltery-and-Casting.md)**: Operating the Smeltery Crucible over lava/magma, diagnostic GUI, and cooling molten metals in water cauldrons with reusable molds.
 * **[The Multiverse Forge Multiblock](Forge-Structure.md)**: Multiblock structure, validation particle simulation, and central anvil aura.
 * **[Forge GUI & Modular Equipment Guide](Forge-GUI-Guide.md)**: Detailed breakdown of the 6 GUI tabs, multi-material casting, tier evolution (Wood to Netherite), and specialized weapon, tool and armor perks — including how each perk is named and powered by the weapon's minerals.
 * **[Alloy Mixing & Metallurgy Guide](Alloy-Mixing.md)**: The Alloy Crucible, universal brush/vanilla mineral blending (110 blendable minerals, 5,995 mineral pairs), and exhaustive guide to all 16 custom alloys.
+* **[Material Reference](Material-Reference.md)**: How to obtain every material — source, class, rarity, forge stats, trait (on weapons, tools and armor) and essences, one block per material.
+* **[Alloy Recipe Index](Alloy-Recipe-Index.md)**: Every blendable pair (5,995) with the alloy it forges and the essences it inherits, plus the 16 legendary recipes and the 12 vanilla catalysts.
 * **[Prime Alloys](Prime-Alloys.md)**: The third alloy tier — fuse a legendary alloy with another alloy, a mineral or one of the 12 vanilla catalysts to unlock freezing ice fields, meteor cascades and the 9 new armor states (up to **103,781** distinct alloys).
 * **[Trait Affinities Reference](Trait-Affinities.md)**: The 12 deterministic essences, how they behave on weapons, tools and armor, and how the head mineral drives every weapon perk.
 * **[Essence Ultimates](Essence-Ultimates.md)**: The 12 cinematic attack ultimates — meteors, vortexes, light pillars and cages that root the enemy — and how to reach the 80% essence focus they demand.

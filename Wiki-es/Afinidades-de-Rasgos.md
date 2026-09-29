@@ -8,6 +8,8 @@ incendia al golpear, auto-funde al minar y otorga Resistencia al Fuego al llevar
 La clasificación es 100% determinista: el mismo mineral siempre enseña las mismas afinidades, por
 lo que cada combinación de forja posee siempre la misma mezcla reproducible.
 
+> 📚 La lista exacta de esencias de cada material está en la **[Referencia de Materiales](Fuentes-de-Materiales.md)**, y las esencias que hereda cada mezcla en el **[Índice de Recetas](Indice-de-Recetas.md)**.
+
 ---
 
 ## 🧭 Cómo se asignan las afinidades

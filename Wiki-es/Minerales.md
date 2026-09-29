@@ -2,6 +2,8 @@
 
 MultiverseTinker cuenta con **97 minerales geológicos**, repartidos entre las tres dimensiones de Minecraft (33 Overworld, 34 Nether, 30 The End):
 
+> 📚 La fuente, las estadísticas de forja y las esencias de cada mineral están en la **[Referencia de Materiales](Fuentes-de-Materiales.md)**, y todas las recetas de mezcla en el **[Índice de Recetas](Indice-de-Recetas.md)**.
+
 ---
 
 ## 🌍 Overworld (33 Minerales)

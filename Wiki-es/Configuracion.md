@@ -162,7 +162,7 @@ propios plugins de daño), mientras que el desgaste vanilla sigue desactivado en
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
 | `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado o con el del material vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumir la lava fuente y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
-| `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). |
+| `rarity-weights` | Pesos de botín relativos por rareza de mineral (`common` … `legendary`). **Reservado:** hoy la tabla de botín de arqueología usa los pesos internos (común 50, poco común 30, raro 14, épico 5, legendario 1), así que editar esta clave todavía no tiene efecto. |
 | `messages` | Textos de chat y barra de acción (formato MiniMessage) para cepillado, enfriamientos y permisos. |
 
 ---
@@ -172,3 +172,4 @@ propios plugins de daño), mientras que el desgaste vanilla sigue desactivado en
 * **[Guía del GUI de la Forja y Equipo Modular](Guia-GUI-Forja.md)**: qué imprime exactamente el lore envuelto — perks, enfoque de esencia, canales de rasgos y la animación exclusiva de cada tipo.
 * **[Rasgos de Forja y Efectos de Minerales](Rasgos-y-Efectos.md)**: la referencia de rasgos y afinidades tras esas filas de lore.
 * **[Aleaciones Primordiales](Aleaciones-Primordiales.md)**: el archivo `dynamic-alloys.yml` que conserva las primordiales forjadas por los jugadores entre reinicios.
+* **[Resumen de Mecánicas](Resumen-de-Mecanicas.md)**: cada mecánica, ítem y comando que configuran las claves de arriba.

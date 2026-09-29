@@ -6,6 +6,8 @@ The **Multiverse Forge** features a dedicated **Alloy Crucible** (Section 3 of t
 
 > 🌌 **Prime tier**: the crucible carries a third category. A **legendary alloy** can be fused again — with another legendary alloy, a composite alloy, any mineral, or one of the **12 vanilla catalysts** (Nether Star, Blue Ice, Echo Shard…) — producing a **prime alloy** with boosted stats and its own ultimate and armor state. See **[Prime Alloys](Prime-Alloys.md)**; with every composite discovered the crucible reaches **103,781** distinct alloys. Everything you forge is saved to `dynamic-alloys.yml` and restored on the next startup.
 
+> 📚 **Need the full list?** Every blendable pair — all **5,995** of them — with the alloy it forges and the essences it inherits lives in the **[Alloy Recipe Index](Alloy-Recipe-Index.md)**. Per-material sources, stats and traits are in the **[Material Reference](Material-Reference.md)**.
+
 ---
 
 ## ⚒ How Alloy Mixing Works

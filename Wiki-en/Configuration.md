@@ -161,7 +161,7 @@ damage plugins), while vanilla wear stays disabled in both cases.
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
 | `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage or the vanilla material value (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: chance to consume the lava source and the Magma Block heat-source slowdown multiplier. |
-| `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). |
+| `rarity-weights` | Relative drop weights per mineral rarity (`common` … `legendary`). **Reserved:** the archaeology loot table currently rolls on the built-in weights (common 50, uncommon 30, rare 14, epic 5, legendary 1), so editing this key has no effect yet. |
 | `messages` | Chat and action bar texts (MiniMessage format) for brushing, cooldowns and permissions. |
 
 ---
@@ -171,3 +171,4 @@ damage plugins), while vanilla wear stays disabled in both cases.
 * **[Forge GUI & Modular Equipment Guide](Forge-GUI-Guide.md)**: what the wrapped lore actually prints — perks, essence focus, trait channels and the exclusive animation of every type.
 * **[Traits & Mineral Effects](Traits-and-Effects.md)**: the trait and affinity reference behind those lore rows.
 * **[Prime Alloys](Prime-Alloys.md)**: the `dynamic-alloys.yml` file that stores player-forged primes across restarts.
+* **[Mechanics Overview](Mechanics-Overview.md)**: every mechanic, item and command the keys above configure.

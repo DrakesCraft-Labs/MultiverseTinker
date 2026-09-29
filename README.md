@@ -16,7 +16,7 @@
 
 Part of **Chagui68's Sovereign Multiverse Suite** alongside [MultiverseNets](https://github.com/DrakesCraft-Labs/MultiverseNets), [MultiverseCreatures](https://github.com/DrakesCraft-Labs/MultiverseCreatures), and [MultiverseProgramming](https://github.com/DrakesCraft-Labs/MultiverseProgramming).
 
-[📖 English Wiki](Wiki-en/Home.md) · [🏛️ Forge Multiblock](Wiki-en/Forge-Structure.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [🔮 Trait Affinities](Wiki-en/Trait-Affinities.md) · [📖 Wiki en Español](Wiki-es/Home.md) · [🏛️ Estructura Forja](Wiki-es/Estructura-Forja.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [🔮 Afinidades](Wiki-es/Afinidades-de-Rasgos.md) · [Español (README)](README_ES.md)
+[📖 English Wiki](Wiki-en/Home.md) · [🗺️ Mechanics Overview](Wiki-en/Mechanics-Overview.md) · [🧩 Material Reference](Wiki-en/Material-Reference.md) · [🧪 Alloy Recipe Index](Wiki-en/Alloy-Recipe-Index.md) · [🏛️ Forge Multiblock](Wiki-en/Forge-Structure.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [🔮 Trait Affinities](Wiki-en/Trait-Affinities.md) · [📖 Wiki en Español](Wiki-es/Home.md) · [🗺️ Resumen de Mecánicas](Wiki-es/Resumen-de-Mecanicas.md) · [🧩 Referencia de Materiales](Wiki-es/Fuentes-de-Materiales.md) · [🧪 Índice de Recetas](Wiki-es/Indice-de-Recetas.md) · [🏛️ Estructura Forja](Wiki-es/Estructura-Forja.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [🔮 Afinidades](Wiki-es/Afinidades-de-Rasgos.md) · [Español (README)](README_ES.md)
 
 </div>
 
