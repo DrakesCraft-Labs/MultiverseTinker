@@ -2,11 +2,14 @@ package com.chagui68.multiversetinker.commands;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
+import com.chagui68.multiversetinker.storage.TinkerKeys;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -217,6 +220,109 @@ class MultiverseTinkerCommandTest {
         assertTrue(admin.performCommand("mvtink craft weapon BOW mvtink_smeltery mvtink_cast_head"));
         assertTrue(drainMessages().stream().anyMatch(line -> line.contains("Unrecognized material")),
                 "Non-material ids must still be refused");
+    }
+
+    @Test
+    @DisplayName("give forges and registers the alloy a crucible pair id names")
+    void giveForgesACruciblePairOnDemand() {
+        PlayerMock smith = server.addPlayer("smith");
+        String pairId = "mvtink_alloy_tin_zinc";
+        assertNull(plugin.getMaterialRegistry().get(pairId), "The pair must not exist before the command");
+
+        drainMessages();
+        assertTrue(admin.performCommand("mvtink give smith " + pairId + " 4"));
+        List<String> messages = drainMessages();
+
+        assertTrue(messages.stream().anyMatch(line -> line.contains("forged and registered")),
+                "The admin must be told an alloy was created, got: " + messages);
+        assertTrue(messages.stream().anyMatch(line -> line.contains("Tin-Zinc Alloy")), "got: " + messages);
+        assertTrue(messages.stream().anyMatch(line -> line.contains("Gave 4x " + pairId)), "got: " + messages);
+
+        assertNotNull(plugin.getMaterialRegistry().get(pairId),
+                "The forged alloy must be a material the rest of the plugin can use");
+        assertEquals(1, plugin.getAlloyRegistry().getDynamicAlloyCount(),
+                "The alloy is player-forged, so it has to be saved");
+        // A bare material id hands out its raw ore, exactly like every other material.
+        assertEquals(4, countHeld(smith, pairId + "_raw"),
+                "The raw ore of the new alloy must reach the player");
+    }
+
+    @Test
+    @DisplayName("give resolves the kind inside a pair id, so an ingot of an unblended pair works too")
+    void giveResolvesTheKindInsideAPairId() {
+        PlayerMock smith = server.addPlayer("smith");
+
+        drainMessages();
+        assertTrue(admin.performCommand("mvtink give smith mvtink_alloy_tin_zinc_ingot"));
+
+        assertNotNull(plugin.getMaterialRegistry().get("mvtink_alloy_tin_zinc"),
+                "Asking for the ingot must forge the alloy just the same");
+        assertEquals(1, countHeld(smith, "mvtink_alloy_tin_zinc_ingot"));
+    }
+
+    @Test
+    @DisplayName("give names the alloy a curated pair really forges instead of inventing a second one")
+    void giveResolvesACuratedPairToItsRecipe() {
+        PlayerMock smith = server.addPlayer("smith");
+
+        drainMessages();
+        assertTrue(admin.performCommand("mvtink give smith mvtink_alloy_copper_tin"));
+        List<String> messages = drainMessages();
+
+        assertTrue(messages.stream().anyMatch(line -> line.contains("Bronze")),
+                "Copper and tin forge Bronze, and the admin must hear it, got: " + messages);
+        assertTrue(messages.stream().anyMatch(line -> line.contains("would produce")),
+                "The message must say the crucible produces it, got: " + messages);
+        assertNull(plugin.getMaterialRegistry().get("mvtink_alloy_copper_tin"),
+                "A curated pair must not spawn a second alloy for the same minerals");
+        assertEquals(0, plugin.getAlloyRegistry().getDynamicAlloyCount());
+        assertNotNull(findHeld(smith, "mvtink_bronze_raw"), "Bronze must be what lands in the inventory");
+    }
+
+    @Test
+    @DisplayName("give still refuses an id that names no pair the crucible would accept")
+    void giveRefusesIdsThatNameNoPair() {
+        PlayerMock smith = server.addPlayer("smith");
+
+        for (String id : List.of(
+                "mvtink_alloy_tin_tin",              // a mineral cannot blend with itself
+                "mvtink_alloy_tin_unobtainium",      // an unknown parent
+                "mvtink_alloy_zinc_tin",             // not the canonical spelling the crucible produces
+                "mvtink_alloy_catalyst_nether_star_tin", // a catalyst only joins a prime fusion
+                "mvtink_alloy_bronze_tin",           // a finished alloy only enters through a prime
+                "mvtink_prime_tin_zinc")) {          // no legendary parent, so it is no prime
+            drainMessages();
+            assertTrue(admin.performCommand("mvtink give smith " + id));
+            assertTrue(drainMessages().stream().anyMatch(line -> line.contains("Item not found")),
+                    id + " must stay unknown, so a typo cannot smuggle an alloy in");
+        }
+
+        assertEquals(0, plugin.getAlloyRegistry().getDynamicAlloyCount(),
+                "A refused id must never forge or register anything");
+        assertNull(findHeld(smith, "mvtink_alloy_tin_tin_raw"));
+    }
+
+    /** How much of one registry id the player is carrying. */
+    private int countHeld(PlayerMock player, String itemId) {
+        int held = 0;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item == null || item.getType() == org.bukkit.Material.AIR || !item.hasItemMeta()) continue;
+            String id = item.getItemMeta().getPersistentDataContainer()
+                    .get(TinkerKeys.ITEM_ID, PersistentDataType.STRING);
+            if (itemId.equals(id)) held += item.getAmount();
+        }
+        return held;
+    }
+
+    /** The stack the player holds under one registry id, or {@code null}. */
+    private ItemStack findHeld(PlayerMock player, String itemId) {
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item == null || item.getType() == org.bukkit.Material.AIR || !item.hasItemMeta()) continue;
+            String id = item.getItemMeta().getPersistentDataContainer()
+                    .get(TinkerKeys.ITEM_ID, PersistentDataType.STRING);
+            if (itemId.equals(id)) return item;
+        }
+        return null;
     }
 
     /** Reads and clears every message the player received. */

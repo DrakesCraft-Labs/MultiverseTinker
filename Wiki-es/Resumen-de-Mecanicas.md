@@ -221,7 +221,7 @@ la brocha y los moldes no pertenecen a ningún material, cualquier filtro activo
 | `/mvtink` | todos | Ayuda pública (solo `codex`). Con `multiversetinker.admin`: la ayuda completa |
 | `/mvtink codex [jugador]` | usuarios del codex; apuntar a otro jugador necesita admin | Abre el Codex de Aleaciones |
 | `/mvtink craft <weapon\|tool\|armor> <tipo> <m1> <m2> [m3] [tier]` | admin | Forja equipo al instante |
-| `/mvtink give <jugador> <id> [cantidad]` | admin | Entrega cualquier ítem registrado |
+| `/mvtink give <jugador> <id> [cantidad]` | admin | Entrega cualquier ítem registrado, y forja y registra la aleación cuando el id nombra un par del crisol que nadie ha fundido todavía |
 | `/mvtink forge <build\|check\|gui> [rotación]` | admin | Construye / valida / abre la Forja |
 | `/mvtink verify` | admin | Diagnostica el registro de ítems |
 | `/mvtink reload` | admin | Recarga config, ítems y loot |

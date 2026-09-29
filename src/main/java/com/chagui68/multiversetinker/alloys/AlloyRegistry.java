@@ -24,6 +24,12 @@ public class AlloyRegistry {
     /** File holding every composite alloy the players have forged so far. */
     private static final String DYNAMIC_FILE = "dynamic-alloys.yml";
 
+    /**
+     * Id prefix of a composite: two freely blendable minerals fused in the crucible, e.g.
+     * {@code mvtink_alloy_copper_tin}.
+     */
+    public static final String COMPOSITE_PREFIX = "mvtink_alloy_";
+
     /** Id prefix of the new prime category (legendary alloy fused with an alloy, mineral or catalyst). */
     public static final String PRIME_PREFIX = "mvtink_prime_";
 
@@ -301,6 +307,68 @@ public class AlloyRegistry {
         return dynamicAlloy;
     }
 
+    /** A material id without the {@code mvtink_} prefix, exactly as a pair id spells it. */
+    @Nonnull
+    private static String bareIdOf(@Nonnull TinkerMaterial material) {
+        return material.getId().toLowerCase(Locale.ROOT).replace("mvtink_", "");
+    }
+
+    /**
+     * The alloy a crucible <b>pair id</b> names, forging and registering it when the id names a valid
+     * pair that nobody has blended yet.
+     *
+     * <p>The codex previews the id of every pair the crucible would accept, including the ones that do
+     * not exist yet, so an id copied out of it can name an alloy that was never smelted. This resolves
+     * it the same way the crucible would: the two parents are looked up, the pair is checked against the
+     * same rules ({@link #isCraftablePair}, so a catalyst still cannot join a plain composite and a prime
+     * still cannot be reforged), and the result is registered exactly once.</p>
+     *
+     * <p>Splitting the id is a search rather than a substring, because both parent ids carry underscores
+     * of their own ({@code cosmic_netherite}, {@code catalyst_nether_star}): every material that could be
+     * the first parent is tried and the <b>longest</b> one wins, so the answer does not depend on the order
+     * a server happens to have registered its materials in. A pair whose alloy is a curated recipe resolves
+     * to that recipe, and the id it was asked for is not one of its own.</p>
+     *
+     * @return the alloy, or {@code null} when the id names no craftable pair
+     */
+    @Nullable
+    public TinkerAlloy alloyForPairId(@Nonnull String pairId, @Nonnull MaterialRegistry materialRegistry) {
+        String key = pairId.toLowerCase(Locale.ROOT);
+
+        // Only a pair id is answered: an alloy that already exists under its own name is not one.
+        String prefix = key.startsWith(PRIME_PREFIX) ? PRIME_PREFIX
+                : key.startsWith(COMPOSITE_PREFIX) ? COMPOSITE_PREFIX
+                : null;
+        if (prefix == null) return null;
+
+        String rest = key.substring(prefix.length());
+        TinkerMaterial first = null;
+        TinkerMaterial second = null;
+        int firstLength = 0;
+
+        for (TinkerMaterial candidate : materialRegistry.getAll()) {
+            String bare = bareIdOf(candidate);
+            if (bare.length() <= firstLength) continue;
+            if (!rest.startsWith(bare + "_")) continue;
+
+            TinkerMaterial partner = materialRegistry.get("mvtink_" + rest.substring(bare.length() + 1));
+            if (partner == null) continue;
+
+            // Longest first parent wins, so a pair never resolves differently on another server.
+            first = candidate;
+            second = partner;
+            firstLength = bare.length();
+        }
+
+        if (first == null) return null;
+
+        // The prefix has to be the one this pair really produces: a composite id never names a prime,
+        // and a prime id never names a plain composite.
+        if (!dynamicId(first, second).equals(key)) return null;
+        if (!isCraftablePair(first, second)) return null;
+        return findOrCreateAlloy(first, second, materialRegistry);
+    }
+
     /** Narrative for a freshly fused prime alloy, naming the catalyst when it has one. */
     @Nonnull
     private static String primeDescription(@Nonnull TinkerMaterial first, @Nonnull TinkerMaterial second) {
@@ -392,7 +460,7 @@ public class AlloyRegistry {
         TinkerMaterial canonicalB = canonicalA == first ? second : first;
         String id1 = canonicalA.getId().replace("mvtink_", "");
         String id2 = canonicalB.getId().replace("mvtink_", "");
-        return (prime ? PRIME_PREFIX : "mvtink_alloy_") + id1 + "_" + id2;
+        return (prime ? PRIME_PREFIX : COMPOSITE_PREFIX) + id1 + "_" + id2;
     }
 
     /** Name a freshly forged pair would receive, without registering anything. */

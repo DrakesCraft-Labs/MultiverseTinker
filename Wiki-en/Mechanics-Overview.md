@@ -214,7 +214,7 @@ the brush and the casts belong to no material at all, any active filter hides th
 | `/mvtink` | everyone | Public help (only `codex`). With `multiversetinker.admin`: the full help |
 | `/mvtink codex [player]` | codex users; another player needs admin | Opens the Alloy Codex |
 | `/mvtink craft <weapon\|tool\|armor> <type> <m1> <m2> [m3] [tier]` | admin | Forges equipment instantly |
-| `/mvtink give <player> <id> [amount]` | admin | Gives any registered item |
+| `/mvtink give <player> <id> [amount]` | admin | Gives any registered item, forging and registering the alloy when the id names a crucible pair nobody has smelted yet |
 | `/mvtink forge <build\|check\|gui> [rotation]` | admin | Builds / validates / opens the Forge |
 | `/mvtink verify` | admin | Diagnoses the item registry |
 | `/mvtink reload` | admin | Reloads config, items and loot |

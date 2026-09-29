@@ -2,6 +2,7 @@ package com.chagui68.multiversetinker.commands;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.access.AccessControl;
+import com.chagui68.multiversetinker.alloys.TinkerAlloy;
 import com.chagui68.multiversetinker.access.AccessControl.Surface;
 import com.chagui68.multiversetinker.archaeology.ArchaeologyLootTable;
 import com.chagui68.multiversetinker.api.CastType;
@@ -164,9 +165,25 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
                 String itemId = args[2].toLowerCase(Locale.ROOT);
                 ItemStack item = itemRegistry.getItemById(itemId);
-                if (item == null && !itemId.startsWith("mvtink_")) {
+                if (item == null && !itemId.startsWith(ID_PREFIX)) {
                     // Convenience: "tin_ingot" and "mvtink_tin_ingot" are the same item.
-                    item = itemRegistry.getItemById("mvtink_" + itemId);
+                    item = itemRegistry.getItemById(ID_PREFIX + itemId);
+                }
+
+                // The codex previews the id of every pair the crucible would accept — including the ones
+                // nobody has smelted yet — so an id copied out of it can name an alloy that does not exist.
+                // Forge and register it here, under the very same rules the crucible enforces.
+                String handedOut = itemId;
+                TinkerAlloy blended = null;
+                boolean freshlyForged = false;
+                if (item == null) {
+                    TinkerItemRegistry.IdRequest request = TinkerItemRegistry.parseId(itemId);
+                    blended = plugin.getAlloyRegistry().alloyForPairId(request.materialId(), materialRegistry);
+                    if (blended != null) {
+                        freshlyForged = blended.id().equalsIgnoreCase(request.materialId());
+                        handedOut = request.idFor(blended.id());
+                        item = itemRegistry.getItemById(handedOut);
+                    }
                 }
 
                 if (item == null) {
@@ -193,7 +210,18 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
                 item.setAmount(amount);
                 target.getInventory().addItem(item);
-                sender.sendMessage(miniMessage.deserialize("<green>Gave " + amount + "x " + itemId + " to " + target.getName() + ".</green>"));
+
+                if (blended != null) {
+                    // The pair was resolved, which is worth saying: an alloy was just created and saved, and
+                    // a curated pair hands over a differently named alloy than the id suggested.
+                    sender.sendMessage(miniMessage.deserialize(freshlyForged
+                            ? "<gray>That id names a crucible pair nobody had smelted yet: forged and registered </gray><yellow>"
+                                    + blended.name() + "</yellow> <dark_gray>(" + blended.id() + ")</dark_gray><gray>.</gray>"
+                            : "<gray>That id names a crucible pair, and the crucible would produce </gray><yellow>"
+                                    + blended.name() + "</yellow> <dark_gray>(" + blended.id() + ")</dark_gray><gray>.</gray>"));
+                }
+
+                sender.sendMessage(miniMessage.deserialize("<green>Gave " + amount + "x " + handedOut + " to " + target.getName() + ".</green>"));
                 return true;
             }
 
@@ -494,7 +522,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
     private void sendHelp(CommandSender sender, String label) {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give any raw ore, ingot, nugget, block, molten bucket, part, cast, smeltery or brush. The mvtink_ prefix is optional.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give any raw ore, ingot, nugget, block, molten bucket, part, cast, smeltery or brush. The mvtink_ prefix is optional, and a crucible pair id from the codex is forged and registered on the spot.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " codex [player]</yellow> <gray>- Open the browsable Alloy Codex: the mineral catalog, legendary recipes, catalysts, forged composites and primes, a combination explorer and the totals.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " verify</yellow> <gray>- Check that every material and every item kind is registered and resolvable.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));

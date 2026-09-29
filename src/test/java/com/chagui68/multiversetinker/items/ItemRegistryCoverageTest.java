@@ -127,6 +127,43 @@ class ItemRegistryCoverageTest {
     }
 
     @Test
+    @DisplayName("An item id splits into the material it names and the kind it asks for")
+    void itemIdsSplitIntoTheirMaterialAndKind() {
+        assertEquals(new TinkerItemRegistry.IdRequest("mvtink_tin", TinkerItemRegistry.ItemKind.INGOT, "_ingot"),
+                TinkerItemRegistry.parseId("mvtink_tin_ingot"));
+
+        // A bare material id asks for the material itself, and an id that belongs to no material keeps
+        // its own name instead of being cut in two.
+        assertEquals(new TinkerItemRegistry.IdRequest("mvtink_tin", null, ""),
+                TinkerItemRegistry.parseId("mvtink_tin"));
+        assertEquals(new TinkerItemRegistry.IdRequest("mvtink_smeltery", null, ""),
+                TinkerItemRegistry.parseId("mvtink_smeltery"));
+
+        // A legacy alias keeps the spelling that was asked for, and case never matters.
+        TinkerItemRegistry.IdRequest alias = TinkerItemRegistry.parseId("mvtink_tin_processed");
+        assertEquals(TinkerItemRegistry.ItemKind.INGOT, alias.kind());
+        assertEquals("mvtink_tin", alias.materialId());
+        assertEquals("_processed", alias.suffix());
+
+        // The same request re-spelled against another material is what lets an id that resolved to a
+        // differently named alloy keep the kind it asked for.
+        TinkerItemRegistry.IdRequest request = TinkerItemRegistry.parseId("MVTINK_TIN_INGOT");
+        assertEquals("mvtink_tin_ingot", request.idFor("mvtink_tin"));
+        assertEquals("mvtink_alloy_tin_zinc_ingot", request.idFor("mvtink_alloy_tin_zinc"));
+    }
+
+    @Test
+    @DisplayName("No material id ends with a kind suffix, so an id is never cut in the middle of one")
+    void materialIdsNeverLookLikeItemKinds() {
+        for (TinkerMaterial material : materials.getAll()) {
+            String id = material.getId().toLowerCase(Locale.ROOT);
+            TinkerItemRegistry.IdRequest request = TinkerItemRegistry.parseId(id);
+            assertNull(request.kind(), id + " must not read as a material plus an item kind");
+            assertEquals(id, request.materialId());
+        }
+    }
+
+    @Test
     @DisplayName("Item ids are generated per material without eagerly building stacks")
     void idIndexIsGeneratedPerMaterial() {
         int expectedPerMaterial = TinkerItemRegistry.kindsPerMaterial() + 4; // + bare, _processed, _handle, _pommel

@@ -198,6 +198,43 @@ public class TinkerItemRegistry {
     // ID RESOLUTION
     // ==========================================
     /**
+     * An item id split into the material it names and the kind it asks for.
+     *
+     * <p>{@code mvtink_tin_ingot} asks for Tin's ingot and {@code mvtink_tin} for Tin itself, while
+     * {@code mvtink_alloy_copper_tin_ingot} asks for the ingot of a composite that two minerals would
+     * forge. {@link #idFor(String)} spells the same request against another material, which is what lets
+     * an id that was resolved to a differently named alloy keep the kind it asked for.</p>
+     *
+     * @param materialId the material the id belongs to
+     * @param kind       the kind requested, or {@code null} for a bare material id
+     * @param suffix     the id suffix that spelled the kind, empty for a bare material id
+     */
+    public record IdRequest(@Nonnull String materialId, @Nullable ItemKind kind, @Nonnull String suffix) {
+
+        /** The same request against another material. */
+        @Nonnull
+        public String idFor(@Nonnull String otherMaterialId) {
+            return otherMaterialId + suffix;
+        }
+    }
+
+    /**
+     * Splits an item id into the material it names and the kind it asks for, without resolving either.
+     *
+     * <p>Ids that belong to no material (the smeltery, the casts) come back with the id as their own
+     * material and no kind.</p>
+     */
+    @Nonnull
+    public static IdRequest parseId(@Nonnull String itemId) {
+        String key = itemId.toLowerCase(Locale.ROOT);
+        ItemKind kind = kindOfId(key);
+        if (kind == null) return new IdRequest(key, null, "");
+
+        String suffix = key.substring(key.length() - suffixLengthOf(key, kind));
+        return new IdRequest(key.substring(0, key.length() - suffix.length()), kind, suffix);
+    }
+
+    /**
      * Resolves any tinker item id, including materials created after startup (composites, prime
      * alloys and their parts).
      */
@@ -208,10 +245,9 @@ public class TinkerItemRegistry {
         ItemStack special = specialItems.get(key);
         if (special != null) return special.clone();
 
-        ItemKind kind = kindOfId(key);
-        if (kind != null) {
-            String materialId = key.substring(0, key.length() - suffixLengthOf(key, kind));
-            ItemStack item = itemFor(kind, materialId);
+        IdRequest request = parseId(key);
+        if (request.kind() != null) {
+            ItemStack item = itemFor(request.kind(), request.materialId());
             if (item != null) return item;
         }
 
