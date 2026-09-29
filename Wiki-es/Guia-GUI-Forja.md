@@ -92,13 +92,13 @@ Haz clic en el **Selector de Armas** (Ranura 13) para alternar entre los 7 tipos
 - Derrotar enemigos incrementa el contador de bajas y avanza el arma:
   `Madera → Piedra (15 bajas) → Cobre (40) → Hierro (80) → Oro (150) → Diamante (300) → Netherite (600)`.
 - **Ventajas de Combate Únicas**:
-  - **Mazo de Guerra**: Caídas de ataque generan ondas de choque sísmicas en área.
-  - **Arco Largo**: Las flechas disparadas heredan los rasgos elementales del arco.
-  - **Ballesta Pesada**: Los virotes ignoran armadura y causan explosión cinética.
-  - **Tridente Anciano**: Lanza rayos hidráulicos en agua o lluvia (+5.0 daño).
-  - **Lanza Cinética**: Alcance extendido y +30% daño al atacar esprintando.
-  - **Escudo Torre**: Refleja el 35% del daño bloqueado hacia el atacante.
-  - **Espada Ancha**: Los barridos propagan los rasgos elementales a enemigos adyacentes.
+  - **Mazo de Guerra (War Mace)**: *Golpe Sísmico* — Al atacar cayendo/saltando o agachado, libera una onda expansiva que inflige el 65% de daño a todos los enemigos en 4 bloques, los lanza por el aire y les transmite los rasgos elementales.
+  - **Arco Largo (Longbow)**: *Andanada Imbuida* — Las flechas disparadas heredan íntegramente los rasgos elementales de las extremidades y cuerda tensora (quemando, envenenando, ralentizando, etc.).
+  - **Ballesta Pesada (Heavy Crossbow)**: *Piercing Velocity* — Los virotes perforan armaduras (+6.0 daño directo) y provocan una explosión cinética abrasiva (al impactar a un enemigo o a un bloque), dañando en 5.0 y empujando a todas las criaturas en 4 bloques.
+  - **Tridente Anciano (Elder Trident)**: *Oleada Hidráulica* — Tanto cuerpo a cuerpo como al ser arrojado, si el objetivo o el lanzador se encuentran en agua o bajo la lluvia, invoca un relámpago con trueno, partículas de agua y un estallido de +5.0 de daño hidráulico adicional.
+  - **Lanza Cinética (Kinetic Spear)**: *Embestida de Justa* — Posee el modelo y alcance cuerpo a cuerpo extendido de la lanza oficial vanilla 1.21.11; al atacar esprintando o montado sobre un caballo/camello, asesta un golpe crítico con +30% de daño y un fuerte empuje hacia adelante.
+  - **Escudo Torre (Tower Shield)**: *Barrera de Represalia* — Bloquear ataques cuerpo a cuerpo o proyectiles (flechas, tridentes) devuelve un 35% del daño al atacante, lo empuja hacia atrás y le aplica los rasgos elementales de la placa frontal y el umbón.
+  - **Espada Ancha (Broadsword)**: *Tajo Elemental Enlazado* — Los tajos de barrido causan el 40% de daño a los enemigos adyacentes y propagan todos los rasgos elementales activos a cada uno de ellos.
 
 ---
 

@@ -14,10 +14,12 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Ageable;
@@ -26,6 +28,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -35,6 +38,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -133,32 +137,38 @@ public class ModularToolListener implements Listener {
 
         switch (type) {
             case MACE -> {
-                // Downward smash ground shockwave
-                if (player.getFallDistance() > 1.2 || player.isSneaking()) {
+                // Downward smash ground shockwave on jump-attack or sneak
+                if (player.getFallDistance() > 0.5 || player.isSneaking()) {
                     double shockDamage = event.getDamage() * 0.65;
-                    target.getWorld().spawnParticle(Particle.EXPLOSION, target.getLocation().add(0, 0.5, 0), 2, 0.2, 0.2, 0.2, 0.0);
+                    target.getWorld().spawnParticle(Particle.EXPLOSION, target.getLocation().add(0, 0.5, 0), 3, 0.3, 0.3, 0.3, 0.0);
                     target.getWorld().playSound(target.getLocation(), Sound.ITEM_MACE_SMASH_GROUND, 1.2f, 0.8f);
+
+                    ItemMeta meta = player.getInventory().getItemInMainHand().getItemMeta();
+                    PersistentDataContainer pdc = (meta != null) ? meta.getPersistentDataContainer() : null;
 
                     for (Entity nearby : target.getNearbyEntities(4.0, 2.0, 4.0)) {
                         if (nearby instanceof LivingEntity mob && !nearby.equals(player) && !nearby.equals(target)) {
                             mob.damage(shockDamage, player);
                             mob.setVelocity(mob.getLocation().toVector().subtract(target.getLocation().toVector()).normalize().multiply(0.6).setY(0.4));
+                            if (pdc != null) {
+                                triggerMultiMaterialTraits(player, mob, null, pdc);
+                            }
                         }
                     }
                 }
             }
             case SPEAR -> {
-                // Jousting charge bonus
-                if (player.isSprinting()) {
+                // Jousting charge bonus on sprint or mounted
+                if (player.isSprinting() || player.isInsideVehicle()) {
                     event.setDamage(event.getDamage() * 1.30);
-                    target.setVelocity(player.getLocation().getDirection().multiply(0.8).setY(0.3));
+                    target.setVelocity(player.getLocation().getDirection().multiply(0.85).setY(0.35));
                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.2f);
                     target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 15, 0.3, 0.3, 0.3, 0.1);
                 }
             }
             case TRIDENT -> {
                 // Oceanic / rain hydraulic surge
-                if (target.isInWaterOrRain()) {
+                if (target.isInWaterOrRain() || player.isInWaterOrRain()) {
                     event.setDamage(event.getDamage() + 5.0);
                     target.getWorld().strikeLightningEffect(target.getLocation());
                     target.getWorld().playSound(target.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.8f, 1.4f);
@@ -167,10 +177,16 @@ public class ModularToolListener implements Listener {
             }
             case SWORD -> {
                 // Sweeping elemental cleave
+                ItemMeta meta = player.getInventory().getItemInMainHand().getItemMeta();
+                PersistentDataContainer pdc = (meta != null) ? meta.getPersistentDataContainer() : null;
+
                 for (Entity nearby : target.getNearbyEntities(2.5, 1.5, 2.5)) {
                     if (nearby instanceof LivingEntity mob && !nearby.equals(player) && !nearby.equals(target)) {
                         mob.damage(event.getDamage() * 0.4, player);
                         mob.getWorld().spawnParticle(Particle.SWEEP_ATTACK, mob.getLocation().add(0, 0.8, 0), 1);
+                        if (pdc != null) {
+                            triggerMultiMaterialTraits(player, mob, null, pdc);
+                        }
                     }
                 }
             }
@@ -180,20 +196,31 @@ public class ModularToolListener implements Listener {
 
     private void handleSpecializedToolCombat(Player player, LivingEntity target, EntityDamageByEntityEvent event, String toolType) {
         if (toolType.equalsIgnoreCase(ModularToolType.AXE.name())) {
-            // Shield breaker on crit
+            // Shield breaker on jump crit or fall
             if (player.getFallDistance() > 0.0) {
                 event.setDamage(event.getDamage() * 1.25);
                 player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 0.9f);
-                target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 10, 0.3, 0.3, 0.3, 0.1);
+                target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 12, 0.3, 0.3, 0.3, 0.1);
+
+                if (target instanceof Player targetPlayer && targetPlayer.isBlocking()) {
+                    targetPlayer.setCooldown(Material.SHIELD, 100);
+                    targetPlayer.playSound(targetPlayer.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.2f, 0.8f);
+                }
             }
         }
     }
 
     private void handleShieldBlock(Player victim, Entity damager, EntityDamageByEntityEvent event, ItemStack shield) {
-        if (!(damager instanceof LivingEntity attacker)) return;
+        LivingEntity attacker = null;
+        if (damager instanceof LivingEntity le) {
+            attacker = le;
+        } else if (damager instanceof Projectile proj && proj.getShooter() instanceof LivingEntity le) {
+            attacker = le;
+        }
+        if (attacker == null) return;
 
         // Retaliation: reflect 35% damage & push attacker
-        double reflectedDamage = event.getDamage() * 0.35;
+        double reflectedDamage = Math.max(1.0, event.getDamage() * 0.35);
         attacker.damage(reflectedDamage, victim);
         attacker.setVelocity(victim.getLocation().getDirection().multiply(0.7).setY(0.2));
 
@@ -206,10 +233,12 @@ public class ModularToolListener implements Listener {
             PersistentDataContainer pdc = meta.getPersistentDataContainer();
             triggerMultiMaterialTraits(victim, attacker, event, pdc);
         }
+
+        damageEquipment(victim, shield);
     }
 
     // ==========================================
-    // BOW & PROJECTILE SHOOTING
+    // BOW, CROSSBOW & PROJECTILE SHOOTING
     // ==========================================
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onShootBow(EntityShootBowEvent event) {
@@ -223,25 +252,104 @@ public class ModularToolListener implements Listener {
         Entity proj = event.getProjectile();
         PersistentDataContainer projPdc = proj.getPersistentDataContainer();
 
-        // Copy composition data to arrow
+        // Copy composition data and weapon type to projectile
         String hComp = pdc.get(TinkerKeys.TOOL_HEAD_COMP, PersistentDataType.STRING);
         String rComp = pdc.get(TinkerKeys.TOOL_ROD_COMP, PersistentDataType.STRING);
+        String bComp = pdc.get(TinkerKeys.TOOL_BINDING_COMP, PersistentDataType.STRING);
+        String wType = pdc.get(TinkerKeys.WEAPON_TYPE, PersistentDataType.STRING);
+
         if (hComp != null) projPdc.set(TinkerKeys.TOOL_HEAD_COMP, PersistentDataType.STRING, hComp);
         if (rComp != null) projPdc.set(TinkerKeys.TOOL_ROD_COMP, PersistentDataType.STRING, rComp);
+        if (bComp != null) projPdc.set(TinkerKeys.TOOL_BINDING_COMP, PersistentDataType.STRING, bComp);
+        if (wType != null) projPdc.set(TinkerKeys.WEAPON_TYPE, PersistentDataType.STRING, wType);
 
         projPdc.set(TinkerKeys.IS_MODULAR_WEAPON, PersistentDataType.BYTE, (byte) 1);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onProjectileHit(ProjectileHitEvent event) {
-        if (!(event.getEntity() instanceof Arrow arrow)) return;
-        if (!(event.getHitEntity() instanceof LivingEntity target)) return;
+    public void onProjectileLaunch(ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof Trident trident)) return;
+        if (!(trident.getShooter() instanceof Player player)) return;
 
-        PersistentDataContainer pdc = arrow.getPersistentDataContainer();
+        ItemStack hand = player.getInventory().getItemInMainHand();
+        if (!isModularEquipment(hand) || hand.getType() != Material.TRIDENT) {
+            hand = player.getInventory().getItemInOffHand();
+        }
+        if (!isModularEquipment(hand) || hand.getType() != Material.TRIDENT) return;
+
+        ItemMeta meta = hand.getItemMeta();
+        if (meta == null) return;
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+
+        PersistentDataContainer projPdc = trident.getPersistentDataContainer();
+        String hComp = pdc.get(TinkerKeys.TOOL_HEAD_COMP, PersistentDataType.STRING);
+        String rComp = pdc.get(TinkerKeys.TOOL_ROD_COMP, PersistentDataType.STRING);
+        String bComp = pdc.get(TinkerKeys.TOOL_BINDING_COMP, PersistentDataType.STRING);
+
+        if (hComp != null) projPdc.set(TinkerKeys.TOOL_HEAD_COMP, PersistentDataType.STRING, hComp);
+        if (rComp != null) projPdc.set(TinkerKeys.TOOL_ROD_COMP, PersistentDataType.STRING, rComp);
+        if (bComp != null) projPdc.set(TinkerKeys.TOOL_BINDING_COMP, PersistentDataType.STRING, bComp);
+        projPdc.set(TinkerKeys.WEAPON_TYPE, PersistentDataType.STRING, ModularWeaponType.TRIDENT.name());
+        projPdc.set(TinkerKeys.IS_MODULAR_WEAPON, PersistentDataType.BYTE, (byte) 1);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onProjectileHit(ProjectileHitEvent event) {
+        Projectile proj = event.getEntity();
+        PersistentDataContainer pdc = proj.getPersistentDataContainer();
         if (!pdc.has(TinkerKeys.IS_MODULAR_WEAPON, PersistentDataType.BYTE)) return;
 
-        Player shooter = (arrow.getShooter() instanceof Player p) ? p : null;
-        triggerMultiMaterialTraits(shooter, target, null, pdc);
+        Player shooter = (proj.getShooter() instanceof Player p) ? p : null;
+        String wType = pdc.get(TinkerKeys.WEAPON_TYPE, PersistentDataType.STRING);
+        Entity hitEntity = event.getHitEntity();
+        Block hitBlock = event.getHitBlock();
+        Location hitLoc = (hitEntity != null) ? hitEntity.getLocation()
+                : (hitBlock != null ? hitBlock.getLocation().add(0.5, 0.5, 0.5) : proj.getLocation());
+
+        // 1. CROSSBOW: Piercing Velocity & Kinetic Explosion
+        if (wType != null && wType.equalsIgnoreCase(ModularWeaponType.CROSSBOW.name())) {
+            World world = hitLoc.getWorld();
+            if (world != null) {
+                // Visual & sound explosion
+                world.spawnParticle(Particle.EXPLOSION, hitLoc, 4, 0.4, 0.4, 0.4, 0.0);
+                world.spawnParticle(Particle.CRIT, hitLoc, 20, 0.5, 0.5, 0.5, 0.2);
+                world.playSound(hitLoc, Sound.ENTITY_GENERIC_EXPLODE, 1.2f, 1.3f);
+
+                // Direct Armor-Penetrating Damage
+                if (hitEntity instanceof LivingEntity directTarget) {
+                    directTarget.damage(6.0, shooter);
+                }
+
+                // Blast wave damage to all nearby mobs in 4-block radius
+                for (Entity nearby : world.getNearbyEntities(hitLoc, 4.0, 2.5, 4.0)) {
+                    if (nearby instanceof LivingEntity mob && !nearby.equals(shooter) && !nearby.equals(hitEntity)) {
+                        mob.damage(5.0, shooter);
+                        mob.setVelocity(mob.getLocation().toVector().subtract(hitLoc.toVector()).normalize().multiply(0.6).setY(0.35));
+                    }
+                }
+            }
+        }
+
+        // 2. TRIDENT: Hydraulic Surge on hit
+        if (wType != null && wType.equalsIgnoreCase(ModularWeaponType.TRIDENT.name())) {
+            World world = hitLoc.getWorld();
+            if (world != null) {
+                boolean inMoisture = (hitEntity != null && hitEntity.isInWaterOrRain()) || hitLoc.getBlock().isLiquid();
+                if (inMoisture) {
+                    world.strikeLightningEffect(hitLoc);
+                    world.playSound(hitLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.8f, 1.4f);
+                    world.spawnParticle(Particle.SPLASH, hitLoc, 30, 0.5, 0.5, 0.5, 0.15);
+                    if (hitEntity instanceof LivingEntity directTarget) {
+                        directTarget.damage(5.0, shooter);
+                    }
+                }
+            }
+        }
+
+        // 3. Multi-Material Elemental Traits on Direct Target
+        if (hitEntity instanceof LivingEntity target) {
+            triggerMultiMaterialTraits(shooter, target, null, pdc);
+        }
     }
 
     // ==========================================
@@ -277,7 +385,7 @@ public class ModularToolListener implements Listener {
     private void handleSpecializedToolMining(Player player, Block block, String toolType) {
         // Pickaxe: Vein Resonance
         if (toolType.equalsIgnoreCase(ModularToolType.PICKAXE.name())) {
-            if (block.getType().name().endsWith("_ORE")) {
+            if (block.getType().name().endsWith("_ORE") || block.getType() == Material.ANCIENT_DEBRIS) {
                 if (random.nextDouble() < 0.15) {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 120, 0, false, false));
                     block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(block.getType()));
