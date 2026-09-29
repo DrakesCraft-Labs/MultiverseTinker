@@ -9,6 +9,7 @@ import com.chagui68.multiversetinker.api.ModularToolType;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
 import com.chagui68.multiversetinker.api.ToolPartType;
 import com.chagui68.multiversetinker.evolution.EvolutionTier;
+import com.chagui68.multiversetinker.items.LoreWrap;
 import com.chagui68.multiversetinker.items.PartComposition;
 import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
@@ -193,7 +194,7 @@ public class ForgeGUI implements InventoryHolder {
             String prefix = active ? "<green>▶ </green>" : "<gray>  </gray>";
             meta.displayName(miniMessage.deserialize(prefix + title).decoration(TextDecoration.ITALIC, false));
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text(desc, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+            lore.addAll(LoreWrap.wrap(Component.text(desc, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
             lore.add(Component.empty());
             if (active) {
                 lore.add(miniMessage.deserialize("<green><b>✔ Currently Active Section</b></green>").decoration(TextDecoration.ITALIC, false));
@@ -365,7 +366,7 @@ public class ForgeGUI implements InventoryHolder {
             meta.displayName(miniMessage.deserialize(title).decoration(TextDecoration.ITALIC, false));
             List<Component> lore = new ArrayList<>();
             for (String line : lines) {
-                lore.add(Component.text(line, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+                lore.addAll(LoreWrap.wrap(Component.text(line, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
             }
             meta.lore(lore);
             markAsSystemItem(meta);
@@ -653,7 +654,7 @@ public class ForgeGUI implements InventoryHolder {
             meta.displayName(miniMessage.deserialize(title).decoration(TextDecoration.ITALIC, false));
             List<Component> lore = new ArrayList<>();
             for (String line : loreLines) {
-                lore.add(Component.text(line, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+                lore.addAll(LoreWrap.wrap(Component.text(line, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
             }
             meta.lore(lore);
             markAsSystemItem(meta);

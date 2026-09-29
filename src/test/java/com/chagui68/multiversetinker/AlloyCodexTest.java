@@ -6,8 +6,11 @@ import com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.tools.VanillaCatalyst;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -174,9 +177,42 @@ class AlloyCodexTest {
                 "Primes must never appear as partners");
     }
 
+    @Test
+    @DisplayName("An empty Prime Alloys section explains why it is empty and fills up once a prime is forged")
+    void emptyPrimeSectionExplainsItself() {
+        assertEquals(0, codex.entryCount(AlloyCodexGUI.Section.PRIMES), "A fresh server has no primes");
+
+        codex.handleClick(player, SLOT_SECTION_FIRST + 3);
+        assertEquals(AlloyCodexGUI.Section.PRIMES, codex.getSection());
+
+        String hint = plainText(codex.getInventory().getItem(22));
+        assertTrue(hint.contains("No prime alloys forged yet"), "Empty section must say so, got: " + hint);
+        assertTrue(hint.contains("this server"), "It must be clear only forged primes are listed");
+        assertTrue(hint.contains("Legendary alloy"), "The unlock recipe must be spelled out");
+
+        alloys.findOrCreateAlloy(materials.get("mvtink_manyullyn"),
+                materials.get(VanillaCatalyst.BLUE_ICE.getMaterialId()), materials);
+        codex.render();
+
+        assertEquals(1, codex.entryCount(AlloyCodexGUI.Section.PRIMES), "The forged prime must be listed");
+        assertNull(codex.getInventory().getItem(22), "The explanation must disappear once a prime exists");
+    }
+
     // ==========================================
     // HELPERS
     // ==========================================
+    private String plainText(ItemStack item) {
+        assertNotNull(item, "Expected an item in the codex slot");
+        StringBuilder builder = new StringBuilder(
+                PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName()));
+        if (item.getItemMeta().lore() != null) {
+            for (Component line : item.getItemMeta().lore()) {
+                builder.append(' ').append(PlainTextComponentSerializer.plainText().serialize(line));
+            }
+        }
+        return builder.toString();
+    }
+
     private List<String> partnerIds(TinkerMaterial target) {
         List<String> ids = new ArrayList<>();
         for (TinkerMaterial candidate : materials.getAll()) {

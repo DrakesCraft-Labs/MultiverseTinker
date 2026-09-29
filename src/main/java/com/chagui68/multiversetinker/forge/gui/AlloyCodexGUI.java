@@ -3,6 +3,7 @@ package com.chagui68.multiversetinker.forge.gui;
 import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.alloys.TinkerAlloy;
+import com.chagui68.multiversetinker.items.LoreWrap;
 import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
@@ -141,9 +142,7 @@ public class AlloyCodexGUI implements InventoryHolder {
         }
 
         if (content.isEmpty()) {
-            inventory.setItem(22, button(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
-                    "<gray><b>Nothing here yet</b></gray>",
-                    List.of("Forge something in the Alloy Crucible and it appears here.")));
+            inventory.setItem(22, emptyState(section));
         }
 
         inventory.setItem(SLOT_PREV, page > 0
@@ -180,6 +179,55 @@ public class AlloyCodexGUI implements InventoryHolder {
                 "<yellow><b>Print Summary to Chat</b></yellow>",
                 List.of("<gray>Writes the alloy space summary to chat,", "<gray>useful for screenshots and logs.</gray>")));
         inventory.setItem(SLOT_CLOSE, button(Material.BARRIER, "<red><b>Close</b></red>", List.of("<gray>Exit the codex.</gray>")));
+    }
+
+    /**
+     * Explains an empty section instead of leaving the player guessing.
+     *
+     * <p>The codex only lists what <b>this server</b> has actually forged, so {@code Prime Alloys}
+     * and {@code Forged Composites} start empty on every fresh world: nothing is broken, the list
+     * simply fills itself as the crucible is used. This is exactly why the Prime Alloys tab looks
+     * empty until the first legendary fusion happens.</p>
+     */
+    @Nonnull
+    private ItemStack emptyState(@Nonnull Section section) {
+        return switch (section) {
+            case PRIMES -> button(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+                    "<gray><b>No prime alloys forged yet</b></gray>",
+                    List.of("<gray>Nothing is missing here - this tab only lists the",
+                            "<gray>primes <white>this server</white> has already fused.</gray>",
+                            "",
+                            "<gold>How to forge a prime alloy:</gold>",
+                            "<gray>1. Forge a <yellow>Legendary alloy</yellow> in the Alloy Crucible.</gray>",
+                            "<gray>2. Fuse it again with another alloy, any mineral,</gray>",
+                            "<gray>   or one of the <yellow>12 vanilla catalysts</yellow>.</gray>",
+                            "",
+                            "<gray>The prime comes out Legendary, with its own",
+                            "<gray>cinematic ultimate and armor state, and is listed here.",
+                            "",
+                            "<yellow>► Tip: the Combination Explorer lists every</yellow>",
+                            "<yellow>partner each legendary alloy accepts.</yellow>"));
+            case COMPOSITES -> button(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+                    "<gray><b>No composite alloys forged yet</b></gray>",
+                    List.of("<gray>Blend any <yellow>two minerals</yellow> in the Alloy Crucible and</gray>",
+                            "<gray>the composite they create is recorded here.</gray>",
+                            "",
+                            "<gray>This tab stays empty until this server forges one.</gray>",
+                            "",
+                            "<yellow>► Tip: browse the Combination Explorer to see how</yellow>",
+                            "<yellow>many pairs each mineral accepts.</yellow>"));
+            case EXPLORER -> button(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+                    "<gray><b>No partner for this material</b></gray>",
+                    List.of("<gray>This material cannot be blended right now.</gray>",
+                            "",
+                            "<gray>Prime alloys cannot be fused again, and a</gray>",
+                            "<gray>material needs a distinct partner to mix with.</gray>",
+                            "",
+                            "<yellow>► Tip: press any entry to pick another material.</yellow>"));
+            default -> button(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+                    "<gray><b>Nothing here yet</b></gray>",
+                    List.of("Forge something in the Alloy Crucible and it appears here."));
+        };
     }
 
     private List<ItemStack> contentFor(Section section) {
@@ -579,7 +627,8 @@ public class AlloyCodexGUI implements InventoryHolder {
 
         List<Component> lore = new ArrayList<>();
         for (String line : loreLines) {
-            lore.add(miniMessage.deserialize(line).decoration(TextDecoration.ITALIC, false));
+            // Codex entries carry long trait descriptions: wrap them so nothing is clipped.
+            lore.addAll(LoreWrap.wrap(miniMessage.deserialize(line).decoration(TextDecoration.ITALIC, false)));
         }
         meta.lore(lore);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ADDITIONAL_TOOLTIP, ItemFlag.HIDE_ENCHANTS);

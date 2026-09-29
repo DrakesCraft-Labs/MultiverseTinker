@@ -17,6 +17,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
@@ -37,6 +38,7 @@ import java.util.Set;
 public class TinkerItemBuilder {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
+    private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
     @Nonnull
     public static ItemStack createRawMineral(@Nonnull TinkerMaterial material) {
@@ -74,7 +76,7 @@ public class TinkerItemBuilder {
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_raw</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(lore);
+        meta.lore(LoreWrap.wrapAll(lore));
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -150,7 +152,7 @@ public class TinkerItemBuilder {
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_ingot</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(lore);
+        meta.lore(LoreWrap.wrapAll(lore));
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -186,7 +188,7 @@ public class TinkerItemBuilder {
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_nugget</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(lore);
+        meta.lore(LoreWrap.wrapAll(lore));
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, material.getId() + "_nugget");
@@ -221,7 +223,7 @@ public class TinkerItemBuilder {
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_block</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(lore);
+        meta.lore(LoreWrap.wrapAll(lore));
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, material.getId() + "_block");
@@ -264,7 +266,7 @@ public class TinkerItemBuilder {
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + material.getId() + "_molten_bucket</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(lore);
+        meta.lore(LoreWrap.wrapAll(lore));
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, material.getId() + "_molten_bucket");
@@ -301,7 +303,7 @@ public class TinkerItemBuilder {
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: " + castType.getId() + "</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(lore);
+        meta.lore(LoreWrap.wrapAll(lore));
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, castType.getId());
@@ -343,7 +345,7 @@ public class TinkerItemBuilder {
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: mvtink_smeltery</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(lore);
+        meta.lore(LoreWrap.wrapAll(lore));
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, "mvtink_smeltery");
@@ -385,7 +387,7 @@ public class TinkerItemBuilder {
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: mvtink_brush_prospector</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(lore);
+        meta.lore(LoreWrap.wrapAll(lore));
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(TinkerKeys.ITEM_ID, PersistentDataType.STRING, "mvtink_brush_prospector");
@@ -459,7 +461,7 @@ public class TinkerItemBuilder {
         lore.add(MINI_MESSAGE.deserialize("<dark_gray>ID: mvtink_part_" + partType.getIdSuffix() + "</dark_gray>")
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(lore);
+        meta.lore(LoreWrap.wrapAll(lore));
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -532,15 +534,14 @@ public class TinkerItemBuilder {
         // Kill Tracker bar
         int nextKillReq = (tier.getNextTier() != null) ? tier.getNextTier().getKillRequirement() : -1;
         if (nextKillReq == -1) {
-            lore.add(MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + killCount + " Total Kills)</gradient>").decoration(TextDecoration.ITALIC, false));
+            lore.add(MINI_MESSAGE.deserialize(masterTierLine("Kills", killCount)).decoration(TextDecoration.ITALIC, false));
         } else {
             int prevMilestone = tier.getKillRequirement();
-            int needed = nextKillReq - prevMilestone;
+            int needed = Math.max(1, nextKillReq - prevMilestone);
             int curProgress = Math.max(0, killCount - prevMilestone);
             int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
-            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
-                    + curProgress + "/" + needed + " Kills</yellow> <gray>(Next: " + tier.getNextTier().getDisplayName() + ")</gray>";
-            lore.add(MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+            lore.add(MINI_MESSAGE.deserialize(progressBar(bars, curProgress, needed, "Kills", tier.getNextTier().getDisplayName()))
+                    .decoration(TextDecoration.ITALIC, false));
         }
 
         lore.add(Component.empty());
@@ -599,7 +600,9 @@ public class TinkerItemBuilder {
                 .decoration(TextDecoration.ITALIC, false));
         lore.addAll(primeLore(part1, part2, part3));
 
-        meta.lore(lore);
+        // The first two rows are the tier tag and the kill progress bar: they are rewritten in place
+        // on every kill, so they get the wider header budget instead of the tooltip budget.
+        meta.lore(LoreWrap.wrapAll(lore, 2));
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(TinkerKeys.IS_TINKER_ITEM, PersistentDataType.BYTE, (byte) 1);
@@ -666,15 +669,14 @@ public class TinkerItemBuilder {
         // Block Break Progress bar
         int nextBlockReq = (tier.getNextTier() != null) ? tier.getNextTier().getBlockBreakRequirement() : -1;
         if (nextBlockReq == -1) {
-            lore.add(MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + blocksBroken + " Total Blocks Broken)</gradient>").decoration(TextDecoration.ITALIC, false));
+            lore.add(MINI_MESSAGE.deserialize(masterTierLine("Blocks Broken", blocksBroken)).decoration(TextDecoration.ITALIC, false));
         } else {
             int prevMilestone = tier.getBlockBreakRequirement();
-            int needed = nextBlockReq - prevMilestone;
+            int needed = Math.max(1, nextBlockReq - prevMilestone);
             int curProgress = Math.max(0, blocksBroken - prevMilestone);
             int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
-            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
-                    + curProgress + "/" + needed + " Blocks</yellow> <gray>(Next: " + tier.getNextTier().getDisplayName() + ")</gray>";
-            lore.add(MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+            lore.add(MINI_MESSAGE.deserialize(progressBar(bars, curProgress, needed, "Blocks", tier.getNextTier().getDisplayName()))
+                    .decoration(TextDecoration.ITALIC, false));
         }
 
         lore.add(Component.empty());
@@ -710,7 +712,9 @@ public class TinkerItemBuilder {
                 .decoration(TextDecoration.ITALIC, false));
         lore.addAll(primeLore(head, rod, binding));
 
-        meta.lore(lore);
+        // Header rows (tier tag + block progress bar) stay on one row so progress updates can
+        // rewrite them in place.
+        meta.lore(LoreWrap.wrapAll(lore, 2));
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(TinkerKeys.IS_TINKER_ITEM, PersistentDataType.BYTE, (byte) 1);
@@ -858,15 +862,14 @@ public class TinkerItemBuilder {
         // Damage Absorbed Progress Bar
         int nextDmgReq = (tier.getNextTier() != null) ? tier.getNextTier().getArmorDamageRequirement() : -1;
         if (nextDmgReq == -1) {
-            lore.add(MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + damageAbsorbed + " Total Damage Absorbed)</gradient>").decoration(TextDecoration.ITALIC, false));
+            lore.add(MINI_MESSAGE.deserialize(masterTierLine("Damage Absorbed", damageAbsorbed)).decoration(TextDecoration.ITALIC, false));
         } else {
             int prevMilestone = tier.getArmorDamageRequirement();
             int needed = Math.max(1, nextDmgReq - prevMilestone);
             int curProgress = Math.max(0, damageAbsorbed - prevMilestone);
             int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
-            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
-                    + curProgress + "/" + needed + " Damage Absorbed</yellow> <gray>(Next: " + tier.getNextTier().getArmorDisplayName() + ")</gray>";
-            lore.add(MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+            lore.add(MINI_MESSAGE.deserialize(progressBar(bars, curProgress, needed, "Damage Absorbed", tier.getNextTier().getArmorDisplayName()))
+                    .decoration(TextDecoration.ITALIC, false));
         }
 
         lore.add(Component.empty());
@@ -905,7 +908,9 @@ public class TinkerItemBuilder {
                 .decoration(TextDecoration.ITALIC, false));
         lore.addAll(primeLore(plate, lining, trim));
 
-        meta.lore(lore);
+        // Header rows (tier tag + damage progress bar) stay on one row so progress updates can
+        // rewrite them in place.
+        meta.lore(LoreWrap.wrapAll(lore, 2));
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(TinkerKeys.IS_TINKER_ITEM, PersistentDataType.BYTE, (byte) 1);
@@ -942,76 +947,106 @@ public class TinkerItemBuilder {
     public static void updateWeaponProgress(@Nonnull ItemStack weapon, @Nonnull EvolutionTier tier, int killCount) {
         ItemMeta meta = weapon.getItemMeta();
         if (meta == null) return;
-        List<Component> lore = meta.lore();
-        if (lore == null || lore.size() < 2) return;
 
-        lore.set(0, MINI_MESSAGE.deserialize(tier.getMiniMessageTag()).decoration(TextDecoration.ITALIC, false));
+        Component tierTag = MINI_MESSAGE.deserialize(tier.getMiniMessageTag()).decoration(TextDecoration.ITALIC, false);
 
         int nextKillReq = (tier.getNextTier() != null) ? tier.getNextTier().getKillRequirement() : -1;
+        Component progress;
         if (nextKillReq == -1) {
-            lore.set(1, MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + killCount + " Total Kills)</gradient>").decoration(TextDecoration.ITALIC, false));
+            progress = MINI_MESSAGE.deserialize(masterTierLine("Kills", killCount)).decoration(TextDecoration.ITALIC, false);
         } else {
             int prevMilestone = tier.getKillRequirement();
             int needed = Math.max(1, nextKillReq - prevMilestone);
             int curProgress = Math.max(0, killCount - prevMilestone);
             int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
-            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
-                    + curProgress + "/" + needed + " Kills</yellow> <gray>(Next: " + tier.getNextTier().getDisplayName() + ")</gray>";
-            lore.set(1, MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+            progress = MINI_MESSAGE.deserialize(progressBar(bars, curProgress, needed, "Kills", tier.getNextTier().getDisplayName()))
+                    .decoration(TextDecoration.ITALIC, false);
         }
 
-        meta.lore(lore);
+        updateProgressHeader(meta, tierTag, progress);
         weapon.setItemMeta(meta);
     }
 
     public static void updateToolProgress(@Nonnull ItemStack tool, @Nonnull EvolutionTier tier, int blocksBroken) {
         ItemMeta meta = tool.getItemMeta();
         if (meta == null) return;
-        List<Component> lore = meta.lore();
-        if (lore == null || lore.size() < 2) return;
 
-        lore.set(0, MINI_MESSAGE.deserialize(tier.getMiniMessageTag()).decoration(TextDecoration.ITALIC, false));
+        Component tierTag = MINI_MESSAGE.deserialize(tier.getMiniMessageTag()).decoration(TextDecoration.ITALIC, false);
 
         int nextReq = (tier.getNextTier() != null) ? tier.getNextTier().getBlockBreakRequirement() : -1;
+        Component progress;
         if (nextReq == -1) {
-            lore.set(1, MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + blocksBroken + " Total Blocks)</gradient>").decoration(TextDecoration.ITALIC, false));
+            progress = MINI_MESSAGE.deserialize(masterTierLine("Blocks", blocksBroken)).decoration(TextDecoration.ITALIC, false);
         } else {
             int prevMilestone = tier.getBlockBreakRequirement();
             int needed = Math.max(1, nextReq - prevMilestone);
             int curProgress = Math.max(0, blocksBroken - prevMilestone);
             int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
-            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
-                    + curProgress + "/" + needed + " Blocks</yellow> <gray>(Next: " + tier.getNextTier().getDisplayName() + ")</gray>";
-            lore.set(1, MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+            progress = MINI_MESSAGE.deserialize(progressBar(bars, curProgress, needed, "Blocks", tier.getNextTier().getDisplayName()))
+                    .decoration(TextDecoration.ITALIC, false);
         }
 
-        meta.lore(lore);
+        updateProgressHeader(meta, tierTag, progress);
         tool.setItemMeta(meta);
     }
 
     public static void updateArmorProgress(@Nonnull ItemStack armor, @Nonnull EvolutionTier tier, int damageAbsorbed) {
         ItemMeta meta = armor.getItemMeta();
         if (meta == null) return;
-        List<Component> lore = meta.lore();
-        if (lore == null || lore.size() < 2) return;
 
-        lore.set(0, MINI_MESSAGE.deserialize(tier.getArmorMiniMessageTag()).decoration(TextDecoration.ITALIC, false));
+        Component tierTag = MINI_MESSAGE.deserialize(tier.getArmorMiniMessageTag()).decoration(TextDecoration.ITALIC, false);
 
         int nextDmgReq = (tier.getNextTier() != null) ? tier.getNextTier().getArmorDamageRequirement() : -1;
+        Component progress;
         if (nextDmgReq == -1) {
-            lore.set(1, MINI_MESSAGE.deserialize("<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + damageAbsorbed + " Total Damage Absorbed)</gradient>").decoration(TextDecoration.ITALIC, false));
+            progress = MINI_MESSAGE.deserialize(masterTierLine("Damage Absorbed", damageAbsorbed)).decoration(TextDecoration.ITALIC, false);
         } else {
             int prevMilestone = tier.getArmorDamageRequirement();
             int needed = Math.max(1, nextDmgReq - prevMilestone);
             int curProgress = Math.max(0, damageAbsorbed - prevMilestone);
             int bars = Math.min(10, Math.max(0, (int) Math.round(((double) curProgress / needed) * 10)));
-            String barDisplay = "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
-                    + curProgress + "/" + needed + " Damage Absorbed</yellow> <gray>(Next: " + tier.getNextTier().getArmorDisplayName() + ")</gray>";
-            lore.set(1, MINI_MESSAGE.deserialize(barDisplay).decoration(TextDecoration.ITALIC, false));
+            progress = MINI_MESSAGE.deserialize(progressBar(bars, curProgress, needed, "Damage Absorbed", tier.getNextTier().getArmorDisplayName()))
+                    .decoration(TextDecoration.ITALIC, false);
         }
 
-        meta.lore(lore);
+        updateProgressHeader(meta, tierTag, progress);
         armor.setItemMeta(meta);
+    }
+
+    /**
+     * Rewrites the two lore rows that open a modular item: its tier tag and its progress bar.
+     *
+     * <p>Lore is word-wrapped when the item is forged, so the header is located by the blank
+     * separator row that follows it instead of by fixed indices — a wrapped bar stays intact and the
+     * rows below keep their place.</p>
+     */
+    private static void updateProgressHeader(@Nonnull ItemMeta meta, @Nonnull Component tierTag, @Nonnull Component progressLine) {
+        List<Component> lore = meta.lore();
+        if (lore == null || lore.isEmpty()) return;
+
+        int boundary = 1;
+        while (boundary < lore.size() && !PLAIN.serialize(lore.get(boundary)).isEmpty()) {
+            boundary++;
+        }
+
+        List<Component> rebuilt = new ArrayList<>();
+        rebuilt.add(tierTag);
+        rebuilt.addAll(LoreWrap.wrap(progressLine, LoreWrap.HEADER_MAX_PIXELS));
+        if (boundary < lore.size()) {
+            rebuilt.addAll(lore.subList(boundary, lore.size()));
+        }
+        meta.lore(rebuilt);
+    }
+
+    @Nonnull
+    private static String masterTierLine(@Nonnull String metric, int total) {
+        return "<gradient:#ffd700:#ff8c00>★ MASTER TIER ★ (" + total + " Total " + metric + ")</gradient>";
+    }
+
+    @Nonnull
+    private static String progressBar(int bars, int current, int needed, @Nonnull String metric, @Nonnull String nextTierName) {
+        return "<green>" + "▮".repeat(bars) + "</green><gray>" + "▯".repeat(10 - bars) + "</gray> <yellow>"
+                + current + "/" + needed + " " + metric + "</yellow> <gray>(Next: " + nextTierName + ")</gray>";
     }
 
     @Nonnull
