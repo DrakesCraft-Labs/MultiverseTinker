@@ -108,6 +108,8 @@ public final class WikiPages {
                 "Wiki-es/Fuentes-de-Materiales.md",
                 "Wiki-en/Perk-Names.md",
                 "Wiki-es/Nombres-de-Perk.md",
+                "Wiki-en/Best-Sword-and-Bow-Combos.md",
+                "Wiki-es/Mejores-Combos-Espada-Arco.md",
                 "Wiki-en/Alloy-Pairs-Overworld-1.md",
                 "Wiki-en/Alloy-Pairs-Overworld-2.md",
                 "Wiki-en/Alloy-Pairs-Nether-1.md",
@@ -125,50 +127,95 @@ public final class WikiPages {
     }
 
     /**
-     * Renders the block that belongs in a page.
+     * Renders the blocks that belong in a page, in marker order.
+     *
+     * <p>Most pages carry one block. The best-combination pages carry two, because the prose between the sword
+     * and the bow table belongs to a human.</p>
      *
      * @param path    the wiki page
      * @param content what the page currently holds, so a pair page can be rendered from the parents it
      *                already declares (the page split is a human decision, the rows are not)
      */
     @Nonnull
-    public String render(@Nonnull String path, @Nonnull String content) {
+    public List<String> render(@Nonnull String path, @Nonnull String content) {
         boolean spanish = path.startsWith("Wiki-es/");
 
         if (path.endsWith("/Material-Reference.md") || path.endsWith("/Fuentes-de-Materiales.md")) {
-            return materialReference(spanish);
+            return List.of(materialReference(spanish));
         }
         if (path.endsWith("/Perk-Names.md") || path.endsWith("/Nombres-de-Perk.md")) {
-            return epithetTable(spanish);
+            return List.of(epithetTable(spanish));
         }
-        return pairSections(declaredParents(content), spanish);
+        if (path.endsWith("/Best-Sword-and-Bow-Combos.md") || path.endsWith("/Mejores-Combos-Espada-Arco.md")) {
+            return bestCombos(spanish);
+        }
+        return List.of(pairSections(declaredParents(content), spanish));
     }
 
-    /** Text between the markers of a page, with the newline that follows the opening marker removed. */
+    /** Every generated block of a page, in order, with the newline after each marker removed. */
     @Nonnull
-    public static String generatedBlock(@Nonnull String content) {
-        int start = content.indexOf(START_MARKER);
-        int end = content.indexOf(END_MARKER);
-        if (start < 0 || end < 0 || end < start) {
+    public static List<String> generatedBlocks(@Nonnull String content) {
+        List<String> blocks = new ArrayList<>();
+        int cursor = 0;
+        while (true) {
+            int start = content.indexOf(START_MARKER, cursor);
+            if (start < 0) break;
+            int end = content.indexOf(END_MARKER, start);
+            if (end < 0) {
+                throw new IllegalStateException("The " + START_MARKER + " on line " + lineOf(content, start)
+                        + " is never closed by " + END_MARKER);
+            }
+            blocks.add(withoutLeadingNewline(content.substring(start + START_MARKER.length(), end)));
+            cursor = end + END_MARKER.length();
+        }
+        if (blocks.isEmpty()) {
             throw new IllegalStateException("A generated page must carry the " + START_MARKER
                     + " and " + END_MARKER + " markers");
         }
-        String block = content.substring(start + START_MARKER.length(), end);
+        return blocks;
+    }
+
+    /** Replaces every generated block of a page, in order, leaving the hand-written lines untouched. */
+    @Nonnull
+    public static String withGeneratedBlocks(@Nonnull String content, @Nonnull List<String> blocks) {
+        StringBuilder out = new StringBuilder();
+        int cursor = 0;
+        int index = 0;
+        while (true) {
+            int start = content.indexOf(START_MARKER, cursor);
+            if (start < 0) break;
+            int end = content.indexOf(END_MARKER, start);
+            if (end < 0) {
+                throw new IllegalStateException("The " + START_MARKER + " on line " + lineOf(content, start)
+                        + " is never closed by " + END_MARKER);
+            }
+            if (index >= blocks.size()) {
+                throw new IllegalStateException("The page holds more blocks than were rendered (line "
+                        + lineOf(content, start) + ")");
+            }
+            out.append(content, cursor, start + START_MARKER.length()).append('\n').append(blocks.get(index++));
+            cursor = end;
+        }
+        out.append(content.substring(cursor));
+        if (index != blocks.size()) {
+            throw new IllegalStateException("The page holds " + index + " blocks but " + blocks.size()
+                    + " were rendered");
+        }
+        return out.toString();
+    }
+
+    private static String withoutLeadingNewline(String block) {
         if (block.startsWith("\r\n")) return block.substring(2);
         if (block.startsWith("\n")) return block.substring(1);
         return block;
     }
 
-    /** Replaces the generated block of a page, leaving every hand-written line untouched. */
-    @Nonnull
-    public static String withGeneratedBlock(@Nonnull String content, @Nonnull String block) {
-        int start = content.indexOf(START_MARKER);
-        int end = content.indexOf(END_MARKER);
-        if (start < 0 || end < 0 || end < start) {
-            throw new IllegalStateException("A generated page must carry the " + START_MARKER
-                    + " and " + END_MARKER + " markers");
+    private static int lineOf(String content, int offset) {
+        int line = 1;
+        for (int index = 0; index < offset; index++) {
+            if (content.charAt(index) == '\n') line++;
         }
-        return content.substring(0, start + START_MARKER.length()) + "\n" + block + content.substring(end);
+        return line;
     }
 
     // ==========================================
@@ -274,6 +321,67 @@ public final class WikiPages {
     }
 
     // ==========================================
+    // BEST COMBINATIONS
+    // ==========================================
+
+    /** How many builds each table lists before the toughest one of the catalog is appended. */
+    private static final int SWORD_ROWS = 10;
+    private static final int BOW_ROWS = 8;
+
+    /**
+     * The two tables of the combination page, the sword first.
+     *
+     * <p>The rows come from {@link BestBuilds}, which forges every candidate and reads the numbers back from
+     * the item's own lore: the page shows what the forge hands the player and nothing else.</p>
+     */
+    @Nonnull
+    private List<String> bestCombos(boolean spanish) {
+        // The shipped materials, not the live registry: forging a prime registers it, and a table that ranked
+        // its own output would grow with every render and drift from one run to the next.
+        BestBuilds builds = new BestBuilds(materials, alloys, documented);
+        return List.of(
+                buildTable(builds.swords(SWORD_ROWS), spanish, true),
+                buildTable(builds.bows(BOW_ROWS), spanish, false));
+    }
+
+    private static String buildTable(List<BestBuilds.Row> rows, boolean spanish, boolean threeParts) {
+        StringBuilder out = new StringBuilder();
+        out.append(spanish
+                        ? "| # | Forja (" + (threeParts ? "Cabeza / Mango / Pomo" : "Limbos / Cuerda")
+                                + ") | Daño | Durabilidad | Esencia | Rasgo de identidad |\n"
+                        : "| # | Forge (" + (threeParts ? "Head / Handle / Pommel" : "Limbs / String")
+                                + ") | Damage | Durability | Essence | Identity trait |\n")
+                .append("|---|---|---|---|---|---|\n");
+        int rank = 0;
+        for (BestBuilds.Row row : rows) {
+            rank++;
+            out.append("| ").append(place(rank)).append(" | **").append(row.forge()).append("** | **")
+                    .append(oneDecimal(row.damage())).append("** | ").append(thousands(row.durability()))
+                    .append(" | ").append(row.essence()).append(" · ").append(row.essencePercent()).append('%')
+                    .append(" | ").append(row.tank()
+                            ? (spanish ? "La forja más dura del catálogo" : "The toughest forge in the catalog")
+                            : row.identity())
+                    .append(" |\n");
+        }
+        return out.toString();
+    }
+
+    /** Medals for the podium, plain numbers after it. */
+    private static String place(int rank) {
+        return switch (rank) {
+            case 1 -> "🥇";
+            case 2 -> "🥈";
+            case 3 -> "🥉";
+            default -> String.valueOf(rank);
+        };
+    }
+
+    /** Durability with the thousands separator the wiki has always used. */
+    private static String thousands(int value) {
+        return String.format(Locale.US, "%,d", value);
+    }
+
+    // ==========================================
     // MINERAL CATALOG HEADINGS
     // ==========================================
 
@@ -304,8 +412,9 @@ public final class WikiPages {
     /** The parents a pair page declares, in the order it lists them. */
     @Nonnull
     public List<TinkerMaterial> declaredParents(@Nonnull String content) {
+        List<String> blocks = generatedBlocks(content);
         List<TinkerMaterial> parents = new ArrayList<>();
-        for (String line : generatedBlock(content).split("\n")) {
+        for (String line : blocks.get(0).split("\n")) {
             if (!line.startsWith("### ")) continue;
             int tick = line.indexOf('`');
             int last = line.lastIndexOf('`');
@@ -635,12 +744,12 @@ public final class WikiPages {
     // WRITING
     // ==========================================
 
-    /** Rewrites the generated block of every page in place, keeping the rest of the file untouched. */
+    /** Rewrites the generated blocks of every page in place, keeping the rest of the file untouched. */
     public void write(@Nonnull Path root) {
         for (String path : generatedPaths()) {
             Path file = root.resolve(path);
             String content = read(file);
-            String updated = withGeneratedBlock(content, render(path, content));
+            String updated = withGeneratedBlocks(content, render(path, content));
             if (updated.equals(content)) continue;
             try {
                 Files.writeString(file, updated, StandardCharsets.UTF_8);
@@ -659,10 +768,10 @@ public final class WikiPages {
         }
     }
 
-    /** Pages in the order the wiki lists them, mapped to the block they must hold. */
+    /** Pages in the order the wiki lists them, mapped to the blocks they must hold. */
     @Nonnull
-    public Map<String, String> expectedBlocks(@Nonnull Path root) {
-        Map<String, String> blocks = new LinkedHashMap<>();
+    public Map<String, List<String>> expectedBlocks(@Nonnull Path root) {
+        Map<String, List<String>> blocks = new LinkedHashMap<>();
         for (String path : generatedPaths()) {
             String content = read(root.resolve(path));
             blocks.put(path, render(path, content));

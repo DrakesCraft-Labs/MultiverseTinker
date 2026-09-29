@@ -57,7 +57,7 @@ class WikiDocumentationTest {
     @Test
     @DisplayName("Every registry-driven block of the wiki still matches the registries")
     void generatedBlocksMatchTheRegistries() {
-        Map<String, String> expected = pages.expectedBlocks(ROOT);
+        Map<String, List<String>> expected = pages.expectedBlocks(ROOT);
 
         // In write mode the same test repairs the pages instead of complaining about them.
         if (Boolean.getBoolean(WikiPages.WRITE_PROPERTY)) {
@@ -66,14 +66,24 @@ class WikiDocumentationTest {
         }
 
         List<String> drifted = new ArrayList<>();
-        for (Map.Entry<String, String> entry : expected.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : expected.entrySet()) {
             Path file = ROOT.resolve(entry.getKey());
             assertTrue(Files.isRegularFile(file), entry.getKey() + " is missing from the wiki");
 
-            String committed = normalize(WikiPages.generatedBlock(WikiPages.read(file)));
-            String rendered = normalize(entry.getValue());
-            if (!committed.equals(rendered)) {
-                drifted.add(entry.getKey() + firstDifference(committed, rendered));
+            List<String> committed = WikiPages.generatedBlocks(WikiPages.read(file));
+            List<String> rendered = entry.getValue();
+            if (committed.size() != rendered.size()) {
+                drifted.add(entry.getKey() + " holds " + committed.size() + " generated blocks but the registries"
+                        + " render " + rendered.size());
+                continue;
+            }
+            for (int index = 0; index < rendered.size(); index++) {
+                String actual = normalize(committed.get(index));
+                String wanted = normalize(rendered.get(index));
+                if (!actual.equals(wanted)) {
+                    drifted.add(entry.getKey() + blockLabel(rendered.size(), index)
+                            + firstDifference(actual, wanted));
+                }
             }
         }
 
@@ -81,6 +91,27 @@ class WikiDocumentationTest {
                 + "  ./mvnw -o test -Dtest=WikiDocumentationTest -Dmvtink.wiki.write=true\n"
                 + "to regenerate them, then commit the result. Drifted pages:\n  - "
                 + String.join("\n  - ", drifted));
+    }
+
+    @Test
+    @DisplayName("The best-build tables rank the same builds however often they are rendered")
+    void bestBuildTablesAreReproducible() {
+        String page = "Wiki-en/Best-Sword-and-Bow-Combos.md";
+        List<String> first = pages.render(page, "");
+        assertEquals(2, first.size(), "The combination page carries a sword table and a bow table");
+
+        // The tables rank the whole prime tier, so one render registers thousands of composites and primes —
+        // every one of them an alloy the crucible would happily blend again. The page has to rank the shipped
+        // materials yet again rather than its own output: ranking the live registry would make the tables
+        // depend on how often they were rendered, and pairing thousands of alloys with each other costs
+        // minutes, so a regression here does more than fail an assertion — it stops the build finishing at all.
+        int forged = plugin.getMaterialRegistry().getAll().size();
+        assertTrue(forged > 1_000, "Forging the tier must fill the registry, or this test proves nothing");
+
+        List<String> second = pages.render(page, "");
+        assertEquals(first, second, "The best-build tables must be reproducible");
+        assertEquals(forged, plugin.getMaterialRegistry().getAll().size(),
+                "A second render must reuse the forges the first one made, not invent new ones");
     }
 
     @Test
@@ -130,7 +161,7 @@ class WikiDocumentationTest {
             if (!isPairPage(path)) continue;
             boolean spanish = path.startsWith("Wiki-es/");
             String content = WikiPages.read(ROOT.resolve(path));
-            String block = WikiPages.generatedBlock(content);
+            String block = WikiPages.generatedBlocks(content).get(0);
 
             List<TinkerMaterial> parents = pages.declaredParents(content);
             assertFalse(parents.isEmpty(), path + " must declare the parents it documents");
@@ -193,6 +224,11 @@ class WikiDocumentationTest {
         TinkerMaterial material = plugin.getMaterialRegistry().get(id);
         assertNotNull(material, id + " must be registered");
         return material;
+    }
+
+    /** Names the table a page carries more than one of, so a drift message points at the right one. */
+    private static String blockLabel(int blocks, int index) {
+        return blocks == 1 ? "" : " (generated block " + (index + 1) + " of " + blocks + ")";
     }
 
     /** Compares line by line, so a Windows checkout with CRLF endings is not reported as drift. */

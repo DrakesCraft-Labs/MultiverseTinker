@@ -17,6 +17,7 @@ Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a soverei
 * **[Alloy Recipe Index](Alloy-Recipe-Index.md)**: Every blendable pair (5,995) with the alloy it forges and the essences it inherits, plus the 16 legendary recipes and the 12 vanilla catalysts.
 * **[Prime Alloys](Prime-Alloys.md)**: The third alloy tier — fuse a legendary alloy with another alloy, a mineral or one of the 12 vanilla catalysts to unlock freezing ice fields, meteor cascades and the 9 new armor states (up to **103,781** distinct alloys).
 * **[Trait Affinities Reference](Trait-Affinities.md)**: The 12 deterministic essences, how they behave on weapons, tools and armor, and how the head mineral drives every weapon perk.
+* **[Best Sword and Bow Combinations](Best-Sword-and-Bow-Combos.md)**: Practical guide with the optimal modular broadsword and longbow forges — the prime-tier heads, their verified damage and durability, and how to reach 100% essence focus.
 * **[Essence Ultimates](Essence-Ultimates.md)**: The 12 cinematic attack ultimates — meteors, vortexes, light pillars and cages that root the enemy — and how to reach the 80% essence focus they demand.
 * **[Complete Mineral Catalog](Minerals.md)**: Exhaustive breakdown of all 111 geological & vanilla materials, 16 legendary alloys and the 12 vanilla crucible catalysts.
 * **[Forge Traits & Mineral Effects](Traits-and-Effects.md)**: Full reference guide for mineral traits, combat effects, stat bonuses, and unique physical perks.
