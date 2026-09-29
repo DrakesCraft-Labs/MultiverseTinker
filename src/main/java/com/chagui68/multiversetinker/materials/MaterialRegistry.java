@@ -222,7 +222,11 @@ public class MaterialRegistry {
                 .id("mvtink_zircon").name("Zircon").origin(MineralOrigin.OVERWORLD).rarity(MaterialRarity.RARE).type(MaterialType.CRYSTAL)
                 .baseVanillaMaterial(Material.QUARTZ).processedVanillaMaterial(Material.DIAMOND).nuggetVanillaMaterial(Material.QUARTZ).blockVanillaMaterial(Material.SMOOTH_QUARTZ)
                 .colorHex("#AF601A").description("Oldest known mineral on Earth with diamond-like fire.").meltingDurationTicks(125)
-                .durabilityBonus(700).miningSpeed(9.2f).attackDamageBonus(3.3).traitName("Deep Time").traitDescription("Increases durability when mining deepslate layers.").build());
+                .durabilityBonus(700).miningSpeed(9.2f).attackDamageBonus(3.3).traitName("Deep Time")
+                .traitDescription("Preserves its edge and mines with maximum efficiency in deepslate layers.")
+                .weaponTraitDescription("Subterranean Strike: Smashes enemy armor with +25% bonus armor-shredding damage at Y < 0.")
+                .armorTraitDescription("Epoch Barrier: Grants +15% damage reduction against physical and crushing blows.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_tourmaline").name("Tourmaline").origin(MineralOrigin.OVERWORLD).rarity(MaterialRarity.RARE).type(MaterialType.CRYSTAL)
@@ -599,72 +603,146 @@ public class MaterialRegistry {
                 .durabilityBonus(3000).miningSpeed(14.5f).attackDamageBonus(6.4).traitName("Absolute Zero").traitDescription("Completely freezes and immobilizes targets on impact.").build());
 
         // ==========================================
-        // 4. VANILLA MINECRAFT MINERALS (11 Materials)
+        // 4. VANILLA MINECRAFT MINERALS (14 Materials)
         // ==========================================
         register(TinkerMaterial.builder()
                 .id("mvtink_coal").name("Coal").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.COMMON).type(MaterialType.MINERAL)
                 .baseVanillaMaterial(Material.COAL_ORE).processedVanillaMaterial(Material.COAL).nuggetVanillaMaterial(Material.GUNPOWDER).blockVanillaMaterial(Material.COAL_BLOCK)
                 .colorHex("#2C3E50").description("Combustible carbon mineral.").meltingDurationTicks(40)
-                .durabilityBonus(150).miningSpeed(5.5f).attackDamageBonus(1.0).traitName("Kindling").traitDescription("Ignites struck enemies with high thermal friction.").build());
+                .durabilityBonus(150).miningSpeed(5.5f).attackDamageBonus(1.0).traitName("Kindling")
+                .traitDescription("Smelts mined items directly with thermal friction.")
+                .weaponTraitDescription("Combustion: Inflicts fiery burns on struck enemies.")
+                .armorTraitDescription("Thermal Insulation: Grants resistance to freezing and powder snow.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_iron").name("Iron").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.COMMON).type(MaterialType.METAL)
                 .baseVanillaMaterial(Material.RAW_IRON).processedVanillaMaterial(Material.IRON_INGOT).nuggetVanillaMaterial(Material.IRON_NUGGET).blockVanillaMaterial(Material.IRON_BLOCK)
                 .colorHex("#D8D8D8").description("Classic foundational metal.").meltingDurationTicks(60)
-                .durabilityBonus(250).miningSpeed(6.0f).attackDamageBonus(2.0).traitName("Reinforced").traitDescription("Solid baseline durability and reliable strike defense.").build());
+                .durabilityBonus(250).miningSpeed(6.0f).attackDamageBonus(2.0).traitName("Reinforced")
+                .traitDescription("Solid baseline durability and reliable strike defense.")
+                .weaponTraitDescription("Tempered Steel: Delivers +15% reliable physical impact damage.")
+                .armorTraitDescription("Ironclad Wall: Sturdy physical defense against melee strikes.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_copper").name("Copper").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.COMMON).type(MaterialType.METAL)
                 .baseVanillaMaterial(Material.RAW_COPPER).processedVanillaMaterial(Material.COPPER_INGOT).nuggetVanillaMaterial(Material.COPPER_INGOT).blockVanillaMaterial(Material.COPPER_BLOCK)
                 .colorHex("#C06C46").description("Highly conductive ductile metal.").meltingDurationTicks(50)
-                .durabilityBonus(200).miningSpeed(5.8f).attackDamageBonus(1.8).traitName("Conductive").traitDescription("Channels kinetic electricity upon striking enemies.").build());
+                .durabilityBonus(200).miningSpeed(5.8f).attackDamageBonus(1.8).traitName("Conductive")
+                .traitDescription("Channels kinetic electricity upon striking blocks or enemies.")
+                .weaponTraitDescription("Static Discharge: Strikes have a 25% chance to zap targets with electric shock.")
+                .armorTraitDescription("Grounding Lattice: Absorbs and dissipates lightning and electrical shocks.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_gold").name("Gold").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.METAL)
                 .baseVanillaMaterial(Material.RAW_GOLD).processedVanillaMaterial(Material.GOLD_INGOT).nuggetVanillaMaterial(Material.GOLD_NUGGET).blockVanillaMaterial(Material.GOLD_BLOCK)
                 .colorHex("#F1C40F").description("Precious lustrous noble metal.").meltingDurationTicks(45)
-                .durabilityBonus(100).miningSpeed(12.0f).attackDamageBonus(1.5).traitName("Midas Touch").traitDescription("Enormous mining speed, pacifies piglins, and boosts bonus mob drops.").build());
+                .durabilityBonus(100).miningSpeed(12.0f).attackDamageBonus(1.5).traitName("Midas Touch")
+                .traitDescription("Enormous mining speed, pacifies piglins, and boosts bonus mob drops.")
+                .weaponTraitDescription("Auric Strike: Increases weapon damage by +30% and pacifies Piglins.")
+                .armorTraitDescription("Gilded Splendor: Pacifies Piglins and converts 10% of damage taken into golden aura.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_redstone").name("Redstone").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.ELEMENTAL)
                 .baseVanillaMaterial(Material.REDSTONE_ORE).processedVanillaMaterial(Material.REDSTONE).nuggetVanillaMaterial(Material.REDSTONE).blockVanillaMaterial(Material.REDSTONE_BLOCK)
                 .colorHex("#E74C3C").description("Energy-pulsing resonant mineral.").meltingDurationTicks(50)
-                .durabilityBonus(180).miningSpeed(8.0f).attackDamageBonus(2.2).traitName("Energized").traitDescription("Grants high attack swing speed and bursts of haste.").build());
+                .durabilityBonus(180).miningSpeed(8.0f).attackDamageBonus(2.2).traitName("Energized")
+                .traitDescription("Grants high attack swing speed and bursts of haste.")
+                .weaponTraitDescription("Overcharged Cadence: Increases weapon attack swing speed by +25%.")
+                .armorTraitDescription("Conduit Pulse: Taking damage triggers a repulsion burst pushing foes back.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_lapis").name("Lapis Lazuli").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.GEM)
                 .baseVanillaMaterial(Material.LAPIS_ORE).processedVanillaMaterial(Material.LAPIS_LAZULI).nuggetVanillaMaterial(Material.LAPIS_LAZULI).blockVanillaMaterial(Material.LAPIS_BLOCK)
                 .colorHex("#2980B9").description("Metamorphic deep blue gemstone.").meltingDurationTicks(55)
-                .durabilityBonus(220).miningSpeed(6.5f).attackDamageBonus(1.9).traitName("Fortune Affinity").traitDescription("Amplifies dropped experience orbs and extra mineral drops.").build());
+                .durabilityBonus(220).miningSpeed(6.5f).attackDamageBonus(1.9).traitName("Fortune Affinity")
+                .traitDescription("Amplifies dropped experience orbs and extra mineral drops.")
+                .weaponTraitDescription("Arcane Siphon: Defeating enemies yields +50% bonus experience orbs.")
+                .armorTraitDescription("Enchanted Ward: Reduces incoming magic and potion damage by 25%.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_diamond").name("Diamond").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.RARE).type(MaterialType.GEM)
                 .baseVanillaMaterial(Material.DIAMOND_ORE).processedVanillaMaterial(Material.DIAMOND).nuggetVanillaMaterial(Material.DIAMOND).blockVanillaMaterial(Material.DIAMOND_BLOCK)
                 .colorHex("#5DADE2").description("Supreme crystalline carbon structure.").meltingDurationTicks(120)
-                .durabilityBonus(1560).miningSpeed(8.0f).attackDamageBonus(4.0).traitName("Adamant Edge").traitDescription("Unmatched natural toughness and armor cleavage.").build());
+                .durabilityBonus(1560).miningSpeed(8.0f).attackDamageBonus(4.0).traitName("Adamant Edge")
+                .traitDescription("Unmatched natural toughness and armor cleavage.")
+                .weaponTraitDescription("Diamond Edge: Razor-sharp cutting edge that bypasses 20% enemy armor.")
+                .armorTraitDescription("Diamond Bulwark: Provides supreme armor toughness and knockback absorption.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_emerald").name("Emerald").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.RARE).type(MaterialType.GEM)
                 .baseVanillaMaterial(Material.EMERALD_ORE).processedVanillaMaterial(Material.EMERALD).nuggetVanillaMaterial(Material.EMERALD).blockVanillaMaterial(Material.EMERALD_BLOCK)
                 .colorHex("#2ECC71").description("Vibrant beryl gemstone prized by villagers.").meltingDurationTicks(110)
-                .durabilityBonus(600).miningSpeed(7.5f).attackDamageBonus(3.2).traitName("Merchant's Eye").traitDescription("Deals bonus damage against Illagers and yields extra emerald drops.").build());
+                .durabilityBonus(600).miningSpeed(7.5f).attackDamageBonus(3.2).traitName("Merchant's Eye")
+                .traitDescription("Deals bonus damage against Illagers and yields extra emerald drops.")
+                .weaponTraitDescription("Illager's Bane: Deals +40% bonus damage against Illagers, Evokers, and Vindicators.")
+                .armorTraitDescription("Heroic Presence: Reduces damage taken from Illagers and grants Hero of the Village.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_netherite").name("Netherite").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.LEGENDARY).type(MaterialType.ALLOY)
                 .baseVanillaMaterial(Material.ANCIENT_DEBRIS).processedVanillaMaterial(Material.NETHERITE_INGOT).nuggetVanillaMaterial(Material.NETHERITE_SCRAP).blockVanillaMaterial(Material.NETHERITE_BLOCK)
                 .colorHex("#4A3B32").description("Indestructible ancient Nether alloy.").meltingDurationTicks(200)
-                .durabilityBonus(2031).miningSpeed(9.0f).attackDamageBonus(5.0).traitName("Netherborn Core").traitDescription("Complete fire/lava immunity and heavy knockback resistance.").build());
+                .durabilityBonus(2031).miningSpeed(9.0f).attackDamageBonus(5.0).traitName("Netherborn Core")
+                .traitDescription("Complete fire/lava immunity and heavy knockback resistance.")
+                .weaponTraitDescription("Netherborn Wrath: Inflicts searing soul fire and ignores 20% enemy defense.")
+                .armorTraitDescription("Ancient Bastion: Total fire/lava immunity and +20% knockback resistance.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_quartz").name("Nether Quartz").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.COMMON).type(MaterialType.CRYSTAL)
                 .baseVanillaMaterial(Material.NETHER_QUARTZ_ORE).processedVanillaMaterial(Material.QUARTZ).nuggetVanillaMaterial(Material.QUARTZ).blockVanillaMaterial(Material.QUARTZ_BLOCK)
                 .colorHex("#F4F6F6").description("Jagged thermal silica crystal.").meltingDurationTicks(50)
-                .durabilityBonus(280).miningSpeed(7.0f).attackDamageBonus(3.0).traitName("Serrated Shard").traitDescription("Sharp edges inflict painful bleed wounds over time.").build());
+                .durabilityBonus(280).miningSpeed(7.0f).attackDamageBonus(3.0).traitName("Serrated Shard")
+                .traitDescription("Sharp edges inflict painful bleed wounds over time.")
+                .weaponTraitDescription("Bleed Gouge: Attacks inflict painful bleeding damage over 4 seconds.")
+                .armorTraitDescription("Crystalline Spikes: Reflects 20% melee damage back to attackers as sharp thorns.")
+                .build());
 
         register(TinkerMaterial.builder()
                 .id("mvtink_amethyst").name("Amethyst").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.CRYSTAL)
                 .baseVanillaMaterial(Material.AMETHYST_CLUSTER).processedVanillaMaterial(Material.AMETHYST_SHARD).nuggetVanillaMaterial(Material.AMETHYST_SHARD).blockVanillaMaterial(Material.AMETHYST_BLOCK)
                 .colorHex("#AF7AC5").description("Resonant crystalline quartz geode.").meltingDurationTicks(65)
-                .durabilityBonus(400).miningSpeed(7.2f).attackDamageBonus(2.5).traitName("Resonant Pulse").traitDescription("Emits kinetic chime waves upon connecting critical hits.").build());
+                .durabilityBonus(400).miningSpeed(7.2f).attackDamageBonus(2.5).traitName("Resonant Pulse")
+                .traitDescription("Emits kinetic chime waves upon connecting critical hits.")
+                .weaponTraitDescription("Resonant Chime: Crits release acoustic shockwaves damaging nearby foes for 2.5 damage.")
+                .armorTraitDescription("Harmonic Buffer: Absorbs incoming kinetic shocks and projectile blasts.")
+                .build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_flint").name("Flint").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.COMMON).type(MaterialType.MINERAL)
+                .baseVanillaMaterial(Material.FLINT).processedVanillaMaterial(Material.FLINT).nuggetVanillaMaterial(Material.FLINT).blockVanillaMaterial(Material.GRAVEL)
+                .colorHex("#4C4E52").description("Sedimentary cryptocrystalline quartz mineral with razor conchoidal fracture.").meltingDurationTicks(40)
+                .durabilityBonus(190).miningSpeed(6.5f).attackDamageBonus(2.0).traitName("Jagged Edge")
+                .traitDescription("Abrasive flaking keeps edges razor-sharp during prolonged use.")
+                .weaponTraitDescription("Razor Edge: 25% chance on strike to cause deep bleeding wounds.")
+                .armorTraitDescription("Abrasive Scale: Melee attackers suffer thorns abrasion when striking.")
+                .build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_obsidian").name("Obsidian").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.MINERAL)
+                .baseVanillaMaterial(Material.OBSIDIAN).processedVanillaMaterial(Material.OBSIDIAN).nuggetVanillaMaterial(Material.FLINT).blockVanillaMaterial(Material.OBSIDIAN)
+                .colorHex("#2E1C4D").description("Dense volcanic silicate glass cooled instantly from lava.").meltingDurationTicks(160)
+                .durabilityBonus(1800).miningSpeed(7.0f).attackDamageBonus(4.2).traitName("Void Cleave")
+                .traitDescription("Extremely dense volcanic structure immune to explosive wear.")
+                .weaponTraitDescription("Armor Cleave: Strikes bypass 25% of target armor protection.")
+                .armorTraitDescription("Blast Hardening: Grants 50% resistance against explosions and blast damage.")
+                .build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_prismarine").name("Prismarine").origin(MineralOrigin.VANILLA).rarity(MaterialRarity.UNCOMMON).type(MaterialType.CRYSTAL)
+                .baseVanillaMaterial(Material.PRISMARINE_SHARD).processedVanillaMaterial(Material.PRISMARINE_CRYSTALS).nuggetVanillaMaterial(Material.PRISMARINE_SHARD).blockVanillaMaterial(Material.PRISMARINE)
+                .colorHex("#56A69E").description("Aquatic oceanic crystal recovered from ocean depths and elder guardians.").meltingDurationTicks(70)
+                .durabilityBonus(350).miningSpeed(7.5f).attackDamageBonus(2.8).traitName("Aquatic Surge")
+                .traitDescription("Maintains optimal mining speed underwater without aquatic penalties.")
+                .weaponTraitDescription("Oceanic Strike: Deals +30% bonus damage in water or rain with water splash.")
+                .armorTraitDescription("Abyssal Grace: Grants Conduit Power resonance and increased swim agility.")
+                .build());
     }
 }

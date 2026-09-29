@@ -92,7 +92,7 @@ Click the **Weapon Selector** in **Slot 13** to cycle between all 7 weapon types
 - **Specialized Combat Perks**:
   - **War Mace**: Downward fall strikes trigger seismic ground shockwaves dealing AOE damage.
   - **Longbow**: Arrows inherit limb and string elemental traits.
-  - **Heavy Crossbow**: Bolts bypass armor and trigger explosive impact.
+  - **Heavy Crossbow**: *Piercing Velocity* — bolts deal +6.0 armor-piercing direct damage and detonate a **block-safe kinetic explosion** that damages (5.0) and knocks back every creature within 4 blocks.
   - **Elder Trident**: Summons hydraulic lightning strikes in water or rain.
   - **Kinetic Spear**: Extended attack reach and +30% sprint charge damage.
   - **Tower Shield**: Reflects 35% of blocked damage back to the attacker.
@@ -119,6 +119,8 @@ Click the **Tool Selector** in **Slot 13** to cycle between all 5 tool types:
   - **Excavator**: Seismic Tremor excavates a 3x3 area of soil, sand, and gravel while sneaking.
   - **Scythe**: Harvest Scythe harvests 3x3 crops and automatically replants seeds from your inventory.
   - **Fishing Rod**: Abyssal Dredge gives a 15% chance to fish up rare geological minerals.
+
+> 🔮 **Mineral Affinities**: on top of the perks above, every part contributes up to 3 trait affinities (see [Trait Affinities](Trait-Affinities.md)). They fire **offensively on weapons, as mining procs on tools and as defensive procs on armor**, so different mineral combinations genuinely play differently.
 
 ---
 

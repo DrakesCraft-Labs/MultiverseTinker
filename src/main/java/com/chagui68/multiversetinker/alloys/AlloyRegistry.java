@@ -163,6 +163,93 @@ public class AlloyRegistry {
         return null;
     }
 
+    @Nonnull
+    public TinkerAlloy findOrCreateAlloy(@Nonnull TinkerMaterial m1, @Nonnull TinkerMaterial m2, @Nonnull MaterialRegistry materialRegistry) {
+        TinkerAlloy existing = findAlloy(m1.getId(), m2.getId());
+        if (existing != null) {
+            return existing;
+        }
+
+        // Canonical order by ID to ensure commutativity: (m1, m2) == (m2, m1)
+        TinkerMaterial first = m1.getId().compareTo(m2.getId()) <= 0 ? m1 : m2;
+        TinkerMaterial second = first == m1 ? m2 : m1;
+
+        String id1 = first.getId().replace("mvtink_", "");
+        String id2 = second.getId().replace("mvtink_", "");
+        String dynamicAlloyId = "mvtink_alloy_" + id1 + "_" + id2;
+
+        TinkerAlloy cached = alloys.get(dynamicAlloyId.toLowerCase(Locale.ROOT));
+        if (cached != null) {
+            return cached;
+        }
+
+        String alloyName = first.getName() + "-" + second.getName() + " Alloy";
+        String blendedColor = blendHexColors(first.getColorHex(), second.getColorHex());
+        int durabilityBonus = (int) Math.round((first.getDurability() + second.getDurability()) * 0.70) + 60;
+        float miningSpeed = ((first.getMiningSpeed() + second.getMiningSpeed()) / 2.0f) + 0.6f;
+        double attackDamageBonus = ((first.getAttackDamage() + second.getAttackDamage()) / 2.0) + 1.2;
+
+        String traitName = first.getTraitName() + "-" + second.getTraitName();
+        String traitDesc = "Composite metallurgy combining " + first.getName() + " and " + second.getName() + " properties.";
+
+        TinkerAlloy dynamicAlloy = new TinkerAlloy(
+                dynamicAlloyId,
+                alloyName,
+                first.getId(),
+                second.getId(),
+                blendedColor,
+                traitName,
+                traitDesc,
+                durabilityBonus,
+                miningSpeed,
+                attackDamageBonus
+        );
+        register(dynamicAlloy);
+
+        if (materialRegistry.get(dynamicAlloyId) == null) {
+            TinkerMaterial tm = TinkerMaterial.builder()
+                    .id(dynamicAlloyId)
+                    .name(alloyName)
+                    .origin(MineralOrigin.OVERWORLD)
+                    .rarity(MaterialRarity.EPIC)
+                    .type(MaterialType.ALLOY)
+                    .baseVanillaMaterial(Material.RAW_IRON)
+                    .processedVanillaMaterial(Material.IRON_INGOT)
+                    .nuggetVanillaMaterial(Material.IRON_NUGGET)
+                    .blockVanillaMaterial(Material.IRON_BLOCK)
+                    .colorHex(blendedColor)
+                    .description(traitDesc)
+                    .meltingDurationTicks(100)
+                    .durabilityBonus(durabilityBonus)
+                    .miningSpeed(miningSpeed)
+                    .attackDamageBonus(attackDamageBonus)
+                    .traitName(traitName)
+                    .traitDescription(traitDesc)
+                    .weaponTraitDescription("Dual Combat Synergy: Blends " + first.getWeaponTraitDescription() + " and " + second.getWeaponTraitDescription() + ".")
+                    .armorTraitDescription("Dual Defensive Synergy: Blends " + first.getArmorTraitDescription() + " and " + second.getArmorTraitDescription() + ".")
+                    .alloyParents(first.getId() + "," + second.getId())
+                    .build();
+            materialRegistry.register(tm);
+        }
+
+        return dynamicAlloy;
+    }
+
+    private String blendHexColors(String hex1, String hex2) {
+        try {
+            int c1 = Integer.parseInt(hex1.replace("#", ""), 16);
+            int c2 = Integer.parseInt(hex2.replace("#", ""), 16);
+            int r1 = (c1 >> 16) & 0xFF, g1 = (c1 >> 8) & 0xFF, b1 = c1 & 0xFF;
+            int r2 = (c2 >> 16) & 0xFF, g2 = (c2 >> 8) & 0xFF, b2 = c2 & 0xFF;
+            int r = (r1 + r2) / 2;
+            int g = (g1 + g2) / 2;
+            int b = (b1 + b2) / 2;
+            return String.format("#%02X%02X%02X", r, g, b);
+        } catch (Exception e) {
+            return "#D4AF37";
+        }
+    }
+
     @Nullable
     public TinkerAlloy get(@Nonnull String id) {
         return alloys.get(id.toLowerCase(Locale.ROOT));
@@ -195,8 +282,33 @@ public class AlloyRegistry {
                     .attackDamageBonus(alloy.attackDamageBonus())
                     .traitName(alloy.traitName())
                     .traitDescription(alloy.traitDescription())
+                    .alloyParents(alloy.mat1Id() + "," + alloy.mat2Id())
                     .build();
             materialRegistry.register(tm);
         }
+    }
+
+    /**
+     * Determines whether a material may be used as an Alloy Crucible input.
+     *
+     * <p>Only minerals that can be excavated with the Prospector Brush (Overworld, Nether and
+     * End geology) or refined from vanilla Minecraft ores are blendable. Existing alloys and
+     * non-mineral tinker items are rejected so the crucible cannot be looped infinitely.</p>
+     */
+    public static boolean isMixable(@Nullable TinkerMaterial material) {
+        if (material == null) return false;
+        if (material.getType() == MaterialType.ALLOY) return false;
+        if (material.isAlloy()) return false;
+        return switch (material.getOrigin()) {
+            case OVERWORLD, NETHER, THE_END, VANILLA -> true;
+        };
+    }
+
+    /**
+     * Convenience overload used for player feedback messages.
+     */
+    @Nullable
+    public static String mixRequirementMessage() {
+        return "Only minerals extracted with the Prospector Brush or refined vanilla ores can be blended in the Alloy Crucible.";
     }
 }

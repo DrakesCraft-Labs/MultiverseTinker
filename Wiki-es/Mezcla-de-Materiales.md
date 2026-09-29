@@ -2,6 +2,8 @@
 
 La **Forja del Multiverso** cuenta con un **Crisol de Aleaciones** dedicado (Sección 3 de la interfaz GUI de la forja) capaz de sobrecalentar y fusionar dos minerales distintos (metales o cristales geológicos) en aleaciones personalizadas de alta especialización.
 
+> ♻ **Mezcla universal**: se puede mezclar *cualquier* par de minerales distintos obtenidos con la **Brocha de Prospector** (geología del Overworld, Nether o End) o refinados de **menas vanilla de Minecraft**, no solo las 16 recetas legendarias. Cada par sintetiza su propia aleación con su propio rasgo, y ese rasgo se adapta a **armas, herramientas y armaduras** (ver [Afinidades de Rasgos](Afinidades-de-Rasgos.md)). Las aleaciones ya terminadas no pueden volver a mezclarse, evitando bucles infinitos en el crisol.
+
 ---
 
 ## ⚒ Cómo Funciona la Mezcla de Materiales
@@ -22,6 +24,11 @@ La **Forja del Multiverso** cuenta con un **Crisol de Aleaciones** dedicado (Sec
 ---
 
 ## 📜 Tabla Completa de las 16 Aleaciones
+
+Las 16 recetas siguientes son **predefinidas**: siempre tienen prioridad y conservan su habilidad
+exclusiva curada. Cualquier otro par legal de minerales brocha/vanilla produce una **aleación
+compuesta dinámica** llamada `<Mineral A>-<Mineral B> Alloy`, heredando las afinidades de ambos
+progenitores.
 
 | Nombre de la Aleación | ID | Material 1 | Material 2 | Color Hex | Durabilidad | Velocidad | Daño | Nombre del Rasgo | Efecto del Rasgo |
 | :--- | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :--- | :--- |
@@ -49,3 +56,5 @@ La **Forja del Multiverso** cuenta con un **Crisol de Aleaciones** dedicado (Sec
 - **Rendimiento Doble**: Cada fundición de aleación produce **2 lingotes**, manteniendo la conservación exacta de materiales (1 + 1 = 2).
 - **Mezclas Interdimensionales**: Unir metales nobles del Overworld con minerales del Nether o del End permite forjar aleaciones legendarias como la **Netherita Cósmica** y el **Damasco del Vacío**.
 - **Aleaciones como Componentes**: Puedes mezclar aleaciones con minerales puros en la Sección 2 (Forja Multimaterial) para obtener sinergias híbridas de hasta 3 materiales por pieza.
+- **Solo entradas mezclables**: El crisol rechaza objetos tinker no minerales (moldes, piezas, fundidora, brocha) y aleaciones ya terminadas. Solo minerales distintos — un mineral no puede emparejarse consigo mismo.
+- **Efectos adaptativos**: Una aleación forjada en un **arma** activa procs ofensivos, en una **herramienta** activa procs de minería y en una **armadura** activa procs defensivos. Ver [Afinidades de Rasgos](Afinidades-de-Rasgos.md).

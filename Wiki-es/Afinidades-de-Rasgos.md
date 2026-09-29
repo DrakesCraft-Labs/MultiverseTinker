@@ -1,0 +1,76 @@
+# 🔮 Referencia de Afinidades de Rasgos
+
+Cada mineral, mineral vanilla y aleación de MultiverseTinker resuelve a un pequeño conjunto de
+**Afinidades de Rasgos**. Las afinidades son lo que hace que una pieza forjada realmente *haga*
+algo, y se aplican **de forma distinta en armas, herramientas y armaduras**: un mineral ígneo
+incendia al golpear, auto-funde al minar y otorga Resistencia al Fuego al llevarlo puesto.
+
+La clasificación es 100% determinista: el mismo mineral siempre enseña las mismas afinidades, por
+lo que cada combinación de forja posee siempre la misma mezcla reproducible.
+
+---
+
+## 🧭 Cómo se asignan las afinidades
+
+Cada material reúne hasta **3** afinidades, elegidas en este orden de prioridad:
+
+1. **Esencia dimensional** — el origen geológico.
+2. **Clase del material** — el tipo de forja del mineral.
+3. **Estadísticas forjadas** — velocidad, daño, durabilidad o rareza extremos.
+
+| Origen | Afinidad otorgada |
+|---|---|
+| Geología del Overworld | **Terrain** |
+| Geología del Nether | **Infernal** |
+| Geología del End | **Void** |
+| Minerales vanilla | **Primal** |
+| Metal / Aleación | **Tempered** |
+| Gema | **Radiant** |
+| Cristal | **Resonant** |
+| Elemental | **Volatile** |
+| Mineral | **Terrain** |
+| Velocidad de minado ≥ 9.0x | **Swift** |
+| Daño de ataque ≥ +3.5 | **Brutal** |
+| Durabilidad ≥ +900 | **Bulwark** |
+| Rareza Épica / Legendaria | **Ascendant** |
+
+---
+
+## ⚗️ Qué hace cada afinidad
+
+| Afinidad | ⚔ Arma (al golpear) | ⛏ Herramienta (al romper bloque) | 🛡 Armadura (al recibir daño) |
+|---|---|---|---|
+| **Infernal** | Incendia al objetivo por más tiempo. | Probabilidad de **auto-fundir** el mineral excavado. | Otorga **Resistencia al Fuego**. |
+| **Void** | Atrae al objetivo hacia el portador. | Probabilidad de obtener **experiencia extra** de la piedra. | Otorga **Caída Lenta**. |
+| **Primal** | Daño de impacto plano adicional. | Probabilidad de **drops naturales extra**. | Otorga un pequeño escudo de **Absorción**. |
+| **Tempered** | Filo endurecido, **+10% de daño** por potencia. | Probabilidad de **auto-reparar** la herramienta 1 de durabilidad. | Otorga **Resistencia**. |
+| **Radiant** | Golpes radiantes **marcan al objetivo** con Brillantez. | Otorga **Visión Nocturna** al excavar. | **Sana al portador** al recibir daño. |
+| **Resonant** | Onda armónica que daña a **enemigos cercanos**. | Repica y revela los **filones de mineral** alrededor. | Pulso de choque que **empuja a los atacantes**. |
+| **Volatile** | Golpes inestables que **estallan en llamas**. | Probabilidad de encender una chispa por **experiencia extra**. | **Prende fuego a los atacantes cuerpo a cuerpo**. |
+| **Terrain** | Golpes terrosos que **ralentizan** al objetivo. | Probabilidad de **bloques excavados extra**. | **Aturde a los atacantes** con Lentitud. |
+| **Swift** | Cadencia eléctrica que otorga **Prisa** al portador. | Otorga **Prisa** al minar. | Otorga **Velocidad** al recibir daño. |
+| **Brutal** | Fuerza aplastante: **+2.0 de daño** y fuerte empuje. | Probabilidad de **fragmentar mineral extra**. | **Refleja parte** del daño recibido. |
+| **Bulwark** | Masa inamovible que otorga **Resistencia**. | Probabilidad de **ignorar por completo** el desgaste. | Otorga **Resistencia extra**. |
+| **Ascendant** | Golpes trascendentes que otorgan **Regeneración**. | Probabilidad de **experiencia extra** al minar. | Otorga **Regeneración**. |
+
+Todos los efectos escalan con la **concentración** de la pieza que los aporta (100% en una pieza
+de un solo material, 50/50 en dos, 33/33/33 en tres).
+
+---
+
+## 🧪 Mezcla de aleaciones
+
+Las aleaciones heredan las esencias de **ambos** minerales padre, cada una a la mitad de potencia:
+
+```
+Bronce (Cobre + Estaño) -> Terrain (Cobre) + Primal (Cobre)
+                           + Terrain (Estaño) + Tempered (Estaño)
+```
+
+Como cada mezcla es pura y determinista, **cada par de minerales posee una combinación única de
+efectos**: mezclar Estaño con Zinc nunca se comportará como mezclar Estaño con Cobalto. Las 16
+recetas legendarias (Bronce, Electro, Invar, Manyullyn, Netherita Cósmica, …) además conservan su
+rasgo exclusivo curado por encima de las afinidades heredadas.
+
+> 💡 La línea **Mineral Affinities** de cada arma, herramienta o armadura forjada lista exactamente
+> qué esencias porta esa pieza.

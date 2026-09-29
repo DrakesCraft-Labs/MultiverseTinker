@@ -14,7 +14,7 @@
 
 Part of **Chagui68's Sovereign Multiverse Suite** alongside [MultiverseNets](https://github.com/DrakesCraft-Labs/MultiverseNets), [MultiverseCreatures](https://github.com/DrakesCraft-Labs/MultiverseCreatures), and [MultiverseProgramming](https://github.com/DrakesCraft-Labs/MultiverseProgramming).
 
-[📖 English Wiki](Wiki-en/Home.md) · [🏛️ Forge Multiblock](Wiki-en/Forge-Structure.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [📖 Wiki en Español](Wiki-es/Home.md) · [🏛️ Estructura Forja](Wiki-es/Estructura-Forja.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [Español (README)](README_ES.md)
+[📖 English Wiki](Wiki-en/Home.md) · [🏛️ Forge Multiblock](Wiki-en/Forge-Structure.md) · [⚡ Forge Traits](Wiki-en/Traits-and-Effects.md) · [🔮 Trait Affinities](Wiki-en/Trait-Affinities.md) · [📖 Wiki en Español](Wiki-es/Home.md) · [🏛️ Estructura Forja](Wiki-es/Estructura-Forja.md) · [⚡ Rasgos de Forja](Wiki-es/Rasgos-y-Efectos.md) · [🔮 Afinidades](Wiki-es/Afinidades-de-Rasgos.md) · [Español (README)](README_ES.md)
 
 </div>
 
@@ -83,20 +83,23 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 * **Redesigned 5-Section GUI**:
   * **[1. Codex & Guide]**: In-game encyclopedias covering multiblock structure, casting, alloy recipes, tier progression, and specialized perks.
   * **[2. Molds & Parts]**: Quick mold carving (1 Clay Brick = 1 reusable cast) and multi-material forging (place 1 to 3 materials for 100%, 50/50, or 33/33/33 concentration-based trait splitting!).
-  * **[3. Alloy Crucible]**: Smelt 2 distinct materials to forge 16 legendary alloys (Bronze, Electrum, Manyullyn, Cosmic Netherite, etc.) with custom abilities.
+  * **[3. Alloy Crucible]**: Blend **any 2 distinct brush-extracted or vanilla minerals** into a unique alloy. 16 legendary recipes (Bronze, Electrum, Manyullyn, Cosmic Netherite, etc.) keep curated abilities; every other pair synthesizes its own dynamic composite alloy. Finished alloys cannot be re-blended.
   * **[4. Weapon Assembly]**: Assemble 7 weapon types (Broadsword, Longbow, Heavy Crossbow, Elder Trident, Kinetic Spear, War Mace, Tower Shield) starting at **Wood Tier** and leveling up through **Combat Kills**!
   * **[5. Tool Assembly]**: Assemble 5 tool types (Pickaxe, Battleaxe, Excavator/Shovel, Scythe/Hoe, Fishing Rod) starting at **Wood Tier** and leveling up through **Blocks Broken**!
 * **Specialized Weapon & Tool Perks**:
   * **War Mace**: Downward fall strikes trigger seismic ground shockwaves dealing AOE damage.
   * **Longbow**: Arrows inherit limb and string elemental traits.
-  * **Heavy Crossbow**: Bolts bypass 30% of target armor with explosive sparks.
+  * **Heavy Crossbow**: Bolts trigger a real, block-safe kinetic explosion that damages and knocks back every creature in a 4-block radius, plus +6.0 armor-piercing direct damage.
   * **Elder Trident**: Water/rain strikes summon hydraulic lightning (+5.0 damage).
   * **Kinetic Spear**: Extended attack reach and +30% charge damage while sprinting.
   * **Tower Shield**: Reflects 35% blocked damage back to attackers.
+  * **Battleaxe (Axe)**: Lumber Cleave fells the whole connected tree trunk and shatters enemy shields.
   * **Pickaxe**: Vein Resonance grants bonus ores and Haste I.
   * **Excavator (Shovel)**: Sneak-digging excavates a 3x3 area of soil/sand/gravel.
   * **Scythe (Hoe)**: Harvests 3x3 mature crops and auto-replants seeds from your inventory.
   * **Fishing Rod**: Abyssal Dredge has a 15% chance to hook rare raw Multiverse minerals.
+  * **Modular Armor**: Helmet hazard warding, Chestplate kinetic dampening (25% heavy-impact absorption), Leggings stride momentum and Boots fall-damage halving.
+* **Deterministic Trait Affinities**: Every mineral and vanilla ore resolves to up to 3 of the 12 essences (Infernal, Void, Primal, Tempered, Radiant, Resonant, Volatile, Terrain, Swift, Brutal, Bulwark, Ascendant). They behave **offensively on weapons, as mining procs on tools and as defensive procs on armor**, and alloys inherit both parents' essences — so every mineral combination owns its own unique functionality. See [Trait Affinities](Wiki-en/Trait-Affinities.md).
 
 ---
 

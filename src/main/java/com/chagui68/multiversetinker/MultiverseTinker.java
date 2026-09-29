@@ -85,7 +85,9 @@ public class MultiverseTinker extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new SmelteryListener(smelteryManager, itemRegistry), this);
         getServer().getPluginManager().registerEvents(new CastingListener(itemRegistry), this);
         getServer().getPluginManager().registerEvents(new ForgeListener(this, forgeManager, itemRegistry, materialRegistry), this);
-        getServer().getPluginManager().registerEvents(new ModularToolListener(this, materialRegistry), this);
+        ModularToolListener modularToolListener = new ModularToolListener(this, materialRegistry);
+        modularToolListener.startAuraTask();
+        getServer().getPluginManager().registerEvents(modularToolListener, this);
 
         // Register Commands
         PluginCommand cmd = getCommand("multiversetinker");

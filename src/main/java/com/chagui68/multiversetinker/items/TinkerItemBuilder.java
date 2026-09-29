@@ -8,6 +8,7 @@ import com.chagui68.multiversetinker.api.ToolPartType;
 import com.chagui68.multiversetinker.evolution.EvolutionTier;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.TraitAffinity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -24,8 +25,10 @@ import org.bukkit.persistence.PersistentDataType;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class TinkerItemBuilder {
 
@@ -426,6 +429,10 @@ public class TinkerItemBuilder {
 
         // Multi-material breakdown
         lore.addAll(composition.formatLore());
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Mineral Affinities: ", NamedTextColor.GOLD)
+                .append(Component.text(describeAffinities(collectAffinities(composition)), NamedTextColor.LIGHT_PURPLE))
+                .decoration(TextDecoration.ITALIC, false));
 
         lore.add(Component.empty());
         lore.add(Component.text("Combine in Multiverse Forge to assemble weapons & tools.", NamedTextColor.DARK_GRAY)
@@ -541,15 +548,30 @@ public class TinkerItemBuilder {
                 .append(Component.text(getWeaponPerkDescription(weaponType), NamedTextColor.AQUA))
                 .decoration(TextDecoration.ITALIC, false));
 
+        Set<String> uniqueMatIds = getUniqueMaterialIds(part1, part2, part3);
+        if (uniqueMatIds.size() >= 2) {
+            lore.add(Component.empty());
+            lore.add(Component.text("✦ Hybrid Synergy: ", NamedTextColor.GOLD)
+                    .append(MINI_MESSAGE.deserialize(getSynergyDisplayName(uniqueMatIds, p1, p2)))
+                    .decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("  • " + getSynergyDescription(uniqueMatIds), NamedTextColor.YELLOW)
+                    .decoration(TextDecoration.ITALIC, false));
+        }
+
         lore.add(Component.empty());
-        lore.add(Component.text("✦ Active Traits:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • " + p1.getTraitName() + ": " + p1.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("✦ Active Combat Traits:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • " + p1.getTraitName() + ": " + p1.getWeaponTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
         if (!p2.getId().equals(p1.getId())) {
-            lore.add(Component.text("  • " + p2.getTraitName() + ": " + p2.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("  • " + p2.getTraitName() + ": " + p2.getWeaponTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
         }
         if (part3 != null && !part3.getPrimaryMaterial().getId().equals(p1.getId()) && !part3.getPrimaryMaterial().getId().equals(p2.getId())) {
-            lore.add(Component.text("  • " + part3.getPrimaryMaterial().getTraitName() + ": " + part3.getPrimaryMaterial().getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("  • " + part3.getPrimaryMaterial().getTraitName() + ": " + part3.getPrimaryMaterial().getWeaponTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
         }
+
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Mineral Affinities: ", NamedTextColor.GOLD)
+                .append(Component.text(describeAffinities(collectAffinities(part1, part2, part3)), NamedTextColor.LIGHT_PURPLE))
+                .decoration(TextDecoration.ITALIC, false));
 
         meta.lore(lore);
 
@@ -647,14 +669,19 @@ public class TinkerItemBuilder {
                 .decoration(TextDecoration.ITALIC, false));
 
         lore.add(Component.empty());
-        lore.add(Component.text("✦ Active Traits:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • " + hMat.getTraitName() + ": " + hMat.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("✦ Active Mining Traits:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • " + hMat.getTraitName() + ": " + hMat.getToolTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
         if (!rMat.getId().equals(hMat.getId())) {
-            lore.add(Component.text("  • " + rMat.getTraitName() + ": " + rMat.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("  • " + rMat.getTraitName() + ": " + rMat.getToolTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
         }
         if (!bMat.getId().equals(hMat.getId()) && !bMat.getId().equals(rMat.getId())) {
-            lore.add(Component.text("  • " + bMat.getTraitName() + ": " + bMat.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("  • " + bMat.getTraitName() + ": " + bMat.getToolTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
         }
+
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Mineral Affinities: ", NamedTextColor.GOLD)
+                .append(Component.text(describeAffinities(collectAffinities(head, rod, binding)), NamedTextColor.LIGHT_PURPLE))
+                .decoration(TextDecoration.ITALIC, false));
 
         meta.lore(lore);
 
@@ -693,6 +720,28 @@ public class TinkerItemBuilder {
                 PartComposition.fromMaterials(List.of(binding)),
                 EvolutionTier.WOOD,
                 0);
+    }
+
+    @Nonnull
+    private static Set<TraitAffinity> collectAffinities(@Nullable PartComposition... parts) {
+        LinkedHashSet<TraitAffinity> affinities = new LinkedHashSet<>();
+        for (PartComposition part : parts) {
+            if (part == null) continue;
+            for (PartComposition.Entry entry : part.getEntries()) {
+                affinities.addAll(TraitAffinity.of(entry.material()));
+            }
+        }
+        return affinities;
+    }
+
+    @Nonnull
+    private static String describeAffinities(@Nonnull Set<TraitAffinity> affinities) {
+        StringBuilder builder = new StringBuilder();
+        for (TraitAffinity affinity : affinities) {
+            if (builder.length() > 0) builder.append(", ");
+            builder.append(affinity.getDisplayName());
+        }
+        return builder.length() == 0 ? "Primal" : builder.toString();
     }
 
     @Nonnull
@@ -798,13 +847,18 @@ public class TinkerItemBuilder {
 
         lore.add(Component.empty());
         lore.add(Component.text("✦ Active Defensive Traits:", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("  • " + pMat.getTraitName() + ": " + pMat.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • " + pMat.getTraitName() + ": " + pMat.getArmorTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
         if (!lMat.getId().equals(pMat.getId())) {
-            lore.add(Component.text("  • " + lMat.getTraitName() + ": " + lMat.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("  • " + lMat.getTraitName() + ": " + lMat.getArmorTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
         }
         if (!tMat.getId().equals(pMat.getId()) && !tMat.getId().equals(lMat.getId())) {
-            lore.add(Component.text("  • " + tMat.getTraitName() + ": " + tMat.getTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("  • " + tMat.getTraitName() + ": " + tMat.getArmorTraitDescription(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
         }
+
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Mineral Affinities: ", NamedTextColor.GOLD)
+                .append(Component.text(describeAffinities(collectAffinities(plate, lining, trim)), NamedTextColor.LIGHT_PURPLE))
+                .decoration(TextDecoration.ITALIC, false));
 
         meta.lore(lore);
 
@@ -913,5 +967,40 @@ public class TinkerItemBuilder {
 
         meta.lore(lore);
         armor.setItemMeta(meta);
+    }
+
+    @Nonnull
+    public static Set<String> getUniqueMaterialIds(PartComposition... compositions) {
+        Set<String> set = new LinkedHashSet<>();
+        for (PartComposition comp : compositions) {
+            if (comp != null) {
+                for (PartComposition.Entry e : comp.getEntries()) {
+                    set.add(e.material().getId().toLowerCase(Locale.ROOT));
+                }
+            }
+        }
+        return set;
+    }
+
+    @Nonnull
+    public static String getSynergyDisplayName(@Nonnull Set<String> matIds, @Nonnull TinkerMaterial p1, @Nonnull TinkerMaterial p2) {
+        if (matIds.contains("mvtink_zircon")) return "<gradient:#AF601A:#f39c12>Tectonic Rupture</gradient>";
+        if (matIds.contains("mvtink_gold")) return "<gradient:#f1c40f:#ffffff>Midas Blessing</gradient>";
+        if (matIds.contains("mvtink_ruby") && matIds.contains("mvtink_sapphire")) return "<gradient:#e0115f:#0f52ba>Thermal Flash</gradient>";
+        if (matIds.contains("mvtink_obsidian")) return "<gradient:#2e1c4d:#9b59b6>Void Cleave</gradient>";
+        if (matIds.contains("mvtink_netherite")) return "<gradient:#4a3b32:#e67e22>Ancient Primacy</gradient>";
+        if (matIds.contains("mvtink_amethyst")) return "<gradient:#af7ac5:#e056fd>Harmonic Resonance</gradient>";
+        return "<gradient:" + p1.getColorHex() + ":" + p2.getColorHex() + ">Composite Overcharge</gradient>";
+    }
+
+    @Nonnull
+    public static String getSynergyDescription(@Nonnull Set<String> matIds) {
+        if (matIds.contains("mvtink_zircon")) return "Cracking blows bypass 20% armor and trigger seismic deepslate vibrations.";
+        if (matIds.contains("mvtink_gold")) return "Critical strikes erupt in auric radiant sparks dealing +25% bonus gold damage.";
+        if (matIds.contains("mvtink_ruby") && matIds.contains("mvtink_sapphire")) return "Ignites and freezes targets simultaneously, triggering thermal shock vapor.";
+        if (matIds.contains("mvtink_obsidian")) return "Cleaves through target defense, ignoring 25% armor and blast deflection.";
+        if (matIds.contains("mvtink_netherite")) return "Ignites enemies in enduring soul flame and increases knockback resistance.";
+        if (matIds.contains("mvtink_amethyst")) return "Critical impacts chime acoustic shockwaves damaging nearby foes.";
+        return "Synchronizes multi-material elements for +15% amplified trait potency and chromatic visual auras.";
     }
 }

@@ -8,6 +8,7 @@ import lombok.Getter;
 import org.bukkit.Material;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 @Getter
 @Builder
@@ -44,11 +45,19 @@ public class TinkerMaterial {
     private final float miningSpeed;
     private final double attackDamageBonus;
 
-    // Unique Tinker trait
+    // Unique Tinker traits
     @Nonnull
     private final String traitName;
     @Nonnull
     private final String traitDescription;
+    private final String weaponTraitDescription;
+    private final String armorTraitDescription;
+
+    /**
+     * For alloys only: comma separated parent material IDs that this alloy was blended from.
+     * Used by the trait engine to unfold an alloy into the essences of its two components.
+     */
+    private final String alloyParents;
 
     public int getDurability() {
         return durabilityBonus;
@@ -56,6 +65,48 @@ public class TinkerMaterial {
 
     public double getAttackDamage() {
         return attackDamageBonus;
+    }
+
+    @Nonnull
+    public String getWeaponTraitDescription() {
+        if (weaponTraitDescription != null && !weaponTraitDescription.trim().isEmpty()) {
+            return weaponTraitDescription;
+        }
+        if (traitDescription.toLowerCase().contains("mining") || traitDescription.toLowerCase().contains("mine") || traitDescription.toLowerCase().contains("ores")) {
+            return "Subterranean Strike: Smashes through defenses with " + traitName + " combat power.";
+        }
+        return traitDescription;
+    }
+
+    @Nonnull
+    public String getArmorTraitDescription() {
+        if (armorTraitDescription != null && !armorTraitDescription.trim().isEmpty()) {
+            return armorTraitDescription;
+        }
+        if (traitDescription.toLowerCase().contains("mining") || traitDescription.toLowerCase().contains("mine") || traitDescription.toLowerCase().contains("ores")) {
+            return "Fortified Aegis: Reduces incoming physical damage with " + traitName + " structural resilience.";
+        }
+        return traitDescription;
+    }
+
+    @Nonnull
+    public String getToolTraitDescription() {
+        return traitDescription;
+    }
+
+    /**
+     * Returns the comma separated parent IDs of an alloy, or {@code null} for base minerals.
+     */
+    @Nullable
+    public String getAlloyParents() {
+        return alloyParents;
+    }
+
+    /**
+     * True when this material is a forge alloy blended from two distinct minerals.
+     */
+    public boolean isAlloy() {
+        return alloyParents != null && alloyParents.contains(",");
     }
 
     /**

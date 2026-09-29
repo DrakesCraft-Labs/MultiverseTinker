@@ -83,20 +83,23 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 * **Nueva GUI de 5 Secciones**:
   * **[1. Codex & Guide]**: Códices interactivos con información de la estructura, forja, recetas de aleaciones, progresión de rarezas y habilidades especiales.
   * **[2. Molds & Parts]**: Tallado rápido de moldes (1 Ladrillo de Arcilla = 1 molde reutilizable) y forja multimaterial (coloca de 1 a 3 materiales para dividir los rasgos al 100%, 50/50 o 33/33/33 en proporción a su concentración).
-  * **[3. Alloy Crucible]**: Crisol de fundición para mezclar 2 materiales y obtener 16 aleaciones legendarias (Bronce, Electro, Manyullyn, Netherita Cósmica, etc.).
+  * **[3. Alloy Crucible]**: Mezcla **cualquier par de minerales distintos** obtenidos con la brocha o refinados de menas vanilla. Las 16 recetas legendarias (Bronce, Electro, Manyullyn, Netherita Cósmica, etc.) conservan su habilidad curada; cada otro par sintetiza su propia aleación compuesta. Las aleaciones ya terminadas no pueden volver a mezclarse.
   * **[4. Weapon Assembly]**: Ensamblado de 7 tipos de armas (Espada, Arco, Ballesta, Tridente, Lanza, Mazo, Escudo) que comienzan en **Rareza de Madera** y evolucionan mediante **Bajas en Combate**.
   * **[5. Tool Assembly]**: Ensamblado de 5 tipos de herramientas (Pico, Hacha, Pala, Azada, Caña de pescar) que comienzan en **Rareza de Madera** y evolucionan mediante **Bloques Rotos**.
 * **Habilidades Especiales en Armas y Herramientas**:
   * **Mazo de Guerra**: Golpes en caída desatan una onda sísmica en el suelo con daño en área.
   * **Arco**: Las flechas heredan los rasgos elementales de los brazos y de la cuerda.
-  * **Ballesta Pesada**: Disparos con penetración de armadura (30%) e impacto explosivo.
+  * **Ballesta Pesada**: Los virotes detonan una explosión cinética real y sin dañar bloques que daña y empuja a todas las criaturas en 4 bloques, más +6.0 de daño directo perforante.
   * **Tridente**: Rayos y oleadas hidráulicas bajo el agua o lluvia (+5.0 daño).
   * **Lanza Cinética**: Alcance de ataque extendido y +30% de daño en embestida al esprintar.
   * **Escudo Torre**: Refleja el 35% del daño bloqueado de vuelta al atacante.
+  * **Hacha de Guerra**: Tala Ígnea derriba todo el tronco conectado y quiebra los escudos enemigos.
   * **Pico**: Resonancia de Vetas otorga minerales adicionales y Prisa minera I.
   * **Pala Excavadora**: Minar agachado rompe un área de 3x3 de tierra, arena o grava.
   * **Azada**: Cosecha cultivos maduros en 3x3 y replanta automáticamente las semillas de tu inventario.
   * **Caña de Pescar**: Dragado abisal permite pescar minerales raros de las profundidades acuáticas.
+  * **Armadura Modular**: Casco con protección de peligros, Peto con amortiguación cinética (25% de impactos fuertes), Grebas con impulso de zancada y Botas que reducen a la mitad el daño de caída.
+* **Afinidades de Rasgos Deterministas**: Cada mineral y mena vanilla resuelve a hasta 3 de las 12 esencias (Infernal, Void, Primal, Tempered, Radiant, Resonant, Volatile, Terrain, Swift, Brutal, Bulwark, Ascendant). Se comportan de forma **ofensiva en armas, como procs de minería en herramientas y defensivos en armaduras**, y las aleaciones heredan las esencias de ambos progenitores — cada combinación de minerales posee así su propia funcionalidad única. Ver [Afinidades de Rasgos](Wiki-es/Afinidades-de-Rasgos.md).
 
 ---
 

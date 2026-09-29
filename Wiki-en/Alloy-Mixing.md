@@ -2,6 +2,8 @@
 
 The **Multiverse Forge** features a dedicated **Alloy Crucible** (Section 3 of the Forge GUI) capable of superheating and fusing two distinct metallurgical or crystalline minerals into powerful, specialized alloys.
 
+> ♻ **Universal blending**: *any* two distinct minerals obtained with the **Prospector Brush** (Overworld, Nether or End geology) or refined from **vanilla Minecraft ores** can be blended — not just the 16 legendary recipes. Every pair synthesizes its own alloy with its own trait, and that trait adapts to **weapons, tools and armor** (see [Trait Affinities](Trait-Affinities.md)). Finished alloys cannot be re-blended, which keeps the crucible from looping infinitely.
+
 ---
 
 ## ⚒ How Alloy Mixing Works
@@ -22,6 +24,10 @@ The **Multiverse Forge** features a dedicated **Alloy Crucible** (Section 3 of t
 ---
 
 ## 📜 Complete Alloy Recipes Table
+
+The 16 recipes below are **predefined**: they always take priority and keep their curated signature
+ability. Every other legal pair of brush/vanilla minerals produces a **dynamic composite alloy**
+named `<Mineral A>-<Mineral B> Alloy`, inheriting the affinities of both parents.
 
 | Alloy Name | ID | Material 1 | Material 2 | Color | Durability | Speed | Attack | Trait Name | Trait Effect |
 | :--- | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :--- | :--- |
@@ -49,3 +55,5 @@ The **Multiverse Forge** features a dedicated **Alloy Crucible** (Section 3 of t
 - **Dual Ingot Yield**: Every successful alloy smelt yields **2 ingots**, preserving exact material conservation.
 - **Cross-Dimensional Blends**: Combining Overworld precious metals with Nether or End minerals unlocks endgame capabilities such as **Cosmic Netherite** and **Void Damascus**.
 - **Alloy Part Forging**: Alloy ingots can also be mixed with other minerals in Section 2 (Multi-Material Casting) for combined hybrid synergies!
+- **Blendable inputs only**: The crucible rejects non-mineral tinker items (casts, tool parts, smeltery, brush) and already-finished alloys. Distinct minerals only — a mineral cannot be paired with itself.
+- **Adaptive effects**: An alloy forged into a **weapon** triggers offensive procs, into a **tool** triggers mining procs, and into **armor** triggers defensive procs. See [Trait Affinities](Trait-Affinities.md).

@@ -175,7 +175,17 @@ public class TinkerItemRegistry {
 
     @Nullable
     public ItemStack getIngotItem(@Nonnull String materialId) {
-        ItemStack item = ingotItems.get(materialId.toLowerCase(Locale.ROOT));
+        String key = materialId.toLowerCase(Locale.ROOT);
+        ItemStack item = ingotItems.get(key);
+        if (item == null) {
+            TinkerMaterial tm = materialRegistry.get(key);
+            if (tm != null) {
+                item = TinkerItemBuilder.createIngot(tm);
+                ingotItems.put(key, item);
+                allItemsById.put(key + "_ingot", item);
+                allItemsById.put(key + "_processed", item);
+            }
+        }
         return item != null ? item.clone() : null;
     }
 

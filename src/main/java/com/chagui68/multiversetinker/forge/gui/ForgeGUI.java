@@ -282,12 +282,13 @@ public class ForgeGUI implements InventoryHolder {
         inventory.setItem(23, createGuideItem(Material.BLAST_FURNACE,
                 "<gradient:#e74c3c:#c0392b><b>Alloy Crucible Smelting</b></gradient>",
                 List.of(
-                        "• Mix up to 2 distinct materials to form new alloys.",
-                        "• 16 Unique Alloys with custom traits & bonuses:",
+                        "• Blend any 2 brush-extracted or vanilla minerals.",
+                        "• Each combination owns its own composite alloy trait.",
+                        "• 16 legendary recipes have curated traits & bonuses:",
                         "  - Bronze (Copper + Tin): Durability & Knockback Res.",
                         "  - Electrum (Gold + Silver): Swift attack speed & Luck.",
                         "  - Invar (Iron + Nickel): Extreme armor toughness.",
-                        "  - Rose Gold, Manyullyn, Hepatizon, Osmiridium & more!"
+                        "• Alloy effects adapt to weapons, tools and armor!"
                 )));
 
         inventory.setItem(24, createGuideItem(Material.EXPERIENCE_BOTTLE,
@@ -444,9 +445,9 @@ public class ForgeGUI implements InventoryHolder {
         inventory.setItem(SLOT_ALLOY_SMELT, createSystemButton(Material.CAMPFIRE,
                 "<gradient:#ff4500:#ffa500><b>♨ Ignite Crucible & Smelt Alloy</b></gradient>",
                 List.of(
-                        "Place 2 distinct materials in slots 29 and 33.",
+                        "Place 2 distinct brush or vanilla minerals in 29 and 33.",
                         "",
-                        "Blends metals or molten liquids into legendary alloys.",
+                        "Every mineral combination yields its own unique alloy.",
                         "Consumes 1 of each item to produce 2 alloy ingots."
                 )));
         inventory.setItem(SLOT_ALLOY_MAT2, null);
@@ -458,10 +459,12 @@ public class ForgeGUI implements InventoryHolder {
 
         // Row 5 Recipe Codex
         inventory.setItem(SLOT_ALLOY_RECIPES, createSystemButton(Material.BOOK,
-                "<gradient:#ffd700:#ff8c00><b>Alloy Recipes Codex (16 Legendary Alloys)</b></gradient>",
+                "<gradient:#ffd700:#ff8c00><b>Alloy Recipes Codex</b></gradient>",
                 List.of(
-                        "Click to browse all registered alloy recipes in chat.",
-                        "Discover valid combinations and their custom traits."
+                        "Click to browse every registered alloy in chat.",
+                        "Any 2 brush or vanilla minerals can be blended together!",
+                        "16 legendary recipes are predefined; all other pairs",
+                        "synthesize their own unique composite alloy on the spot."
                 )));
     }
 
@@ -883,16 +886,22 @@ public class ForgeGUI implements InventoryHolder {
             return;
         }
 
-        TinkerAlloy alloy = alloyRegistry.findAlloy(m1.getId(), m2.getId());
-        if (alloy == null) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ No known metallurgical reaction between " + m1.getName() + " and " + m2.getName() + "!</red>"));
+        if (!AlloyRegistry.isMixable(m1) || !AlloyRegistry.isMixable(m2)) {
+            player.sendMessage(miniMessage.deserialize("<red>⚠ " + AlloyRegistry.mixRequirementMessage() + "</red>"));
             player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;
         }
 
+        if (m1.getId().equalsIgnoreCase(m2.getId())) {
+            player.sendMessage(miniMessage.deserialize("<red>⚠ The crucible requires 2 distinct minerals to synthesize an alloy!</red>"));
+            player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
+            return;
+        }
+
+        TinkerAlloy alloy = alloyRegistry.findOrCreateAlloy(m1, m2, materialRegistry);
         TinkerMaterial resultMaterial = materialRegistry.get(alloy.id());
         if (resultMaterial == null) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ Internal error: alloy result material not registered.</red>"));
+            player.sendMessage(miniMessage.deserialize("<red>⚠ Internal error: alloy result material could not be synthesized.</red>"));
             return;
         }
 
@@ -914,10 +923,12 @@ public class ForgeGUI implements InventoryHolder {
         player.sendMessage(miniMessage.deserialize("<gold>♨ Crucible Synthesized: </gold>"
                 + "<gradient:" + resultMaterial.getColorHex() + ":#ffffff><b>" + resultMaterial.getName() + " Ingot</b></gradient>"
                 + " <gray>(x2)</gray>!"));
+        player.sendMessage(miniMessage.deserialize("<gray>  ➤ " + alloy.traitName() + ": </gray><dark_aqua>" + alloy.traitDescription() + "</dark_aqua>"));
     }
 
     private void displayAlloyRecipes(Player player) {
         player.sendMessage(miniMessage.deserialize("<gradient:#ffd700:#ff8c00><b>══════════ MULTIVERSE ALLOY CODEX ══════════</b></gradient>"));
+        player.sendMessage(miniMessage.deserialize("<gray>Blend any two brush-extracted or vanilla minerals. Every pair yields a unique alloy whose trait adapts to weapons, tools and armor.</gray>"));
         for (TinkerAlloy alloy : alloyRegistry.getAllAlloys()) {
             TinkerMaterial res = materialRegistry.get(alloy.id());
             String resName = (res != null) ? res.getName() : alloy.name();
@@ -1155,13 +1166,33 @@ public class ForgeGUI implements InventoryHolder {
     private TinkerMaterial getMaterialFromItem(@Nullable ItemStack item) {
         if (item == null || item.getType() == Material.AIR) return null;
         ItemMeta meta = item.getItemMeta();
-        if (meta == null) return null;
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        String matId = pdc.get(TinkerKeys.MATERIAL_ID, PersistentDataType.STRING);
-        if (matId != null) {
-            return materialRegistry.get(matId);
+        if (meta != null) {
+            PersistentDataContainer pdc = meta.getPersistentDataContainer();
+            String matId = pdc.get(TinkerKeys.MATERIAL_ID, PersistentDataType.STRING);
+            if (matId != null) {
+                TinkerMaterial tm = materialRegistry.get(matId);
+                if (tm != null) return tm;
+            }
         }
-        return null;
+
+        // Direct vanilla material fallback
+        return switch (item.getType()) {
+            case IRON_INGOT, RAW_IRON, IRON_BLOCK, IRON_NUGGET -> materialRegistry.get("mvtink_iron");
+            case COPPER_INGOT, RAW_COPPER, COPPER_BLOCK -> materialRegistry.get("mvtink_copper");
+            case GOLD_INGOT, RAW_GOLD, GOLD_BLOCK, GOLD_NUGGET -> materialRegistry.get("mvtink_gold");
+            case DIAMOND, DIAMOND_BLOCK -> materialRegistry.get("mvtink_diamond");
+            case EMERALD, EMERALD_BLOCK -> materialRegistry.get("mvtink_emerald");
+            case NETHERITE_INGOT, NETHERITE_SCRAP, NETHERITE_BLOCK -> materialRegistry.get("mvtink_netherite");
+            case COAL, CHARCOAL, COAL_BLOCK -> materialRegistry.get("mvtink_coal");
+            case REDSTONE, REDSTONE_BLOCK -> materialRegistry.get("mvtink_redstone");
+            case LAPIS_LAZULI, LAPIS_BLOCK -> materialRegistry.get("mvtink_lapis");
+            case QUARTZ, QUARTZ_BLOCK -> materialRegistry.get("mvtink_quartz");
+            case AMETHYST_SHARD, AMETHYST_BLOCK -> materialRegistry.get("mvtink_amethyst");
+            case FLINT -> materialRegistry.get("mvtink_flint");
+            case OBSIDIAN, CRYING_OBSIDIAN -> materialRegistry.get("mvtink_obsidian");
+            case PRISMARINE_SHARD, PRISMARINE_CRYSTALS, PRISMARINE -> materialRegistry.get("mvtink_prismarine");
+            default -> null;
+        };
     }
 
     @Nullable
