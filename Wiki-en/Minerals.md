@@ -1,10 +1,10 @@
-# 💎 Complete Mineral Catalog (90 Materials)
+# 💎 Complete Mineral Catalog (97 Materials)
 
-MultiverseTinker features **90 distinct geological minerals**, evenly distributed across Minecraft's three dimensions:
+MultiverseTinker features **97 distinct geological minerals** spread across Minecraft's three dimensions (33 Overworld, 34 Nether, 30 The End):
 
 ---
 
-## 🌍 Overworld (30 Minerals)
+## 🌍 Overworld (33 Minerals)
 
 | Mineral | ID | Rarity | Type | Trait | Trait Effect | Melt Ticks |
 |---|---|---|---|---|---|---|
@@ -38,10 +38,13 @@ MultiverseTinker features **90 distinct geological minerals**, evenly distribute
 | **Kaolinite** | `mvtink_kaolinite` | Common | Mineral | Ceramic Shell | Absorbs environmental thermal shock | 50t |
 | **Zircon** | `mvtink_zircon` | Rare | Crystal | Deep Time | Increases durability when mining deepslate layers | 125t |
 | **Tourmaline** | `mvtink_tourmaline` | Rare | Crystal | Piezo Shock | Releases electrical sparks when taking impact | 110t |
+| **Nickel** | `mvtink_nickel` | Rare | Metal | Galvanic Hardening | Reinforces alloys against wear and durability loss | 90t |
+| **Cryolite** | `mvtink_cryolite` | Uncommon | Mineral | Fluxing Frost | Lowers smelting heat and keeps blended metals cold-stable | 60t |
+| **Bismuth** | `mvtink_bismuth` | Rare | Metal | Brittle Echo | Shatters on impact, releasing a sharp thermal crack | 85t |
 
 ---
 
-## 🔥 The Nether (30 Minerals)
+## 🔥 The Nether (34 Minerals)
 
 | Mineral | ID | Rarity | Type | Trait | Trait Effect | Melt Ticks |
 |---|---|---|---|---|---|---|
@@ -75,6 +78,10 @@ MultiverseTinker features **90 distinct geological minerals**, evenly distribute
 | **Crimson Gold** | `mvtink_crimson_gold` | Uncommon | Metal | Piglin Respect | Piglins never become hostile towards the wielder | 80t |
 | **Warped Emerald** | `mvtink_warped_emerald` | Rare | Gem | Spore Shield | Releases defensive spore clouds when damaged | 115t |
 | **Netherite Scrap Shard** | `mvtink_netherite_shard` | Legendary | Metal | Prime Armor | Maximum durability and permanent lava immunity | 210t |
+| **Steel** | `mvtink_steel` | Uncommon | Metal | Cinder Temper | Keeps a searing temper that scorches whatever it strikes | 120t |
+| **Tungsten** | `mvtink_tungsten` | Epic | Metal | Refractory Mass | Extreme density converts weight into crushing kinetic force | 180t |
+| **Obsidianite** | `mvtink_obsidianite` | Rare | Mineral | Umbral Shroud | Drinks ambient light to veil the wielder in shadow | 150t |
+| **Fire Opal** | `mvtink_fire_opal` | Epic | Gem | Emberflicker | Trapped fire flares outward whenever the gem is struck | 140t |
 
 ---
 

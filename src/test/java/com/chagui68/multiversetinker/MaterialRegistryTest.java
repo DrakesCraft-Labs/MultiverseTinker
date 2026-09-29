@@ -22,10 +22,10 @@ class MaterialRegistryTest {
     }
 
     @Test
-    @DisplayName("Debe registrar 104 materiales (90 geologicos distribuidos por dimension + 14 vanilla)")
+    @DisplayName("Debe registrar 111 materiales (97 geologicos distribuidos por dimension + 14 vanilla)")
     void testTotalMaterialsCount() {
         Collection<TinkerMaterial> all = registry.getAll();
-        assertEquals(104, all.size(), "Deben haber 104 materiales registrados (90 geologicos + 14 vanilla)");
+        assertEquals(111, all.size(), "Deben haber 111 materiales registrados (97 geologicos + 14 vanilla)");
         assertEquals(14, registry.getByOrigin(MineralOrigin.VANILLA).size(), "Deben haber 14 materiales vanilla");
     }
 
@@ -59,15 +59,15 @@ class MaterialRegistryTest {
     }
 
     @Test
-    @DisplayName("Distribucion equitativa exacta: 30 en Overworld, 30 en Nether, 30 en The End")
+    @DisplayName("Distribucion exacta por dimension: 33 en Overworld, 34 en Nether, 30 en The End")
     void testDimensionDistribution() {
         List<TinkerMaterial> overworld = registry.getByOrigin(MineralOrigin.OVERWORLD);
         List<TinkerMaterial> nether = registry.getByOrigin(MineralOrigin.NETHER);
         List<TinkerMaterial> end = registry.getByOrigin(MineralOrigin.THE_END);
 
-        assertEquals(30, overworld.size(), "Overworld debe tener exactamente 30 minerales");
-        assertEquals(30, nether.size(), "Nether debe tener exactamente 30 minerales");
+        assertEquals(33, overworld.size(), "Overworld debe tener exactamente 33 minerales");
+        assertEquals(34, nether.size(), "Nether debe tener exactamente 34 minerales");
         assertEquals(30, end.size(), "The End debe tener exactamente 30 minerales");
-        assertEquals(90, overworld.size() + nether.size() + end.size());
+        assertEquals(97, overworld.size() + nether.size() + end.size());
     }
 }

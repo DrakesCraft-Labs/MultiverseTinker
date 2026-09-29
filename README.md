@@ -83,7 +83,7 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 * **Redesigned 6-Section GUI**:
   * **[1. Codex & Guide]**: In-game encyclopedias covering multiblock structure, casting, alloy recipes, tier progression, and specialized perks.
   * **[2. Molds & Parts]**: Quick mold carving (1 Clay Brick = 1 reusable cast) and multi-material forging (place 1 to 3 materials for 100%, 50/50, or 33/33/33 concentration-based trait splitting!).
-  * **[3. Alloy Crucible]**: Blend **any 2 distinct brush-extracted or vanilla minerals** into a unique alloy. 16 legendary recipes (Bronze, Electrum, Manyullyn, Cosmic Netherite, etc.) keep curated abilities; every other pair synthesizes its own dynamic composite alloy. Finished alloys cannot be re-blended.
+  * **[3. Alloy Crucible]**: Blend **any 2 distinct brush-extracted or vanilla minerals** into a unique alloy — 110 blendable minerals, **5,995 possible pairs**. 14 of them resolve to a curated legendary recipe (Bronze, Electrum, Manyullyn, Void Damascus, etc.); every other pair synthesizes its own dynamic composite alloy. Finished alloys cannot be re-blended, and vanilla netherite is rejected (it is already an alloy).
   * **[4. Weapon Assembly]**: Assemble 7 weapon types (Broadsword, Longbow, Heavy Crossbow, Elder Trident, Kinetic Spear, War Mace, Tower Shield) starting at **Wood Tier** and leveling up through **Combat Kills**!
   * **[5. Tool Assembly]**: Assemble 5 tool types (Pickaxe, Battleaxe, Excavator/Shovel, Scythe/Hoe, Fishing Rod) starting at **Wood Tier** and leveling up through **Blocks Broken**!
   * **[6. Armor Assembly]**: Assemble 4 armor types (Helmet, Chestplate, Leggings, Boots) from Plate, Lining and Trim parts, leveling up through **Damage Absorbed**.
@@ -126,7 +126,7 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 * `/mvtink forge check` — Validate the targeted anvil and display structure match percentage and diagnostics.
 * `/mvtink forge gui` — Open the custom Multiverse Forge GUI directly.
 * `/mvtink give <player> <mvtink_id> [amount]` — Give any item (raw, ingot, nugget, block, molten bucket, tool parts, casts, smeltery, prospector brush).
-* `/mvtink list [OVERWORLD|NETHER|THE_END]` — Inspect all 90 registered materials, colors, origins, and traits.
+* `/mvtink list [OVERWORLD|NETHER|THE_END]` — Inspect every registered material (97 geological + 14 vanilla), colors, origins, and traits.
 * `/mvtink reload` — Reload configuration, items, and loot tables.
 
 **Permissions:**

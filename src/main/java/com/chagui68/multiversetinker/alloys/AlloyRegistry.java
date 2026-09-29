@@ -142,7 +142,7 @@ public class AlloyRegistry {
 
         register(new TinkerAlloy(
                 "mvtink_cosmic_netherite", "Cosmic Netherite",
-                "mvtink_netherite", "mvtink_celestite",
+                "mvtink_netherite", "mvtink_celestine",
                 "#6c5ce7", "Cosmic Gravity",
                 "Singularity-infused netherite. Melee strikes pull surrounding foes within 6 blocks together.",
                 1400, 12.0f, 10.5
@@ -309,6 +309,6 @@ public class AlloyRegistry {
      */
     @Nullable
     public static String mixRequirementMessage() {
-        return "Only minerals extracted with the Prospector Brush or refined vanilla ores can be blended in the Alloy Crucible.";
+        return "Only minerals extracted with the Prospector Brush or refined vanilla ores can be blended in the Alloy Crucible (vanilla netherite is already an alloy, so it cannot be blended).";
     }
 }

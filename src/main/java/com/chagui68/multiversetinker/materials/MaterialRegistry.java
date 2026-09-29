@@ -47,7 +47,7 @@ public class MaterialRegistry {
 
     private void registerAllMaterials() {
         // ==========================================
-        // 1. OVERWORLD (30 Minerals)
+        // 1. OVERWORLD (33 Minerals)
         // ==========================================
         register(TinkerMaterial.builder()
                 .id("mvtink_tin").name("Tin").origin(MineralOrigin.OVERWORLD).rarity(MaterialRarity.COMMON).type(MaterialType.METAL)
@@ -234,8 +234,26 @@ public class MaterialRegistry {
                 .colorHex("#117864").description("Borosilicate mineral possessing pyroelectric and piezoelectric energy.").meltingDurationTicks(110)
                 .durabilityBonus(590).miningSpeed(8.4f).attackDamageBonus(3.0).traitName("Piezo Shock").traitDescription("Releases electrical sparks when taking impact.").build());
 
+        register(TinkerMaterial.builder()
+                .id("mvtink_nickel").name("Nickel").origin(MineralOrigin.OVERWORLD).rarity(MaterialRarity.RARE).type(MaterialType.METAL)
+                .baseVanillaMaterial(Material.RAW_IRON).processedVanillaMaterial(Material.IRON_INGOT).nuggetVanillaMaterial(Material.IRON_NUGGET).blockVanillaMaterial(Material.IRON_BLOCK)
+                .colorHex("#B6C2C6").description("Tough corrosion-resistant metal that hardens every alloy it joins.").meltingDurationTicks(90)
+                .durabilityBonus(420).miningSpeed(7.4f).attackDamageBonus(2.9).traitName("Galvanic Hardening").traitDescription("Reinforces alloys against wear and improves durability retention.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_cryolite").name("Cryolite").origin(MineralOrigin.OVERWORLD).rarity(MaterialRarity.UNCOMMON).type(MaterialType.MINERAL)
+                .baseVanillaMaterial(Material.CLAY_BALL).processedVanillaMaterial(Material.QUARTZ).nuggetVanillaMaterial(Material.SUGAR).blockVanillaMaterial(Material.WHITE_CONCRETE)
+                .colorHex("#EAF6F6").description("Frost-white fluoride flux that melts at remarkably low heat.").meltingDurationTicks(60)
+                .durabilityBonus(300).miningSpeed(6.6f).attackDamageBonus(1.6).traitName("Fluxing Frost").traitDescription("Lowers smelting heat and keeps blended metals cold-stable.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_bismuth").name("Bismuth").origin(MineralOrigin.OVERWORLD).rarity(MaterialRarity.RARE).type(MaterialType.METAL)
+                .baseVanillaMaterial(Material.RAW_COPPER).processedVanillaMaterial(Material.COPPER_INGOT).nuggetVanillaMaterial(Material.COPPER_INGOT).blockVanillaMaterial(Material.COPPER_BLOCK)
+                .colorHex("#D8A0C8").description("Iridescent stair-stepped metal that shatters into brittle thermal prisms.").meltingDurationTicks(85)
+                .durabilityBonus(390).miningSpeed(7.8f).attackDamageBonus(3.1).traitName("Brittle Echo").traitDescription("Shatters on impact, releasing a sharp thermal crack.").build());
+
         // ==========================================
-        // 2. THE NETHER (30 Minerals)
+        // 2. THE NETHER (34 Minerals)
         // ==========================================
         register(TinkerMaterial.builder()
                 .id("mvtink_cobalt").name("Cobalt").origin(MineralOrigin.NETHER).rarity(MaterialRarity.RARE).type(MaterialType.METAL)
@@ -417,6 +435,30 @@ public class MaterialRegistry {
                 .baseVanillaMaterial(Material.NETHERITE_SCRAP).processedVanillaMaterial(Material.NETHERITE_INGOT).nuggetVanillaMaterial(Material.NETHERITE_SCRAP).blockVanillaMaterial(Material.NETHERITE_BLOCK)
                 .colorHex("#34495E").description("Refined pure scrap of primeval ancient debris.").meltingDurationTicks(210)
                 .durabilityBonus(2100).miningSpeed(11.5f).attackDamageBonus(5.2).traitName("Prime Armor").traitDescription("Grants maximum durability and lava immunity.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_steel").name("Steel").origin(MineralOrigin.NETHER).rarity(MaterialRarity.UNCOMMON).type(MaterialType.METAL)
+                .baseVanillaMaterial(Material.RAW_IRON).processedVanillaMaterial(Material.IRON_INGOT).nuggetVanillaMaterial(Material.IRON_NUGGET).blockVanillaMaterial(Material.IRON_BLOCK)
+                .colorHex("#8E9BA8").description("Nether-forged carbon steel quenched in cinder and brimstone.").meltingDurationTicks(120)
+                .durabilityBonus(620).miningSpeed(7.0f).attackDamageBonus(3.4).traitName("Cinder Temper").traitDescription("Keeps a searing temper that scorches whatever it strikes.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_tungsten").name("Tungsten").origin(MineralOrigin.NETHER).rarity(MaterialRarity.EPIC).type(MaterialType.METAL)
+                .baseVanillaMaterial(Material.RAW_IRON).processedVanillaMaterial(Material.IRON_INGOT).nuggetVanillaMaterial(Material.IRON_NUGGET).blockVanillaMaterial(Material.BLACKSTONE)
+                .colorHex("#5D6D7E").description("Ultra-dense refractory metal with the highest melting point in the multiverse.").meltingDurationTicks(180)
+                .durabilityBonus(980).miningSpeed(8.6f).attackDamageBonus(4.4).traitName("Refractory Mass").traitDescription("Extreme density converts weight into crushing kinetic force.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_obsidianite").name("Obsidianite").origin(MineralOrigin.NETHER).rarity(MaterialRarity.RARE).type(MaterialType.MINERAL)
+                .baseVanillaMaterial(Material.OBSIDIAN).processedVanillaMaterial(Material.CRYING_OBSIDIAN).nuggetVanillaMaterial(Material.FLINT).blockVanillaMaterial(Material.OBSIDIAN)
+                .colorHex("#241E34").description("Vitrified volcanic glass shot through with umbral light-drinking veins.").meltingDurationTicks(150)
+                .durabilityBonus(820).miningSpeed(7.0f).attackDamageBonus(3.8).traitName("Umbral Shroud").traitDescription("Drinks ambient light to veil the wielder in shadow.").build());
+
+        register(TinkerMaterial.builder()
+                .id("mvtink_fire_opal").name("Fire Opal").origin(MineralOrigin.NETHER).rarity(MaterialRarity.EPIC).type(MaterialType.GEM)
+                .baseVanillaMaterial(Material.AMETHYST_SHARD).processedVanillaMaterial(Material.MAGMA_CREAM).nuggetVanillaMaterial(Material.AMETHYST_SHARD).blockVanillaMaterial(Material.MAGMA_BLOCK)
+                .colorHex("#FF6B35").description("Molten opal flickering with trapped volcanic fire.").meltingDurationTicks(140)
+                .durabilityBonus(640).miningSpeed(9.4f).attackDamageBonus(4.0).traitName("Emberflicker").traitDescription("Trapped fire flares outward whenever the gem is struck.").build());
 
         // ==========================================
         // 3. THE END (30 Minerals)

@@ -335,8 +335,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give items, parts, tools, raw ores, ingots, casts, or prospector brush.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " list [OVERWORLD|NETHER|THE_END]</yellow> <gray>- List all 90 geological materials.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));                sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " list [OVERWORLD|NETHER|THE_END]</yellow> <gray>- List all 97 geological materials.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " reload</yellow> <gray>- Reload configuration and caches.</gray>"));
     }
 

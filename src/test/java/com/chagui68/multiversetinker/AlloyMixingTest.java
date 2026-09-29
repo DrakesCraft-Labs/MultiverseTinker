@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -77,6 +78,27 @@ class AlloyMixingTest {
         assertEquals(first.id(), second.id());
         assertSame(first, second, "Repeated blends must reuse the cached alloy instance");
         assertEquals("mvtink_alloy_tin_zinc", first.id());
+    }
+
+    @Test
+    @DisplayName("Legendary recipes point at real minerals and are craftable in the crucible")
+    void testLegendaryRecipesAreReachable() {
+        Set<String> unreachable = new TreeSet<>();
+
+        for (TinkerAlloy alloy : alloyRegistry.getAllAlloys()) {
+            TinkerMaterial first = materialRegistry.get(alloy.mat1Id());
+            TinkerMaterial second = materialRegistry.get(alloy.mat2Id());
+
+            assertNotNull(first, "Recipe " + alloy.id() + " references a non-existent mineral " + alloy.mat1Id());
+            assertNotNull(second, "Recipe " + alloy.id() + " references a non-existent mineral " + alloy.mat2Id());
+
+            if (!AlloyRegistry.isMixable(first) || !AlloyRegistry.isMixable(second)) {
+                unreachable.add(alloy.id());
+            }
+        }
+
+        assertEquals(Set.of("mvtink_cinder_steel", "mvtink_cosmic_netherite"), unreachable,
+                "Only the recipes built on unmixable vanilla netherite may be unreachable");
     }
 
     @Test

@@ -83,7 +83,7 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 * **Nueva GUI de 6 Secciones**:
   * **[1. Codex & Guide]**: Códices interactivos con información de la estructura, forja, recetas de aleaciones, progresión de rarezas y habilidades especiales.
   * **[2. Molds & Parts]**: Tallado rápido de moldes (1 Ladrillo de Arcilla = 1 molde reutilizable) y forja multimaterial (coloca de 1 a 3 materiales para dividir los rasgos al 100%, 50/50 o 33/33/33 en proporción a su concentración).
-  * **[3. Alloy Crucible]**: Mezcla **cualquier par de minerales distintos** obtenidos con la brocha o refinados de menas vanilla. Las 16 recetas legendarias (Bronce, Electro, Manyullyn, Netherita Cósmica, etc.) conservan su habilidad curada; cada otro par sintetiza su propia aleación compuesta. Las aleaciones ya terminadas no pueden volver a mezclarse.
+  * **[3. Alloy Crucible]**: Mezcla **cualquier par de minerales distintos** obtenidos con la brocha o refinados de menas vanilla — 110 minerales mezclables, **5.995 pares posibles**. 14 de ellos coinciden con una receta legendaria curada (Bronce, Electro, Manyullyn, Damasco del Vacío, etc.); cada otro par sintetiza su propia aleación compuesta. Las aleaciones ya terminadas no pueden volver a mezclarse y la netherita vanilla se rechaza (ya es una aleación).
   * **[4. Weapon Assembly]**: Ensamblado de 7 tipos de armas (Espada, Arco, Ballesta, Tridente, Lanza, Mazo, Escudo) que comienzan en **Rareza de Madera** y evolucionan mediante **Bajas en Combate**.
   * **[5. Tool Assembly]**: Ensamblado de 5 tipos de herramientas (Pico, Hacha, Pala, Azada, Caña de pescar) que comienzan en **Rareza de Madera** y evolucionan mediante **Bloques Rotos**.
   * **[6. Armor Assembly]**: Ensamblado de 4 tipos de armaduras (Casco, Peto, Grebas, Botas) a partir de piezas de Placa, Forro y Ribete, que evolucionan mediante **Daño Absorbido**.
@@ -126,7 +126,7 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 * `/mvtink forge check` — Valida el yunque al que estás apuntando y muestra el porcentaje de coincidencia.
 * `/mvtink forge gui` — Abre directamente la interfaz gráfica de la Forja Multiverse.
 * `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha).
-* `/mvtink list [OVERWORLD|NETHER|THE_END]` — Lista los 90 minerales con sus rasgos, rarezas y colores.
+* `/mvtink list [OVERWORLD|NETHER|THE_END]` — Lista todos los materiales registrados (97 geológicos + 14 vanilla) con sus rasgos, rarezas y colores.
 * `/mvtink reload` — Recarga la configuración y las tablas de arqueología.
 
 ---

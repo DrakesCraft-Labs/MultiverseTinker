@@ -2,7 +2,7 @@
 
 La **Forja del Multiverso** cuenta con un **Crisol de Aleaciones** dedicado (Sección 3 de la interfaz GUI de la forja) capaz de sobrecalentar y fusionar dos minerales distintos (metales o cristales geológicos) en aleaciones personalizadas de alta especialización.
 
-> ♻ **Mezcla universal**: se puede mezclar *cualquier* par de minerales distintos obtenidos con la **Brocha de Prospector** (geología del Overworld, Nether o End) o refinados de **menas vanilla de Minecraft**, no solo las 16 recetas legendarias. Cada par sintetiza su propia aleación con su propio rasgo, y ese rasgo se adapta a **armas, herramientas y armaduras** (ver [Afinidades de Rasgos](Afinidades-de-Rasgos.md)). Las aleaciones ya terminadas no pueden volver a mezclarse, evitando bucles infinitos en el crisol.
+> ♻ **Mezcla universal**: se puede mezclar *cualquier* par de minerales distintos obtenidos con la **Brocha de Prospector** (geología del Overworld, Nether o End) o refinados de **menas vanilla de Minecraft**, no solo las 16 recetas legendarias. Cada par sintetiza su propia aleación con su propio rasgo, y ese rasgo se adapta a **armas, herramientas y armaduras** (ver [Afinidades de Rasgos](Afinidades-de-Rasgos.md)). Las aleaciones ya terminadas no pueden volver a mezclarse, evitando bucles infinitos en el crisol. Quedan por tanto **110 minerales mezclables** y **5.995 pares posibles**, de los que 14 resuelven en una receta legendaria; la netherita vanilla es la única excepción (ya está clasificada como aleación, por lo que **Cinder Steel** y **Netherita Cósmica** no pueden mezclarse).
 
 ---
 
@@ -47,7 +47,7 @@ progenitores.
 | **Hellfire Bismuth (Bismuto Ígneo)** | `mvtink_hellfire_bismuth` | Bismuto (`mvtink_bismuth`) | Ópalo de Fuego (`mvtink_fire_opal`) | `#ff7675` | +550 | 8.0x | +8.0 | **Combustion** | Golpes críticos desatan microexplosiones térmicas sin dañar bloques. |
 | **Glacial Silver (Plata Glacial)** | `mvtink_glacial_silver` | Plata (`mvtink_silver`) | Criolita (`mvtink_cryolite`) | `#74b9ff` | +480 | 8.0x | +6.5 | **Absolute Frost** | Congela al objetivo con Lentitud III y efecto de frío de nieve en polvo por 4s. |
 | **Sanguine Gold (Oro Sanguíneo)** | `mvtink_sanguine_gold` | Oro (`mvtink_gold`) | Sanguinita (`mvtink_sanguinite`) | `#d63031` | +380 | 9.5x | +7.5 | **Vampiric Touch** | Restaura el 25% de todo el daño cuerpo a cuerpo infligido como vida propia. |
-| **Cosmic Netherite (Netherita Cósmica)** | `mvtink_cosmic_netherite` | Netherita (`mvtink_netherite`) | Celestina (`mvtink_celestite`) | `#6c5ce7` | +1400 | 12.0x | +10.5 | **Cosmic Gravity** | Singularidad cósmica. Atrae a los enemigos a 6 bloques hacia el objetivo golpeado. |
+| **Cosmic Netherite (Netherita Cósmica)** | `mvtink_cosmic_netherite` | Netherita (`mvtink_netherite`) | Celestina (`mvtink_celestine`) | `#6c5ce7` | +1400 | 12.0x | +10.5 | **Cosmic Gravity** | Singularidad cósmica. Atrae a los enemigos a 6 bloques hacia el objetivo golpeado. |
 
 ---
 
@@ -57,4 +57,5 @@ progenitores.
 - **Mezclas Interdimensionales**: Unir metales nobles del Overworld con minerales del Nether o del End permite forjar aleaciones legendarias como la **Netherita Cósmica** y el **Damasco del Vacío**.
 - **Aleaciones como Componentes**: Puedes mezclar aleaciones con minerales puros en la Sección 2 (Forja Multimaterial) para obtener sinergias híbridas de hasta 3 materiales por pieza.
 - **Solo entradas mezclables**: El crisol rechaza objetos tinker no minerales (moldes, piezas, fundidora, brocha) y aleaciones ya terminadas. Solo minerales distintos — un mineral no puede emparejarse consigo mismo.
+- **Excepción de la netherita**: el `mvtink_netherite` vanilla ya está clasificado como aleación, así que no puede introducirse en el crisol. Por eso **Cinder Steel** y **Netherita Cósmica** no se pueden sintetizar por mezcla y solo se obtienen por comandos de administrador; las otras 14 recetas legendarias sí son forjables.
 - **Efectos adaptativos**: Una aleación forjada en un **arma** activa procs ofensivos, en una **herramienta** activa procs de minería y en una **armadura** activa procs defensivos. Ver [Afinidades de Rasgos](Afinidades-de-Rasgos.md).

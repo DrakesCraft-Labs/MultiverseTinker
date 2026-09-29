@@ -10,9 +10,9 @@
 * **[Crisol de Fundición y Templado en Caldero](Fundicion-y-Caldero.md)**: Operación del crisol sobre lava/magma, diagnósticos visuales y enfriamiento de metales en caldero con moldes.
 * **[Estructura Multibloque de la Forja](Estructura-Forja.md)**: Arquitectura multibloque, simulación de partículas de validación y aura del yunque central.
 * **[Guía del GUI de la Forja y Equipo Modular](Guia-GUI-Forja.md)**: Detalle completo de las 6 secciones, forja multimaterial, evolución por rarezas (Madera a Netherite) y habilidades especiales de armas, herramientas y armaduras — incluido cómo cada perk se nombra e impulsa según sus minerales.
-* **[Guía de Mezcla de Materiales y Aleaciones](Mezcla-de-Materiales.md)**: Crisol de aleaciones, mezcla universal de minerales brocha/vanilla y listado de las 16 aleaciones personalizadas.
+* **[Guía de Mezcla de Materiales y Aleaciones](Mezcla-de-Materiales.md)**: Crisol de aleaciones, mezcla universal de minerales brocha/vanilla (110 minerales mezclables, 5.995 pares posibles) y listado de las 16 aleaciones personalizadas.
 * **[Referencia de Afinidades de Rasgos](Afinidades-de-Rasgos.md)**: Las 12 esencias deterministas, cómo se comportan en armas, herramientas y armaduras, y cómo el mineral de la cabeza define cada perk de arma.
-* **[Catálogo Completo de Minerales](Minerales.md)**: Listado exhaustivo de los 104 materiales geológicos y vanilla, más las 16 aleaciones.
+* **[Catálogo Completo de Minerales](Minerales.md)**: Listado exhaustivo de los 111 materiales geológicos y vanilla, más las 16 aleaciones.
 * **[Rasgos de Forja y Efectos de Minerales](Rasgos-y-Efectos.md)**: Guía de referencia de los rasgos de forja, efectos pasivos, modificadores de combate y estadísticas.
 
 ---

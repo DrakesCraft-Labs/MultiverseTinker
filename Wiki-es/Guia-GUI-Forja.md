@@ -68,6 +68,7 @@ La zona de forja en la fila 3 está visualmente y físicamente dividida mediante
 - Haz clic en **♨ Encender Crisol y Fundir Aleación** (Ranura 31).
 - Obtén **2x Lingotes de Aleación Terminados** en la **Ranura 40**.
 - Haz clic en el **Códice de Recetas** (Ranura 49) para consultar en el chat las 16 fórmulas registradas.
+- Cada par de los **110 minerales mezclables** (97 geológicos + 13 vanilla distintos de la netherita) produce su propia aleación: 5.995 pares posibles, de los que 14 coinciden con una receta legendaria. La netherita vanilla es el único material vanilla que el crisol rechaza (ya es una aleación), por lo que **Cinder Steel** y **Netherita Cósmica** no pueden mezclarse.
 - Consulta la [Guía de Mezcla de Materiales](Mezcla-de-Materiales.md) para más detalles.
 
 ---

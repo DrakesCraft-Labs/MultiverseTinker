@@ -1,10 +1,10 @@
 # ⚡ Referencia de Rasgos de Forja y Efectos de Minerales
 
-MultiverseTinker cuenta con **90 minerales geológicos únicos**, cada uno forjado con un **Rasgo de Forja** distintivo, modificadores de atributos y propiedades físicas singulares. Al ser forjados o integrados en el equipamiento, estos rasgos otorgan habilidades pasivas especializadas, modificadores de combate y ventajas de minería.
+MultiverseTinker cuenta con **97 minerales geológicos únicos**, cada uno forjado con un **Rasgo de Forja** distintivo, modificadores de atributos y propiedades físicas singulares. Al ser forjados o integrados en el equipamiento, estos rasgos otorgan habilidades pasivas especializadas, modificadores de combate y ventajas de minería.
 
 ---
 
-## 🌍 Minerales del Overworld (30 Materiales)
+## 🌍 Minerales del Overworld (33 Materiales)
 
 | Mineral e ID | Rareza y Tipo | Rasgo de Forja | Efecto Detallado y Atributos |
 |---|---|---|---|
@@ -38,10 +38,13 @@ MultiverseTinker cuenta con **90 minerales geológicos únicos**, cada uno forja
 | **Caolinita (Kaolinite)**<br>`mvtink_kaolinite` | Común<br>Mineral | **Coraza Cerámica** | Aísla y absorbe choques térmicos ambientales e impactos ígneos.<br>• *Atributos*: +130 Durabilidad \| 5.4x Velocidad de Minado \| +0.9 Daño |
 | **Zircón (Zircon)**<br>`mvtink_zircon` | Raro<br>Cristal | **Tiempo Profundo** | Preserva su filo y rinde con máxima eficacia en capas subterráneas de Pizarra Profunda (Deepslate).<br>• *Atributos*: +700 Durabilidad \| 9.2x Velocidad de Minado \| +3.3 Daño |
 | **Turmalina (Tourmaline)**<br>`mvtink_tourmaline` | Raro<br>Cristal | **Choque Piezoeléctrico** | Carga piezoeléctrica que libera descargas de choque al recibir o devolver daño.<br>• *Atributos*: +590 Durabilidad \| 8.4x Velocidad de Minado \| +3.0 Daño |
+| **Níquel (Nickel)**<br>`mvtink_nickel` | Raro<br>Metal | **Endurecimiento Galvánico** | Refuerza cualquier aleación que integre, reduciendo el desgaste y preservando la durabilidad.<br>• *Atributos*: +420 Durabilidad \| 7.4x Velocidad de Minado \| +2.9 Daño |
+| **Criolita (Cryolite)**<br>`mvtink_cryolite` | No Común<br>Mineral | **Flujo Gélido** | Reduce el calor necesario para fundir la mezcla y mantiene el metal estable en frío.<br>• *Atributos*: +300 Durabilidad \| 6.6x Velocidad de Minado \| +1.6 Daño |
+| **Bismuto (Bismuth)**<br>`mvtink_bismuth` | Raro<br>Metal | **Eco Quebradizo** | Se quiebra al impactar liberando una grieta térmica afilada.<br>• *Atributos*: +390 Durabilidad \| 7.8x Velocidad de Minado \| +3.1 Daño |
 
 ---
 
-## 🔥 Minerales del Nether (30 Materiales)
+## 🔥 Minerales del Nether (34 Materiales)
 
 | Mineral e ID | Rareza y Tipo | Rasgo de Forja | Efecto Detallado y Atributos |
 |---|---|---|---|
@@ -75,6 +78,10 @@ MultiverseTinker cuenta con **90 minerales geológicos únicos**, cada uno forja
 | **Oro Carmesí (Crimson Gold)**<br>`mvtink_crimson_gold` | No Común<br>Metal | **Respeto Piglin** | Piglins y Piglins Brutos consideran permanentemente al portador un digno aliado.<br>• *Atributos*: +320 Durabilidad \| 10.5x Velocidad de Minado \| +2.2 Daño |
 | **Esmeralda Deformada (Warped Emerald)**<br>`mvtink_warped_emerald` | Raro<br>Gema | **Escudo de Esporas** | Libera ráfagas cegadoras de esporas fúngicas cuando el usuario es golpeado.<br>• *Atributos*: +620 Durabilidad \| 8.4x Velocidad de Minado \| +3.1 Daño |
 | **Resto Fragmentado de Netherita (Netherite Scrap Shard)**<br>`mvtink_netherite_shard` | Legendario<br>Metal | **Armadura Suprema** | La máxima resiliencia del Nether: +2100 de durabilidad, inmunidad ígnea y dureza insuperable.<br>• *Atributos*: +2100 Durabilidad \| 11.5x Velocidad de Minado \| +5.2 Daño |
+| **Acero (Steel)**<br>`mvtink_steel` | No Común<br>Metal | **Temple Incandescente** | Acero al carbono templado en el Nether que abrasa todo lo que golpea.<br>• *Atributos*: +620 Durabilidad \| 7.0x Velocidad de Minado \| +3.4 Daño |
+| **Tungsteno (Tungsten)**<br>`mvtink_tungsten` | Épico<br>Metal | **Masa Refractaria** | Metal refractario ultradenso cuyo peso se convierte en fuerza cinética aplastante.<br>• *Atributos*: +980 Durabilidad \| 8.6x Velocidad de Minado \| +4.4 Daño |
+| **Obsidianita (Obsidianite)**<br>`mvtink_obsidianite` | Raro<br>Mineral | **Sudario Umbrío** | Vidrio volcánico vitrificado que absorbe la luz para velar al portador en sombra.<br>• *Atributos*: +820 Durabilidad \| 7.0x Velocidad de Minado \| +3.8 Daño |
+| **Ópalo de Fuego (Fire Opal)**<br>`mvtink_fire_opal` | Épico<br>Gema | **Fulgor de Brasa** | Ópalo fundido cuyo fuego atrapado estalla al recibir golpes.<br>• *Atributos*: +640 Durabilidad \| 9.4x Velocidad de Minado \| +4.0 Daño |
 
 ---
 

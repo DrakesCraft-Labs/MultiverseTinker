@@ -1,10 +1,10 @@
 # ⚡ Forge Traits & Mineral Effects Reference
 
-MultiverseTinker features **90 distinct geological minerals**, each forged with a unique signature **Forge Trait**, stat modifiers, and distinct physical properties. When forged or integrated into equipment, these traits bestow specialized passive abilities, combat modifiers, and mining perks.
+MultiverseTinker features **97 distinct geological minerals**, each forged with a unique signature **Forge Trait**, stat modifiers, and distinct physical properties. When forged or integrated into equipment, these traits bestow specialized passive abilities, combat modifiers, and mining perks.
 
 ---
 
-## 🌍 Overworld Minerals (30 Materials)
+## 🌍 Overworld Minerals (33 Materials)
 
 | Mineral & ID | Rarity & Type | Forge Trait | Detailed Effect & Stats |
 |---|---|---|---|
@@ -38,10 +38,13 @@ MultiverseTinker features **90 distinct geological minerals**, each forged with 
 | **Kaolinite**<br>`mvtink_kaolinite` | Common<br>Mineral | **Ceramic Shell** | Absorbs environmental thermal shock and fire hazards.<br>• *Stats*: +130 Durability \| 5.4x Mining Speed \| +0.9 Atk |
 | **Zircon**<br>`mvtink_zircon` | Rare<br>Crystal | **Deep Time** | Preserves durability and gains efficiency when excavating Deepslate layers.<br>• *Stats*: +700 Durability \| 9.2x Mining Speed \| +3.3 Atk |
 | **Tourmaline**<br>`mvtink_tourmaline` | Rare<br>Crystal | **Piezo Shock** | Piezoelectric charge releases electrical sparks and damage upon sustaining blows.<br>• *Stats*: +590 Durability \| 8.4x Mining Speed \| +3.0 Atk |
+| **Nickel**<br>`mvtink_nickel` | Rare<br>Metal | **Galvanic Hardening** | Reinforces any alloy it joins, reducing wear and preserving durability.<br>• *Stats*: +420 Durability \| 7.4x Mining Speed \| +2.9 Atk |
+| **Cryolite**<br>`mvtink_cryolite` | Uncommon<br>Mineral | **Fluxing Frost** | Lowers the heat needed to melt a blend and keeps the resulting metal cold-stable.<br>• *Stats*: +300 Durability \| 6.6x Mining Speed \| +1.6 Atk |
+| **Bismuth**<br>`mvtink_bismuth` | Rare<br>Metal | **Brittle Echo** | Shatters on impact, releasing a sharp thermal crack.<br>• *Stats*: +390 Durability \| 7.8x Mining Speed \| +3.1 Atk |
 
 ---
 
-## 🔥 The Nether Minerals (30 Materials)
+## 🔥 The Nether Minerals (34 Materials)
 
 | Mineral & ID | Rarity & Type | Forge Trait | Detailed Effect & Stats |
 |---|---|---|---|
@@ -75,6 +78,10 @@ MultiverseTinker features **90 distinct geological minerals**, each forged with 
 | **Crimson Gold**<br>`mvtink_crimson_gold` | Uncommon<br>Metal | **Piglin Respect** | Piglins and Piglin Brutes permanently treat the wielder as an honored ally.<br>• *Stats*: +320 Durability \| 10.5x Mining Speed \| +2.2 Atk |
 | **Warped Emerald**<br>`mvtink_warped_emerald` | Rare<br>Gem | **Spore Shield** | Releases defensive spore bursts when taking damage, blinding attackers.<br>• *Stats*: +620 Durability \| 8.4x Mining Speed \| +3.1 Atk |
 | **Netherite Scrap Shard**<br>`mvtink_netherite_shard` | Legendary<br>Metal | **Prime Armor** | Ultimate Nether resilience: +2100 durability, permanent lava immunity, and maximum defense.<br>• *Stats*: +2100 Durability \| 11.5x Mining Speed \| +5.2 Atk |
+| **Steel**<br>`mvtink_steel` | Uncommon<br>Metal | **Cinder Temper** | Nether-quenched carbon steel that keeps a searing temper and scorches whatever it strikes.<br>• *Stats*: +620 Durability \| 7.0x Mining Speed \| +3.4 Atk |
+| **Tungsten**<br>`mvtink_tungsten` | Epic<br>Metal | **Refractory Mass** | Ultra-dense refractory metal whose weight becomes crushing kinetic force.<br>• *Stats*: +980 Durability \| 8.6x Mining Speed \| +4.4 Atk |
+| **Obsidianite**<br>`mvtink_obsidianite` | Rare<br>Mineral | **Umbral Shroud** | Vitrified volcanic glass that drinks ambient light to veil the wielder in shadow.<br>• *Stats*: +820 Durability \| 7.0x Mining Speed \| +3.8 Atk |
+| **Fire Opal**<br>`mvtink_fire_opal` | Epic<br>Gem | **Emberflicker** | Molten opal whose trapped fire flares outward whenever it is struck.<br>• *Stats*: +640 Durability \| 9.4x Mining Speed \| +4.0 Atk |
 
 ---
 

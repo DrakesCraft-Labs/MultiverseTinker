@@ -66,6 +66,7 @@ Cycle through available casting molds using a single, uncluttered selector in Ro
 - Click **♨ Ignite Crucible & Smelt Alloy** (Slot 31).
 - Yields **2x Finished Alloy Ingots** in **Slot 40**.
 - Click the **Alloy Recipes Codex** (Slot 49) to browse all 16 registered alloy formulas in chat.
+- Every pair of the **110 blendable minerals** (97 geological + 13 non-netherite vanilla) yields its own alloy: 5,995 possible pairs, of which 14 resolve to a legendary recipe. Vanilla netherite is the one vanilla material the crucible rejects (it is already an alloy), so **Cinder Steel** and **Cosmic Netherite** cannot be blended.
 - See [Alloy Mixing Guide](Alloy-Mixing.md) for full details.
 
 ---

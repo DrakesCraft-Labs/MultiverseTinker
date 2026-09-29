@@ -448,6 +448,7 @@ public class ForgeGUI implements InventoryHolder {
                 "<gradient:#ff4500:#ffa500><b>♨ Ignite Crucible & Smelt Alloy</b></gradient>",
                 List.of(
                         "Place 2 distinct brush or vanilla minerals in 29 and 33.",
+                        "Vanilla netherite is already an alloy and cannot be blended.",
                         "",
                         "Every mineral combination yields its own unique alloy.",
                         "Consumes 1 of each item to produce 2 alloy ingots."

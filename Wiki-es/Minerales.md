@@ -1,10 +1,10 @@
-# 💎 Catálogo Completo de Minerales (90 Materiales)
+# 💎 Catálogo Completo de Minerales (97 Materiales)
 
-MultiverseTinker cuenta con **90 minerales geológicos**, repartidos equitativamente en 30 por cada dimensión:
+MultiverseTinker cuenta con **97 minerales geológicos**, repartidos entre las tres dimensiones de Minecraft (33 Overworld, 34 Nether, 30 The End):
 
 ---
 
-## 🌍 Overworld (30 Minerales)
+## 🌍 Overworld (33 Minerales)
 
 | Mineral | ID | Rareza | Tipo | Rasgo de Forja | Efecto del Rasgo | Tiempo Fusión |
 |---|---|---|---|---|---|---|
@@ -38,10 +38,13 @@ MultiverseTinker cuenta con **90 minerales geológicos**, repartidos equitativam
 | **Kaolinite** | `mvtink_kaolinite` | Común | Mineral | Ceramic Shell | Amortigua choques térmicos ambientales | 50t |
 | **Zircon** | `mvtink_zircon` | Raro | Cristal | Deep Time | Mayor durabilidad al picar en capas de pizarra | 125t |
 | **Tourmaline** | `mvtink_tourmaline` | Raro | Cristal | Piezo Shock | Libera descargas eléctricas al recibir impacto | 110t |
+| **Nickel** | `mvtink_nickel` | Raro | Metal | Galvanic Hardening | Refuerza las aleaciones contra el desgaste y la pérdida de durabilidad | 90t |
+| **Cryolite** | `mvtink_cryolite` | Poco Común | Mineral | Fluxing Frost | Reduce el calor de fundición y mantiene estables los metales mezclados | 60t |
+| **Bismuth** | `mvtink_bismuth` | Raro | Metal | Brittle Echo | Se quiebra al impactar liberando una grieta térmica afilada | 85t |
 
 ---
 
-## 🔥 The Nether (30 Minerales)
+## 🔥 The Nether (34 Minerales)
 
 | Mineral | ID | Rareza | Tipo | Rasgo de Forja | Efecto del Rasgo | Tiempo Fusión |
 |---|---|---|---|---|---|---|
@@ -75,6 +78,10 @@ MultiverseTinker cuenta con **90 minerales geológicos**, repartidos equitativam
 | **Crimson Gold** | `mvtink_crimson_gold` | Poco Común | Metal | Piglin Respect | Los piglins nunca atacan al portador | 80t |
 | **Warped Emerald** | `mvtink_warped_emerald` | Raro | Gema | Spore Shield | Esporas defensivas al sufrir daño | 115t |
 | **Netherite Scrap Shard** | `mvtink_netherite_shard` | Legendario | Metal | Prime Armor | Durabilidad colosal e inmunidad permanente a lava | 210t |
+| **Steel** | `mvtink_steel` | Poco Común | Metal | Cinder Temper | Conserva un temple ardiente que abrasa todo lo que golpea | 120t |
+| **Tungsten** | `mvtink_tungsten` | Épico | Metal | Refractory Mass | Densidad extrema que convierte el peso en fuerza cinética aplastante | 180t |
+| **Obsidianite** | `mvtink_obsidianite` | Raro | Mineral | Umbral Shroud | Absorbe la luz ambiental para velar al portador en sombra | 150t |
+| **Fire Opal** | `mvtink_fire_opal` | Épico | Gema | Emberflicker | El fuego atrapado estalla al recibir golpes | 140t |
 
 ---
 
