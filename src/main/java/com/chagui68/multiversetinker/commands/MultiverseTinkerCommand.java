@@ -26,6 +26,12 @@ import java.util.*;
 
 public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
+    /** Full access to every administrative subcommand. */
+    public static final String ADMIN_PERMISSION = "multiversetinker.admin";
+
+    /** Opens the Alloy Codex; granted to everyone by default, because it is reference material. */
+    public static final String CODEX_PERMISSION = "multiversetinker.codex";
+
     private final MultiverseTinker plugin;
     private final MaterialRegistry materialRegistry;
     private final TinkerItemRegistry itemRegistry;
@@ -41,17 +47,28 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {
-        if (!sender.hasPermission("multiversetinker.admin")) {
-            sender.sendMessage(miniMessage.deserialize("<red>You do not have permission to execute this command.</red>"));
-            return true;
-        }
-
         if (args.length == 0) {
-            sendHelp(sender, label);
+            if (sender.hasPermission(ADMIN_PERMISSION)) {
+                sendHelp(sender, label);
+            } else {
+                sendPublicHelp(sender, label);
+            }
             return true;
         }
 
         String sub = args[0].toLowerCase(Locale.ROOT);
+
+        // The codex is public reference material, so it is answered before the admin gate.
+        if (sub.equals("codex")) {
+            return openCodex(sender, label, args);
+        }
+
+        if (!sender.hasPermission(ADMIN_PERMISSION)) {
+            sender.sendMessage(miniMessage.deserialize("<red>You do not have permission to execute this command.</red>"));
+            sender.sendMessage(miniMessage.deserialize("<gray>Players can browse the Alloy Codex with </gray><yellow>/"
+                    + label + " codex</yellow><gray>.</gray>"));
+            return true;
+        }
 
         switch (sub) {
             case "reload" -> {
@@ -62,30 +79,6 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 plugin.getArchaeologyManager().getLootTable().reload();
                 itemRegistry.reload();
                 sender.sendMessage(miniMessage.deserialize("<green>MultiverseTinker configuration, items and loot tables reloaded successfully!</green>"));
-                return true;
-            }
-
-            case "codex" -> {
-                Player viewer;
-                if (args.length >= 2) {
-                    viewer = Bukkit.getPlayerExact(args[1]);
-                    if (viewer == null) {
-                        sender.sendMessage(miniMessage.deserialize("<red>Player not found: " + args[1] + "</red>"));
-                        return true;
-                    }
-                } else if (sender instanceof Player self) {
-                    viewer = self;
-                } else {
-                    sender.sendMessage(miniMessage.deserialize("<red>Console must specify a player: /" + label + " codex <player></red>"));
-                    return true;
-                }
-
-                com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI codex =
-                        new com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI(plugin, itemRegistry, materialRegistry);
-                viewer.openInventory(codex.getInventory());
-                if (viewer != sender) {
-                    sender.sendMessage(miniMessage.deserialize("<green>Opened the Alloy Codex for " + viewer.getName() + ".</green>"));
-                }
                 return true;
             }
 
@@ -385,6 +378,53 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(miniMessage.deserialize("<green>✔ Admin Crafted: </green>").append(armor.getItemMeta().displayName()).append(miniMessage.deserialize("<green>!</green>")));
     }
 
+    /**
+     * Opens the Alloy Codex for the sender (or, for admins, for a named player).
+     *
+     * <p>The codex is reference material — the mineral catalog, the recipe list and the combination
+     * explorer — so it is open to every player; only aiming it at somebody else is restricted to
+     * admins.</p>
+     */
+    private boolean openCodex(@Nonnull CommandSender sender, @Nonnull String label, @Nonnull String[] args) {
+        if (!sender.hasPermission(CODEX_PERMISSION)) {
+            sender.sendMessage(miniMessage.deserialize("<red>You do not have permission to open the Alloy Codex.</red>"));
+            return true;
+        }
+
+        Player viewer;
+        if (args.length >= 2) {
+            if (!sender.hasPermission(ADMIN_PERMISSION)) {
+                sender.sendMessage(miniMessage.deserialize("<red>Only admins may open the codex for another player.</red>"));
+                return true;
+            }
+            viewer = Bukkit.getPlayerExact(args[1]);
+            if (viewer == null) {
+                sender.sendMessage(miniMessage.deserialize("<red>Player not found: " + args[1] + "</red>"));
+                return true;
+            }
+        } else if (sender instanceof Player self) {
+            viewer = self;
+        } else {
+            sender.sendMessage(miniMessage.deserialize("<red>Console must specify a player: /" + label + " codex <player></red>"));
+            return true;
+        }
+
+        com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI codex =
+                new com.chagui68.multiversetinker.forge.gui.AlloyCodexGUI(plugin, itemRegistry, materialRegistry);
+        viewer.openInventory(codex.getInventory());
+        if (viewer != sender) {
+            sender.sendMessage(miniMessage.deserialize("<green>Opened the Alloy Codex for " + viewer.getName() + ".</green>"));
+        }
+        return true;
+    }
+
+    /** Help shown to players without the admin permission: the codex is the public entry point. */
+    private void sendPublicHelp(CommandSender sender, String label) {
+        sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker (Chagui68) ===</gold>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " codex</yellow> <gray>- Open the Alloy Codex: mineral catalog, legendary recipes, catalysts, forged alloys, the combination explorer and the totals.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<gray>It is also reachable from the book button in the Alloy Crucible tab of the Forge.</gray>"));
+    }
+
     private void sendHelp(CommandSender sender, String label) {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
@@ -397,12 +437,20 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String alias, @Nonnull String[] args) {
-        if (!sender.hasPermission("multiversetinker.admin")) {
-            return Collections.emptyList();
+        if (args.length == 1) {
+            List<String> subcommands = sender.hasPermission(ADMIN_PERMISSION)
+                    ? List.of("craft", "give", "forge", "codex", "verify", "reload")
+                    : List.of("codex");
+            return filter(subcommands, args[0]);
         }
 
-        if (args.length == 1) {
-            return filter(List.of("craft", "give", "forge", "codex", "verify", "reload"), args[0]);
+        // Admins may aim the codex at a player: their names are the suggestions.
+        if (args.length == 2 && args[0].equalsIgnoreCase("codex")) {
+            return sender.hasPermission(ADMIN_PERMISSION) ? null : Collections.emptyList();
+        }
+
+        if (!sender.hasPermission(ADMIN_PERMISSION)) {
+            return Collections.emptyList();
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("craft")) {
@@ -441,7 +489,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
             return filter(List.of("0", "90", "180", "270"), args[2]);
         }
 
-        if (args.length == 2 && (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("codex"))) {
+        if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
             return null; // Player names
         }
 

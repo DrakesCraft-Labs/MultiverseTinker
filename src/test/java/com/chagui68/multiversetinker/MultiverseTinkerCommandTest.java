@@ -57,6 +57,45 @@ class MultiverseTinkerCommandTest {
     }
 
     @Test
+    @DisplayName("The codex is open to every player, while the other subcommands stay admin-only")
+    void codexIsPublic() {
+        PlayerMock guest = server.addPlayer("visitor");
+        assertFalse(guest.isOp(), "The player must not be an operator");
+
+        drainMessages(guest);
+        assertTrue(guest.performCommand("mvtink codex"), "Any player must be able to open the codex");
+        assertNotNull(guest.getOpenInventory(), "The codex inventory must actually open");
+
+        // Everything else still refuses, and points the player at the codex.
+        drainMessages(guest);
+        assertTrue(guest.performCommand("mvtink verify"));
+        List<String> refused = drainMessages(guest);
+        assertTrue(refused.stream().anyMatch(line -> line.contains("do not have permission")),
+                "Admin subcommands must refuse a plain player, got: " + refused);
+        assertTrue(refused.stream().anyMatch(line -> line.contains("codex")),
+                "The refusal must point at the public codex, got: " + refused);
+
+        // And a plain player may not aim it at somebody else.
+        drainMessages(guest);
+        assertTrue(guest.performCommand("mvtink codex archivist"));
+        assertTrue(drainMessages(guest).stream().anyMatch(line -> line.contains("Only admins")),
+                "Opening the codex for another player must stay admin-only");
+
+        TabCompleter completer = command.getTabCompleter();
+        assertNotNull(completer);
+        List<String> guestSuggestions = completer.onTabComplete(guest, command, "mvtink", new String[]{""});
+        assertNotNull(guestSuggestions);
+        assertEquals(List.of("codex"), guestSuggestions,
+                "A plain player is only offered the codex, got: " + guestSuggestions);
+
+        // No arguments: the public help tells them where the codex is.
+        drainMessages(guest);
+        assertTrue(guest.performCommand("mvtink"));
+        assertTrue(drainMessages(guest).stream().anyMatch(line -> line.contains("/mvtink codex")),
+                "The public help must name the codex");
+    }
+
+    @Test
     @DisplayName("The catalog subcommand is gone and the help points at the codex instead")
     void catalogLivesInTheCodex() {
         TabCompleter completer = command.getTabCompleter();
@@ -121,9 +160,13 @@ class MultiverseTinkerCommandTest {
 
     /** Reads and clears every message the player received. */
     private List<String> drainMessages() {
+        return drainMessages(admin);
+    }
+
+    private List<String> drainMessages(PlayerMock player) {
         List<String> messages = new ArrayList<>();
         Component message;
-        while ((message = admin.nextComponentMessage()) != null) {
+        while ((message = player.nextComponentMessage()) != null) {
             messages.add(PLAIN.serialize(message));
         }
         return messages;

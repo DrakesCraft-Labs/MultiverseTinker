@@ -64,3 +64,5 @@ Al interactuar con el yunque validado, se cancela la interfaz de yunque de Minec
 * `/mvtink forge build [0|90|180|270]` — Construye al instante la estructura completa en la ubicación del jugador.
 * `/mvtink forge check` — Analiza el yunque al que estás mirando y reporta el porcentaje de coincidencia y bloques faltantes.
 * `/mvtink forge gui` — Abre directamente la interfaz gráfica de la forja para administradores.
+
+> 📖 El **Codex de Aleaciones** (`/mvtink codex`) no necesita ningún permiso: es el menú público de referencia para todos los jugadores, y también se abre desde el botón del libro en la pestaña del Crisol de Aleaciones.

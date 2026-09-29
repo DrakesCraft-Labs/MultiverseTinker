@@ -133,14 +133,15 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 * `/mvtink forge check` — Validate the targeted anvil and display structure match percentage and diagnostics.
 * `/mvtink forge gui` — Open the custom Multiverse Forge GUI directly.
 * `/mvtink give <player> <mvtink_id> [amount]` — Give any item (raw, ingot, nugget, block, molten bucket, tool parts, casts, smeltery, prospector brush). The `mvtink_` prefix is optional, ids are resolved on demand, and composite/prime alloys forged after startup are givable too. Tab completion is **hierarchical**: it offers the id of every registered material first and, once a material id is complete, its item kinds, so no material is ever missing from the list.
-* `/mvtink codex [player]` — Open the browsable **Alloy Codex GUI**: the full **mineral catalog** (every material with its id, dimension, rarity, trait and essences), legendary recipes, prime catalysts, forged composites and primes, a combination explorer and the totals (also reachable in-game from the book button in the Alloy Crucible tab; sneak-click that button for the totals in chat).
+* `/mvtink codex [player]` — Open the browsable **Alloy Codex GUI**: the full **mineral catalog** (every material with its id, dimension, rarity, trait and essences), legendary recipes, prime catalysts, forged composites and primes, a combination explorer and the totals. **Open to every player** (targeting another player is admin-only) and also reachable in-game from the book button in the Alloy Crucible tab — sneak-click that button for the totals in chat.
 * `/mvtink verify` — Diagnose the item registry: registered materials, item kinds per material, distinct ids and a full resolvability check (every material × every kind).
 * `/mvtink reload` — Reload configuration, items, and loot tables.
 
 > `/mvtink` is the plugin's only command name and it registers **no aliases** — nothing else will ever respond to it.
 
 **Permissions:**
-* `multiversetinker.admin` — Access to `/mvtink` administrative commands (default: `op`).
+* `multiversetinker.admin` — Access to the administrative `/mvtink` subcommands (`craft`, `give`, `forge`, `verify`, `reload`) (default: `op`).
+* `multiversetinker.codex` — Allows opening the Alloy Codex, the public reference menu (default: `true`).
 * `multiversetinker.archaeology` — Allows using brushes for geological extraction (default: `true`).
 
 ---

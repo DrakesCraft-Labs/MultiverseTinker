@@ -140,8 +140,10 @@ tool or armor piece also shows a `✦ Prime Alloy:` line naming the ultimate and
 ## 📖 The Alloy Codex
 
 Everything above is browsable in game. Open the **Alloy Codex** with `/mvtink codex` or by clicking the
-book button in the Alloy Crucible tab (sneak-click it to print the plain chat listing instead). The codex
-is a paginated 54-slot menu with seven sections:
+book button in the Alloy Crucible tab (sneak-click it to print the totals in chat instead). The codex is
+**open to every player** — it is reference material, not an admin tool — and only aiming it at somebody
+else with `/mvtink codex <player>` requires the admin permission. It is a paginated 54-slot menu with seven
+sections:
 
 | Section | What it shows |
 |---|---|

@@ -7,16 +7,20 @@ description: Modular tools, weapons and armor with exclusive perks and animation
 website: https://github.com/DrakesCraft-Labs/MultiverseTinker
 
 # Single command, no aliases: /mvtink is the only name this plugin answers to.
+# The command itself carries no permission so /mvtink codex stays open to everyone; every other
+# subcommand enforces multiversetinker.admin on its own.
 commands:
   mvtink:
     description: Main management command for MultiverseTinker.
-    permission: multiversetinker.admin
     usage: /mvtink <craft|give|forge|codex|verify|reload>
 
 permissions:
   multiversetinker.admin:
     description: Full administrative access to MultiverseTinker commands.
     default: op
+  multiversetinker.codex:
+    description: Allows opening the Alloy Codex (mineral catalog, recipes, forged alloys and the combination explorer).
+    default: true
   multiversetinker.archaeology:
     description: Allows using the brush to extract minerals via archaeology.
     default: true

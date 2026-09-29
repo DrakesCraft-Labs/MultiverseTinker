@@ -133,14 +133,15 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
 * `/mvtink forge check` — Valida el yunque al que estás apuntando y muestra el porcentaje de coincidencia.
 * `/mvtink forge gui` — Abre directamente la interfaz gráfica de la Forja Multiverse.
 * `/mvtink give <jugador> <mvtink_id> [cantidad]` — Entrega cualquier ítem (en bruto, lingote, pepita, bloque, balde fundido, piezas de herramienta, moldes, crisol, brocha). El prefijo `mvtink_` es opcional, los ids se resuelven bajo demanda y las aleaciones compuestas/primordiales forjadas después del arranque también se pueden entregar. El autocompletado es **jerárquico**: primero ofrece el id de todos los materiales registrados y, cuando el id está completo, sus tipos de ítem, así que ningún material desaparece de la lista.
-* `/mvtink codex [jugador]` — Abre el **Codex de Aleaciones** navegable: el **catálogo de minerales** completo (cada material con su id, dimensión, rareza, rasgo y esencias), recetas legendarias, catalizadores primordiales, compuestas y primordiales forjadas, un explorador de combinaciones y los totales (también disponible in-game desde el botón del libro en la pestaña del Crisol; shift-clic en ese botón imprime los totales en el chat).
+* `/mvtink codex [jugador]` — Abre el **Codex de Aleaciones** navegable: el **catálogo de minerales** completo (cada material con su id, dimensión, rareza, rasgo y esencias), recetas legendarias, catalizadores primordiales, compuestas y primordiales forjadas, un explorador de combinaciones y los totales. **Abierto a todos los jugadores** (apuntarlo a otro jugador es solo para admins) y también disponible in-game desde el botón del libro en la pestaña del Crisol — shift-clic en ese botón imprime los totales en el chat.
 * `/mvtink verify` — Diagnostica el registro de ítems: materiales registrados, tipos de ítem por material, ids distintos y una comprobación completa de resolubilidad (cada material × cada tipo).
 * `/mvtink reload` — Recarga la configuración y las tablas de arqueología.
 
 > `/mvtink` es el único nombre de comando del plugin y **no registra alias** — ningún otro nombre responderá.
 
 **Permisos:**
-* `multiversetinker.admin` — Acceso a los comandos administrativos de `/mvtink` (por defecto: `op`).
+* `multiversetinker.admin` — Acceso a los subcomandos administrativos de `/mvtink` (`craft`, `give`, `forge`, `verify`, `reload`) (por defecto: `op`).
+* `multiversetinker.codex` — Permite abrir el Codex de Aleaciones, el menú público de referencia (por defecto: `true`).
 * `multiversetinker.archaeology` — Permite usar la brocha para extracción geológica (por defecto: `true`).
 
 ---

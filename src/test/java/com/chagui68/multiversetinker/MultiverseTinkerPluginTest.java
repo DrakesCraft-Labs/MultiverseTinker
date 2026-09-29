@@ -53,8 +53,13 @@ class MultiverseTinkerPluginTest {
                 "The long command name must be gone");
         assertNotNull(descriptor.getConfigurationSection("commands.mvtink"), "/mvtink must be declared");
         assertTrue(descriptor.getStringList("commands.mvtink.aliases").isEmpty(), "No aliases are allowed");
-        assertEquals("multiversetinker.admin", descriptor.getString("commands.mvtink.permission"));
+        assertNull(descriptor.getString("commands.mvtink.permission"),
+                "The command must carry no permission, or /mvtink codex could not be public");
         assertNotNull(descriptor.getConfigurationSection("permissions"), "Permissions must stay documented");
+        assertTrue(descriptor.getBoolean("permissions.multiversetinker.codex.default"),
+                "The codex must be open to every player by default");
+        assertEquals("op", descriptor.getString("permissions.multiversetinker.admin.default"),
+                "Administrative access must stay restricted");
 
         String usage = descriptor.getString("commands.mvtink.usage");
         assertNotNull(usage);

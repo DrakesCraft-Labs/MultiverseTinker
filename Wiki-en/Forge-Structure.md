@@ -74,3 +74,5 @@ Right-clicking the validated central anvil cancels the vanilla anvil interface a
 * `/mvtink forge build [0|90|180|270]` — Instantly constructs the full multiblock structure centered on the player or targeted block.
 * `/mvtink forge check` — Inspects the multiblock structure around the targeted anvil, reporting exact match percentage and missing blocks.
 * `/mvtink forge gui` — Directly opens the custom Forge GUI for testing.
+
+> 📖 The **Alloy Codex** (`/mvtink codex`) needs no permission at all: it is the public reference menu for every player, and it is also reachable from the book button in the Alloy Crucible tab.
