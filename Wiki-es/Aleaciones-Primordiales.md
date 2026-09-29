@@ -144,11 +144,12 @@ que porta.
 ## 📖 El Codex de Aleaciones
 
 Todo lo anterior es navegable in-game. Abre el **Codex de Aleaciones** con `/mvtink codex` o pulsando el
-botón del libro en la pestaña del Crisol de Aleaciones (shift-clic para imprimir el listado simple en el
-chat). El codex es un menú paginado de 54 slots con seis secciones:
+botón del libro en la pestaña del Crisol de Aleaciones (shift-clic para imprimir los totales en el
+chat). El codex es un menú paginado de 54 slots con siete secciones:
 
 | Sección | Qué muestra |
 |---|---|
+| **Catálogo de Minerales** | Cada material que conoce este servidor — geológico, vanilla y aleación forjada — con su id, dimensión, rareza, rasgo y esencias. Es el reemplazo del antiguo listado por chat. |
 | **Recetas Legendarias** | Las 16 aleaciones curadas: padres, stats, esencias y rasgo curado. |
 | **Catalizadores Primordiales** | Los 12 catalizadores vanilla, con el ultimate y el estado que otorga cada uno. |
 | **Compuestas Forjadas** | Cada compuesta descubierta en este servidor, con padres, stats y esencias. |

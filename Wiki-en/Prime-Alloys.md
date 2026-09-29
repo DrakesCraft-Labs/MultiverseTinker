@@ -141,10 +141,11 @@ tool or armor piece also shows a `✦ Prime Alloy:` line naming the ultimate and
 
 Everything above is browsable in game. Open the **Alloy Codex** with `/mvtink codex` or by clicking the
 book button in the Alloy Crucible tab (sneak-click it to print the plain chat listing instead). The codex
-is a paginated 54-slot menu with six sections:
+is a paginated 54-slot menu with seven sections:
 
 | Section | What it shows |
 |---|---|
+| **Mineral Catalog** | Every material this server knows — geological, vanilla and forged alloy — with its id, dimension, rarity, trait and essences. This is the codex replacement for the old chat listing. |
 | **Legendary Recipes** | The 16 curated alloys with parents, stats, essences and curated trait. |
 | **Prime Catalysts** | The 12 vanilla catalysts with the ultimate and state each one grants. |
 | **Forged Composites** | Every composite this server has discovered, with parents, stats and essences. |

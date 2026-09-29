@@ -58,9 +58,11 @@ class MultiverseTinkerPluginTest {
 
         String usage = descriptor.getString("commands.mvtink.usage");
         assertNotNull(usage);
-        for (String sub : List.of("craft", "give", "forge", "codex", "list", "verify", "reload")) {
+        for (String sub : List.of("craft", "give", "forge", "codex", "verify", "reload")) {
             assertTrue(usage.contains(sub), "plugin.yml usage is missing /mvtink " + sub);
         }
+        assertFalse(usage.contains("list"),
+                "The catalog lives in the codex, so /mvtink list must not be advertised");
     }
 
     @Test

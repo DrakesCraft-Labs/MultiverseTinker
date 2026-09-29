@@ -15,22 +15,18 @@ import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Covers the {@code /mvtink} listing and its suggestions: every registered material has to stay
- * visible, whether it is read through the paged chat listing or discovered through tab completion.
+ * Covers the {@code /mvtink} command surface: the subcommands it exposes, the ones it deliberately
+ * does not (the mineral catalog belongs to the codex), and the suggestions that keep every material
+ * reachable through tab completion.
  */
 class MultiverseTinkerCommandTest {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
-    private static final Pattern MATERIAL_ID = Pattern.compile("\\((mvtink_[a-z0-9_]+)\\)");
 
     private ServerMock server;
     private MultiverseTinker plugin;
@@ -61,40 +57,24 @@ class MultiverseTinkerCommandTest {
     }
 
     @Test
-    @DisplayName("The paged listing walks through every registered material exactly once")
-    void listingShowsEveryMaterial() {
-        List<TinkerMaterial> all = new ArrayList<>(plugin.getMaterialRegistry().getAll());
-        Set<String> listed = new LinkedHashSet<>();
+    @DisplayName("The catalog subcommand is gone and the help points at the codex instead")
+    void catalogLivesInTheCodex() {
+        TabCompleter completer = command.getTabCompleter();
+        assertNotNull(completer);
 
-        int pages = (int) Math.ceil(all.size() / 20.0);
-        for (int page = 1; page <= pages; page++) {
-            admin.nextComponentMessage();
-            drainMessages();
-            assertTrue(admin.performCommand("mvtink list " + page), "Page " + page + " must run");
+        List<String> subcommands = completer.onTabComplete(admin, command, "mvtink", new String[]{""});
+        assertNotNull(subcommands);
+        assertFalse(subcommands.contains("list"),
+                "The catalog lives in the codex, so 'list' must never be suggested again");
+        assertTrue(subcommands.contains("codex"), "The codex is the way in");
 
-            for (String message : drainMessages()) {
-                Matcher matcher = MATERIAL_ID.matcher(message);
-                if (matcher.find()) listed.add(matcher.group(1));
-            }
-        }
-
-        assertEquals(all.size(), listed.size(),
-                "Every registered material must appear in the listing, missing: "
-                        + all.stream().map(TinkerMaterial::getId).filter(id -> !listed.contains(id)).toList());
-        assertTrue(listed.contains("mvtink_singularite"), "Alloys belong to the listing too");
-    }
-
-    @Test
-    @DisplayName("A page beyond the end is clamped instead of showing nothing")
-    void listingClampsThePage() {
+        // An unknown subcommand still answers with the help, so old habits only get a pointer.
         drainMessages();
-        assertTrue(admin.performCommand("mvtink list 999"));
-
+        assertTrue(admin.performCommand("mvtink list 2"));
         List<String> messages = drainMessages();
-        assertFalse(messages.isEmpty(), "The listing must still answer on an out-of-range page");
-        assertTrue(messages.get(0).contains("page"), "The header must report the page it settled on");
-        assertTrue(messages.stream().anyMatch(line -> line.startsWith("• ")),
-                "The last page must still show materials");
+        assertFalse(messages.isEmpty(), "The command must say something");
+        assertTrue(messages.stream().anyMatch(line -> line.contains("codex")),
+                "The help must point at the codex, got: " + messages);
     }
 
     @Test

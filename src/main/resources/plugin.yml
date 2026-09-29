@@ -11,7 +11,7 @@ commands:
   mvtink:
     description: Main management command for MultiverseTinker.
     permission: multiversetinker.admin
-    usage: /mvtink <craft|give|forge|codex|list|verify|reload>
+    usage: /mvtink <craft|give|forge|codex|verify|reload>
 
 permissions:
   multiversetinker.admin:

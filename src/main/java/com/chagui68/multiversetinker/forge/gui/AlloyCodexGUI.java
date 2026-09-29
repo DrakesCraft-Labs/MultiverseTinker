@@ -54,7 +54,9 @@ public class AlloyCodexGUI implements InventoryHolder {
         EXPLORER(Material.COMPASS, "<gradient:#2ecc71:#27ae60><b>Combination Explorer</b></gradient>",
                 "Pick a material and see every partner the crucible accepts."),
         SUMMARY(Material.BOOK, "<gradient:#f1c40f:#e67e22><b>Alloy Space Summary</b></gradient>",
-                "How many alloys exist, by category.");
+                "How many alloys exist, by category."),
+        MINERALS(Material.AMETHYST_CLUSTER, "<gradient:#00ffaa:#00aaff><b>Mineral Catalog</b></gradient>",
+                "Every geological, vanilla and alloy material this server knows, with its traits.");
 
         private final Material icon;
         private final String title;
@@ -72,7 +74,8 @@ public class AlloyCodexGUI implements InventoryHolder {
     private static final int CONTENT_SLOTS = 36;
     private static final int SLOT_BACK = 0;
     private static final int SLOT_SECTION_FIRST = 1;
-    private static final int SLOT_PRINT = 7;
+    /** The top row is fully used by the sections, so the chat dump lives in the bottom row. */
+    private static final int SLOT_PRINT = 47;
     private static final int SLOT_CLOSE = 8;
     private static final int SLOT_PREV = 45;
     private static final int SLOT_INFO = 49;
@@ -238,7 +241,50 @@ public class AlloyCodexGUI implements InventoryHolder {
             case PRIMES -> forgedEntries(true);
             case EXPLORER -> explorerTarget == null ? explorerChoices() : explorerPartners();
             case SUMMARY -> summaryEntries();
+            case MINERALS -> mineralEntries();
         };
+    }
+
+    /**
+     * The catalog of everything that can be forged with, in one browsable tab.
+     *
+     * <p>This is the codex replacement for the old chat listing: each material carries its id,
+     * dimension, rarity, type, trait and essences, so a player can plan a build without leaving the
+     * inventory. Composites and primes forged on this server appear here as well, because they become
+     * forgeable materials the moment they are smelted.</p>
+     */
+    private List<ItemStack> mineralEntries() {
+        List<ItemStack> entries = new ArrayList<>();
+        for (TinkerMaterial material : materialRegistry.getAll()) {
+            List<String> lore = new ArrayList<>();
+            lore.add("<dark_gray>ID: " + material.getId() + "</dark_gray>");
+            lore.add("<gray>Origin: <yellow>" + material.getOrigin().name() + "</yellow> · Rarity: <yellow>"
+                    + material.getRarity().getDisplayName() + "</yellow></gray>");
+            lore.add("<gray>Type: <yellow>" + material.getType().getDisplayTypeName() + "</yellow> · Source: <yellow>"
+                    + material.getOrigin().getSourceBlockName() + "</yellow></gray>");
+            lore.add("");
+            lore.add("<gray>Durability: <green>+" + material.getDurabilityBonus() + "</green> · Speed: <aqua>"
+                    + String.format(Locale.US, "%.1fx", material.getMiningSpeed()) + "</aqua> · Damage: <red>+"
+                    + String.format(Locale.US, "%.1f", material.getAttackDamageBonus()) + "</red></gray>");
+            lore.add("<gold>✦ Trait: </gold><aqua>" + material.getTraitName() + "</aqua>");
+            lore.add("<dark_aqua>" + material.getTraitDescription() + "</dark_aqua>");
+            lore.add("<gray>Essences: <light_purple>" + essenceLine(material) + "</light_purple></gray>");
+            lore.add("");
+            lore.add("<dark_gray>" + material.getDescription() + "</dark_gray>");
+
+            // Show the material as it drops in the world, so the catalog is recognisable at a glance;
+            // alloys have no raw form, so they fall back to their ingot and then to a generic shard.
+            ItemStack raw = itemRegistry.getRawItem(material.getId());
+            ItemStack icon = (raw != null && raw.getType() != Material.AIR) ? raw : null;
+            if (icon == null) {
+                ItemStack ingot = TinkerItemBuilder.createIngot(material);
+                icon = (ingot.getType() != Material.AIR) ? ingot : new ItemStack(Material.AMETHYST_SHARD);
+            }
+            applyMeta(icon, "<gradient:" + material.getColorHex() + ":#ffffff><b>" + material.getName()
+                    + "</b></gradient>", lore);
+            entries.add(icon);
+        }
+        return entries;
     }
 
     private List<ItemStack> legendaryEntries() {

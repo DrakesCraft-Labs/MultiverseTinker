@@ -2,7 +2,6 @@ package com.chagui68.multiversetinker.commands;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.api.CastType;
-import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.api.ModularToolType;
 import com.chagui68.multiversetinker.api.ModularWeaponType;
@@ -26,8 +25,6 @@ import javax.annotation.Nonnull;
 import java.util.*;
 
 public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
-
-    private static final int LIST_PAGE_SIZE = 20;
 
     private final MultiverseTinker plugin;
     private final MaterialRegistry materialRegistry;
@@ -130,53 +127,6 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(miniMessage.deserialize("<red>✖ " + unresolved.size() + " ids failed to resolve: </red><yellow>"
                             + String.join(", ", unresolved.subList(0, Math.min(10, unresolved.size()))) + "</yellow>"));
                 }
-                return true;
-            }
-
-            case "list" -> {
-                MineralOrigin filter = null;
-                int page = 1;
-                for (int i = 1; i < Math.min(args.length, 3); i++) {
-                    String arg = args[i];
-                    try {
-                        filter = MineralOrigin.valueOf(arg.toUpperCase(Locale.ROOT));
-                        continue;
-                    } catch (IllegalArgumentException ignored) {
-                        // not an origin: it may be a page number
-                    }
-                    try {
-                        page = Integer.parseInt(arg);
-                    } catch (NumberFormatException ignored) {
-                        // neither an origin nor a page: ignore it
-                    }
-                }
-
-                Collection<TinkerMaterial> list = filter != null
-                        ? materialRegistry.getByOrigin(filter)
-                        : materialRegistry.getAll();
-                List<TinkerMaterial> ordered = new ArrayList<>(list);
-
-                // The list is paged: dumping every material at once floods the chat and pushes the
-                // first entries out of the client's history, which looks like materials going missing.
-                int pages = Math.max(1, (int) Math.ceil(ordered.size() / (double) LIST_PAGE_SIZE));
-                page = Math.max(1, Math.min(page, pages));
-                int from = (page - 1) * LIST_PAGE_SIZE;
-                int to = Math.min(from + LIST_PAGE_SIZE, ordered.size());
-
-                sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker Materials (Chagui68) "
-                        + (filter != null ? "· " + filter.name() : "· all dimensions")
-                        + " · page " + page + "/" + pages + " ===</gold>"));
-                for (int i = from; i < to; i++) {
-                    TinkerMaterial mat = ordered.get(i);
-                    String line = "<gray>• </gray><gradient:" + mat.getColorHex() + ":#ffffff>" + mat.getName() + "</gradient> "
-                            + "<dark_gray>(" + mat.getId() + ")</dark_gray> "
-                            + "<yellow>[" + mat.getOrigin().name() + "]</yellow> "
-                            + "<aqua>Trait: " + mat.getTraitName() + "</aqua>";
-                    sender.sendMessage(miniMessage.deserialize(line));
-                }
-                sender.sendMessage(miniMessage.deserialize("<gray>Showing <yellow>" + from + "-" + to
-                        + "</yellow> of <yellow>" + ordered.size() + "</yellow> materials · next page: <yellow>/"
-                        + label + " list " + (filter != null ? filter.name() + " " : "") + (page + 1) + "</yellow></gray>"));
                 return true;
             }
 
@@ -439,9 +389,9 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give any raw ore, ingot, nugget, block, molten bucket, part, cast, smeltery or brush. The mvtink_ prefix is optional.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " codex [player]</yellow> <gray>- Open the browsable Alloy Codex: legendary recipes, catalysts, forged composites and primes, a combination explorer and the totals.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " codex [player]</yellow> <gray>- Open the browsable Alloy Codex: the mineral catalog, legendary recipes, catalysts, forged composites and primes, a combination explorer and the totals.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " verify</yellow> <gray>- Check that every material and every item kind is registered and resolvable.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));                sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " list [OVERWORLD|NETHER|THE_END]</yellow> <gray>- List all 97 geological materials.</gray>"));
+        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));
         sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " reload</yellow> <gray>- Reload configuration and caches.</gray>"));
     }
 
@@ -452,7 +402,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return filter(List.of("craft", "give", "forge", "codex", "list", "verify", "reload"), args[0]);
+            return filter(List.of("craft", "give", "forge", "codex", "verify", "reload"), args[0]);
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("craft")) {
@@ -493,10 +443,6 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
         if (args.length == 2 && (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("codex"))) {
             return null; // Player names
-        }
-
-        if (args.length == 2 && args[0].equalsIgnoreCase("list")) {
-            return filter(List.of("OVERWORLD", "NETHER", "THE_END"), args[1]);
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("give")) {

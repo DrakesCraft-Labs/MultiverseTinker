@@ -24,8 +24,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Covers the in-game Alloy Codex: six sections, pagination and the combination explorer, which must
- * preview every valid partner without creating a single alloy.
+ * Covers the in-game Alloy Codex: its sections, the mineral catalog, pagination and the combination
+ * explorer, which must preview every valid partner without creating a single alloy.
  */
 class AlloyCodexTest {
 
@@ -74,6 +74,8 @@ class AlloyCodexTest {
         assertEquals(alloys.getPrimeAlloyCount(), codex.entryCount(AlloyCodexGUI.Section.PRIMES));
         assertTrue(codex.entryCount(AlloyCodexGUI.Section.SUMMARY) >= 5,
                 "The summary must explain the whole alloy space");
+        assertEquals(materials.getAll().size(), codex.entryCount(AlloyCodexGUI.Section.MINERALS),
+                "The mineral catalog must list every registered material, including forged alloys");
 
         long mixable = materials.getAll().stream().filter(AlloyRegistry::isMixable).count();
         assertEquals(16 + VanillaCatalyst.values().length + mixable,
@@ -89,6 +91,13 @@ class AlloyCodexTest {
         codex.handleClick(player, SLOT_SECTION_FIRST + 4);
         assertEquals(AlloyCodexGUI.Section.EXPLORER, codex.getSection());
         assertNull(codex.getExplorerTarget(), "Switching sections resets the explorer");
+
+        // The catalog is the last tab, and clicking it shows materials rather than forging anything.
+        codex.handleClick(player, SLOT_SECTION_FIRST + 6);
+        assertEquals(AlloyCodexGUI.Section.MINERALS, codex.getSection());
+        assertNotNull(codex.getInventory().getItem(CONTENT_START), "The catalog must show materials");
+        codex.handleClick(player, SLOT_SECTION_FIRST + 4);
+        assertEquals(AlloyCodexGUI.Section.EXPLORER, codex.getSection());
 
         // The explorer picker has 138 entries across 4 pages of 36.
         long mixable = materials.getAll().stream().filter(AlloyRegistry::isMixable).count();
@@ -110,6 +119,35 @@ class AlloyCodexTest {
         assertEquals(org.bukkit.Material.GRAY_STAINED_GLASS_PANE,
                 codex.getInventory().getItem(SLOT_PREV).getType(),
                 "The first page must not offer a previous page");
+    }
+
+    @Test
+    @DisplayName("The catalog lists every material with its trait and never forges anything")
+    void catalogListsEveryMaterial() {
+        codex.handleClick(player, SLOT_SECTION_FIRST + 6);
+        assertEquals(AlloyCodexGUI.Section.MINERALS, codex.getSection());
+
+        TinkerMaterial copper = materials.get("mvtink_copper");
+        assertNotNull(copper);
+
+        long pages = (long) Math.ceil(materials.getAll().size() / 36.0);
+        int found = 0;
+        for (long page = 0; page < pages; page++) {
+            for (int slot = CONTENT_START; slot < CONTENT_START + 36; slot++) {
+                ItemStack entry = codex.getInventory().getItem(slot);
+                if (entry == null || entry.getType() == org.bukkit.Material.GRAY_STAINED_GLASS_PANE) continue;
+                String text = plainText(entry);
+                if (text.contains("ID: " + copper.getId())) {
+                    found++;
+                    assertTrue(text.contains(copper.getTraitName()),
+                            "The catalog entry must name the material trait, got: " + text);
+                    assertTrue(text.contains(copper.getOrigin().name()),
+                            "The catalog entry must name the dimension, got: " + text);
+                }
+            }
+            codex.handleClick(player, SLOT_NEXT);
+        }
+        assertEquals(1, found, "Copper must appear exactly once in the catalog");
     }
 
     @Test
