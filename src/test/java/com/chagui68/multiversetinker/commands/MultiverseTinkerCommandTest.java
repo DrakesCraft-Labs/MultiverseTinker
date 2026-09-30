@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.commands;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import net.kyori.adventure.text.Component;
@@ -97,6 +98,74 @@ class MultiverseTinkerCommandTest {
         assertTrue(guest.performCommand("mvtink"));
         assertTrue(drainMessages(guest).stream().anyMatch(line -> line.contains("/mvtink codex")),
                 "The public help must name the codex");
+    }
+
+    @Test
+    @DisplayName("A server can grant one slice of the administration instead of the whole command surface")
+    void aSingleAdministrativeNodeGrantsJustThatSubcommand() {
+        PlayerMock host = server.addPlayer("host");
+        assertFalse(host.isOp(), "The slice must reach a plain player");
+        host.addAttachment(plugin, AccessControl.AdminCommand.GIVE.permission(), true);
+
+        // Exactly the granted subcommand runs: no umbrella, no operator flag.
+        drainMessages(host);
+        assertTrue(host.performCommand("mvtink give archivist mvtink_tin_ingot 2"));
+        List<String> granted = drainMessages(host);
+        assertFalse(granted.stream().anyMatch(line -> line.contains("do not have permission")),
+                "The granted slice must not be refused, got: " + granted);
+        assertTrue(granted.stream().anyMatch(line -> line.contains("Gave 2x mvtink_tin_ingot")),
+                "The granted slice must actually run, got: " + granted);
+
+        // Every other slice still refuses, and does nothing.
+        for (String invocation : List.of("craft weapon SWORD gold iron diamond", "forge build 0", "verify", "reload")) {
+            drainMessages(host);
+            assertTrue(host.performCommand("mvtink " + invocation));
+            List<String> refused = drainMessages(host);
+            assertTrue(refused.stream().anyMatch(line -> line.contains("do not have permission to execute this command")),
+                    "/mvtink " + invocation + " must be refused, got: " + refused);
+        }
+
+        // The suggestions say the same thing: the granted subcommand, plus the codex everyone may open.
+        TabCompleter completer = command.getTabCompleter();
+        assertNotNull(completer);
+        assertEquals(List.of("give", "codex"),
+                completer.onTabComplete(host, command, "mvtink", new String[]{""}),
+                "Only the granted slice and the public codex may be suggested");
+        List<String> giveArgs = completer.onTabComplete(host, command, "mvtink",
+                new String[]{"give", "archivist", ""});
+        assertNotNull(giveArgs);
+        assertTrue(giveArgs.contains("mvtink_tin_ingot"),
+                "A granted subcommand must still complete its own arguments, got " + giveArgs.size() + " ids");
+        assertEquals(List.of(),
+                completer.onTabComplete(host, command, "mvtink", new String[]{"reload", ""}),
+                "A subcommand the sender may not run must suggest nothing");
+
+        // And the help only advertises what this player may run.
+        drainMessages(host);
+        assertTrue(host.performCommand("mvtink"));
+        List<String> help = drainMessages(host);
+        assertTrue(help.stream().anyMatch(line -> line.contains("/mvtink give ")),
+                "The help must show the granted slice, got: " + help);
+        assertFalse(help.stream().anyMatch(line -> line.contains("/mvtink reload")),
+                "The help must not advertise a subcommand this player cannot run, got: " + help);
+
+        // A permissions plugin can grant the umbrella alone to a plain player: they keep getting all
+        // five subcommands, which is what a server that has always handed it out relies on.
+        PlayerMock delegate = server.addPlayer("delegate");
+        assertFalse(delegate.isOp());
+        delegate.addAttachment(plugin, AccessControl.AdminCommand.UMBRELLA, true);
+
+        drainMessages(delegate);
+        assertTrue(delegate.performCommand("mvtink reload"));
+        assertTrue(drainMessages(delegate).stream().anyMatch(line -> line.contains("reloaded successfully")),
+                "An umbrella holder must run every slice, reload included");
+        assertEquals(List.of("craft", "give", "forge", "codex", "verify", "reload"),
+                completer.onTabComplete(delegate, command, "mvtink", new String[]{""}),
+                "An umbrella holder is offered the whole command surface");
+
+        // The operator holds the umbrella by default, so the whole surface is untouched for them too.
+        assertTrue(AccessControl.allows(admin, AccessControl.AdminCommand.CRAFT));
+        assertTrue(AccessControl.allows(admin, AccessControl.Surface.ADMIN_COMMANDS));
     }
 
     @Test

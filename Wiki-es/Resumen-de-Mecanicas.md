@@ -218,7 +218,7 @@ la brocha y los moldes no pertenecen a ningún material, cualquier filtro activo
 
 | Comando | Quién | Qué hace |
 |---|---|---|
-| `/mvtink` | todos | Ayuda pública (solo `codex`). Con `multiversetinker.admin`: la ayuda completa |
+| `/mvtink` | todos | Ayuda pública (solo `codex`). Con `multiversetinker.admin` o cualquiera de sus nodos por subcomando: la ayuda de los subcomandos que ese jugador puede ejecutar |
 | `/mvtink codex [jugador]` | usuarios del codex; apuntar a otro jugador necesita admin | Abre el Codex de Aleaciones |
 | `/mvtink craft <weapon\|tool\|armor> <tipo> <m1> <m2> [m3] [tier]` | admin | Forja equipo al instante |
 | `/mvtink give <jugador> <id> [cantidad]` | admin | Entrega cualquier ítem registrado, y forja y registra la aleación cuando el id nombra un par del crisol que nadie ha fundido todavía |
@@ -227,10 +227,13 @@ la brocha y los moldes no pertenecen a ningún material, cualquier filtro activo
 | `/mvtink reload` | admin | Recarga config, ítems y loot |
 
 `/mvtink codex` es el único comando pensado para los jugadores; todos los demás son tarea de administración y
-piden `multiversetinker.admin` antes de hacer nada, y **ningún config puede abrirlos** — los operadores tienen el
-nodo por defecto y un plugin de permisos puede concedérselo a un jugador.
+piden un nodo antes de hacer nada, y **ningún config puede abrirlos** — el paraguas `multiversetinker.admin`
+concede los cinco, mientras que `multiversetinker.admin.craft`, `.give`, `.forge`, `.verify` y `.reload` conceden un
+solo subcomando, así que un servidor puede repartir solo una parte. Los operadores tienen el paraguas (y todas las
+porciones) por defecto y un plugin de permisos puede conceder cualquiera de los dos a un jugador.
 
-Permisos: `multiversetinker.admin` (op) · `multiversetinker.forge` (todos) ·
+Permisos: `multiversetinker.admin` y sus nodos por subcomando
+(`multiversetinker.admin.craft`, `.give`, `.forge`, `.verify`, `.reload`) (op) · `multiversetinker.forge` (todos) ·
 `multiversetinker.codex` (todos) · `multiversetinker.archaeology` (todos) — y el bloque `access` de
 `config.yml` abre o cierra el codex, la forja y la arqueología como **public**, **op** o **permission**, así que
 un servidor decide sin instalar un plugin de permisos. Ver **[Configuración](Configuracion.md#-quién-puede-usar-qué-access)**.

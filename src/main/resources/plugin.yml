@@ -9,9 +9,11 @@ website: https://github.com/DrakesCraft-Labs/MultiverseTinker
 # Single command, no aliases: /mvtink is the only name this plugin answers to.
 #
 # The command itself carries no permission, because /mvtink codex is the one subcommand players are
-# meant to have and it must stay reachable. Every other subcommand enforces multiversetinker.admin
-# inside the executor, before it does anything, and that gate is not configurable: the codex is the
-# only command a server can open to players, and anything else needs the node.
+# meant to have and it must stay reachable. Every other subcommand enforces a node inside the executor
+# before it does anything, and that gate is not configurable: the codex is the only command a server can
+# open to players, and anything else needs a node. Each administrative subcommand has one of its own —
+# multiversetinker.admin.craft, .give, .forge, .verify, .reload — so a server can grant a single slice,
+# while the umbrella multiversetinker.admin still grants every one of them.
 commands:
   mvtink:
     description: Main management command for MultiverseTinker.
@@ -20,10 +22,28 @@ commands:
 # The forge and the brush can be opened to everyone — or restricted to operators — from config.yml
 # (access.codex, access.forge, access.archaeology), so servers without a permissions plugin never have
 # to depend on one. Those settings only matter while the surface is left on "permission".
-# multiversetinker.admin is never configurable: it is what separates a player from an administrator.
+# The administrative nodes are never configurable: they are what separates a player from an
+# administrator, and a permissions plugin is the only way to hand one out.
 permissions:
+  # Umbrella node: grants every multiversetinker.admin.* node below, so a server that has always handed
+  # it out is unaffected. Honoured by the plugin itself, not by permission-backend inheritance.
   multiversetinker.admin:
-    description: Full administrative access to MultiverseTinker commands (/mvtink craft, give, forge, verify and reload). Granted to operators by default; a permissions plugin is the only way to give it to a player.
+    description: "Umbrella node: every administrative MultiverseTinker subcommand (/mvtink craft, give, forge, verify and reload) and aiming the codex at another player. Granted to operators by default; a permissions plugin is the only way to give it to a player."
+    default: op
+  multiversetinker.admin.craft:
+    description: Allows /mvtink craft, assembling weapons, tools and armor straight into a hand without the Forge.
+    default: op
+  multiversetinker.admin.give:
+    description: Allows /mvtink give, handing any registered item to a player; a crucible pair id from the codex is forged and registered on the spot.
+    default: op
+  multiversetinker.admin.forge:
+    description: Allows /mvtink forge build|check|gui, building and checking the multiblock Forge.
+    default: op
+  multiversetinker.admin.verify:
+    description: Allows /mvtink verify, counting the registry and proving that every item id resolves.
+    default: op
+  multiversetinker.admin.reload:
+    description: Allows /mvtink reload, re-reading the configuration, items and loot tables.
     default: op
   multiversetinker.codex:
     description: Allows opening the Alloy Codex (mineral catalog, recipes, forged alloys and the combination explorer).

@@ -232,11 +232,14 @@ access:
 ```
 
 Los subcomandos administrativos de `/mvtink` faltan a propósito en esa tabla. Dar ítems, forjar equipo, contar el
-registro y recargar el plugin son tareas de administración, así que `craft`, `give`, `forge`, `verify`, `reload` y
-apuntar el codex a otro jugador exigen siempre el nodo `multiversetinker.admin` — los operadores lo tienen por defecto
-y un plugin de permisos puede concedérselo a quien confíe. `/mvtink codex` es el único comando pensado para los
-jugadores, y `access.codex` decide si lo tienen. Por eso un `config.yml` que aún lleve `access.admin-commands` se
-ignora en lugar de obedecerse, y el plugin lo advierte al arrancar y en `/mvtink reload`.
+registro y recargar el plugin son tareas de administración, así que cada uno exige siempre un nodo: el paraguas
+`multiversetinker.admin` concede los cinco, mientras que `multiversetinker.admin.craft`, `.give`, `.forge`, `.verify`
+y `.reload` conceden un solo subcomando — así un servidor puede dar a un maestro de eventos el dador de ítems sin
+la recarga. Apuntar el codex a otro jugador se queda con el paraguas. Los operadores tienen el paraguas (y todas
+las porciones) por defecto y un plugin de permisos puede conceder el paraguas o un nodo suelto a quien confíe.
+`/mvtink codex` es el único comando pensado para los jugadores, y `access.codex` decide si lo tienen. Por eso un
+`config.yml` que aún lleve `access.admin-commands` se ignora en lugar de obedecerse, y el plugin lo advierte al
+arrancar y en `/mvtink reload`.
 
 ```yaml
 messages:

@@ -22,6 +22,10 @@ import java.util.StringJoiner;
  * declared in {@code plugin.yml} (so LuckPerms, PermissionsEx or the vanilla {@code permissions.yml}
  * can narrow it further). The defaults reproduce the historical behaviour of the plugin exactly, so
  * an untouched config changes nothing.</p>
+ *
+ * <p>The administration is the one thing a server can hand out in slices rather than whole: each
+ * {@link AdminCommand} has a node of its own, and the umbrella {@link Surface#ADMIN_COMMANDS} still
+ * grants every one of them. See {@link #allows(CommandSender, AdminCommand)}.</p>
  */
 public final class AccessControl {
 
@@ -46,9 +50,12 @@ public final class AccessControl {
          * The administrative {@code /mvtink} subcommands, and aiming the codex at another player.
          *
          * <p>The one surface a server cannot open: {@code /mvtink codex} is the only command a player
-         * is meant to have, and everything else stays behind the node. See {@link #isConfigurable()}.</p>
+         * is meant to have, and everything else stays behind a node. This is the <b>umbrella</b> —
+         * holding it grants every {@link AdminCommand}, which is what a server that has always handed
+         * out {@code multiversetinker.admin} keeps getting. A server that wants to hand out a single
+         * slice grants that subcommand's node instead. See {@link #isConfigurable()}.</p>
          */
-        ADMIN_COMMANDS("admin-commands", "multiversetinker.admin", Mode.PERMISSION,
+        ADMIN_COMMANDS("admin-commands", AdminCommand.UMBRELLA, Mode.PERMISSION,
                 "<red>You do not have permission to execute this command.</red>");
 
         private final String key;
@@ -108,6 +115,83 @@ public final class AccessControl {
          */
         public boolean isConfigurable() {
             return this != ADMIN_COMMANDS;
+        }
+    }
+
+    /**
+     * The administrative {@code /mvtink} subcommands, each with a node of its own.
+     *
+     * <p>The administration used to be all or nothing: either a player could give items, forge
+     * equipment, count the registry and reload the plugin, or none of it. A server that wants an event
+     * host who may only hand out items, or a builder who may only assemble equipment, can now grant one
+     * of these nodes without handing over the rest.</p>
+     *
+     * <p>The umbrella is {@link #UMBRELLA} — {@link Surface#ADMIN_COMMANDS}, which still grants every
+     * one of them, so an existing server that has always granted {@code multiversetinker.admin} is
+     * unaffected. The umbrella is honoured in {@link #allows(CommandSender, AdminCommand)} rather than
+     * left to the permission backend's child inheritance, so the answer is the same whatever plugin is
+     * deciding (or none at all).</p>
+     */
+    public enum AdminCommand {
+
+        /** {@code /mvtink craft}: assemble a weapon, tool or armor piece straight into a hand. */
+        CRAFT("craft"),
+
+        /** {@code /mvtink give}: hand out any registered item, forging a crucible pair id on the way. */
+        GIVE("give"),
+
+        /** {@code /mvtink forge}: build, check or open the multiblock Forge. */
+        FORGE("forge"),
+
+        /** {@code /mvtink verify}: count the registry and prove every id resolves. */
+        VERIFY("verify"),
+
+        /** {@code /mvtink reload}: re-read the configuration, items and loot tables. */
+        RELOAD("reload");
+
+        /**
+         * The node that grants every subcommand, and the one servers have always handed out.
+         *
+         * <p>A compile-time constant on purpose: it is the same literal {@link Surface#ADMIN_COMMANDS}
+         * carries, so the two can never drift apart.</p>
+         */
+        public static final String UMBRELLA = "multiversetinker.admin";
+
+        private final String node;
+
+        AdminCommand(@Nonnull String node) {
+            this.node = node;
+        }
+
+        /** How the subcommand is typed after {@code /mvtink}, and the last segment of its node. */
+        @Nonnull
+        public String label() {
+            return node;
+        }
+
+        /** Node that grants this subcommand on its own. */
+        @Nonnull
+        public String permission() {
+            return UMBRELLA + "." + node;
+        }
+
+        /** The subcommand this name names, or {@code null} when it is not an administrative one. */
+        @Nullable
+        public static AdminCommand of(@Nullable String sub) {
+            if (sub == null) return null;
+            String value = sub.trim().toLowerCase(Locale.ROOT);
+            for (AdminCommand command : values()) {
+                if (command.node.equals(value)) return command;
+            }
+            return null;
+        }
+
+        /** Every node, in declaration order, for the documentation and the tests. */
+        @Nonnull
+        public static List<String> permissions() {
+            List<String> out = new ArrayList<>();
+            for (AdminCommand command : values()) out.add(command.permission());
+            return out;
         }
     }
 
@@ -264,6 +348,16 @@ public final class AccessControl {
         };
     }
 
+    /** One-line report of the administrative nodes, for the log and the documentation. */
+    @Nonnull
+    public static String adminNodeSummary() {
+        List<String> nodes = new ArrayList<>();
+        for (AdminCommand command : AdminCommand.values()) {
+            nodes.add(command.label() + " (" + command.permission() + ")");
+        }
+        return String.join(" · ", nodes);
+    }
+
     /** Restores the shipped defaults, used before any config is read and by the tests. */
     public static void reset() {
         for (Surface surface : Surface.values()) {
@@ -288,8 +382,7 @@ public final class AccessControl {
      *
      * <p>An administrative surface always answers to its node, because {@link Surface#isConfigurable()}
      * keeps a config from ever changing its mode: {@code /mvtink codex} is the one command players get,
-     * and {@code craft}, {@code give}, {@code verify} and {@code reload} stay behind
-     * {@code multiversetinker.admin} no matter what the file says.</p>
+     * and the administrative subcommands stay behind their nodes no matter what the file says.</p>
      */
     public static boolean allows(@Nonnull CommandSender sender, @Nonnull Surface surface) {
         return switch (mode(surface)) {
@@ -297,6 +390,33 @@ public final class AccessControl {
             case OP -> sender.isOp();
             case PERMISSION -> sender.hasPermission(surface.permission());
         };
+    }
+
+    /**
+     * Whether this sender may run one administrative subcommand.
+     *
+     * <p>Both the subcommand's own node and the umbrella are accepted, which is what lets a server
+     * keep granting {@code multiversetinker.admin} exactly as before while another narrows a player down
+     * to, say, {@code multiversetinker.admin.give}. Answering here rather than relying on the permission
+     * backend's child inheritance keeps the behaviour identical under LuckPerms, under a plain
+     * {@code permissions.yml} and under no permissions plugin at all.</p>
+     */
+    public static boolean allows(@Nonnull CommandSender sender, @Nonnull AdminCommand command) {
+        return sender.hasPermission(command.permission()) || sender.hasPermission(AdminCommand.UMBRELLA);
+    }
+
+    /**
+     * Whether the sender holds any part of the administration at all.
+     *
+     * <p>Used to decide what to print where the answer is not about one subcommand: whether to show the
+     * administrative help, and whether a refusal should still point a stranger at the public codex.</p>
+     */
+    public static boolean allowsAnyAdmin(@Nonnull CommandSender sender) {
+        if (allows(sender, Surface.ADMIN_COMMANDS)) return true;
+        for (AdminCommand command : AdminCommand.values()) {
+            if (sender.hasPermission(command.permission())) return true;
+        }
+        return false;
     }
 
     /** The refusal a denied player sees, in their own server's wording. */

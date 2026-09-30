@@ -2,6 +2,7 @@ package com.chagui68.multiversetinker.commands;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.access.AccessControl;
+import com.chagui68.multiversetinker.access.AccessControl.AdminCommand;
 import com.chagui68.multiversetinker.alloys.TinkerAlloy;
 import com.chagui68.multiversetinker.access.AccessControl.Surface;
 import com.chagui68.multiversetinker.archaeology.ArchaeologyLootTable;
@@ -33,10 +34,12 @@ import java.util.*;
 public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
 
     /**
-     * Full access to every administrative subcommand.
+     * The umbrella node: full access to every administrative subcommand.
      *
-     * <p>Always required, never configurable: {@code /mvtink codex} is the only command players are
-     * meant to have, so every other subcommand asks for this node before it does anything. Operators
+     * <p>Never configurable: {@code /mvtink codex} is the only command players are meant to have, so
+     * every other subcommand asks for a node before it does anything. Each one also has a node of its
+     * own ({@link AdminCommand}), which is how a server hands out a single slice of the administration
+     * — while a player holding this umbrella keeps getting all of them, exactly as before. Operators
      * hold it by default and a permissions plugin can grant it to a player.</p>
      */
     public static final String ADMIN_PERMISSION = Surface.ADMIN_COMMANDS.permission();
@@ -66,7 +69,9 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {
         if (args.length == 0) {
-            if (AccessControl.allows(sender, Surface.ADMIN_COMMANDS)) {
+            // Anyone holding part of the administration gets the administrative help, narrowed below to
+            // the subcommands they may actually run; everyone else only ever hears about the codex.
+            if (AccessControl.allowsAnyAdmin(sender)) {
                 sendHelp(sender, label);
             } else {
                 sendPublicHelp(sender, label);
@@ -81,13 +86,17 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
             return openCodex(sender, label, args);
         }
 
-        if (!AccessControl.allows(sender, Surface.ADMIN_COMMANDS)) {
-            sender.sendMessage(AccessControl.denial(Surface.ADMIN_COMMANDS));
-            // Only point at the codex while the player is actually allowed to open it.
-            if (AccessControl.allows(sender, Surface.CODEX)) {
-                sender.sendMessage(miniMessage.deserialize("<gray>Players can browse the Alloy Codex with </gray><yellow>/"
-                        + label + " codex</yellow><gray>.</gray>"));
+        // Each subcommand answers to its own node, with the umbrella granting every one of them.
+        AdminCommand admin = AdminCommand.of(sub);
+        if (admin != null) {
+            if (!AccessControl.allows(sender, admin)) {
+                refuse(sender, label);
+                return true;
             }
+        } else if (!AccessControl.allowsAnyAdmin(sender)) {
+            // A subcommand nobody has: a stranger hears the refusal rather than the help, so the command
+            // surface is never mapped out for them.
+            refuse(sender, label);
             return true;
         }
 
@@ -308,6 +317,22 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
+     * Turns a sender away from an administrative subcommand, pointing them at the codex while they may
+     * still open it.
+     *
+     * <p>The refusal is the configured {@code messages.access-denied.admin-commands} line; the codex
+     * pointer is dropped when the server closed the codex, because advertising a command the player
+     * cannot open would only be a dead end.</p>
+     */
+    private void refuse(@Nonnull CommandSender sender, @Nonnull String label) {
+        sender.sendMessage(AccessControl.denial(Surface.ADMIN_COMMANDS));
+        if (AccessControl.allows(sender, Surface.CODEX)) {
+            sender.sendMessage(miniMessage.deserialize("<gray>Players can browse the Alloy Codex with </gray><yellow>/"
+                    + label + " codex</yellow><gray>.</gray>"));
+        }
+    }
+
+    /**
      * Resolves any id the command understands to the material it is made of.
      *
      * <p>Besides a material's own id ({@code tin}, {@code mvtink_tin}), the item kinds and legacy
@@ -519,28 +544,47 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(miniMessage.deserialize("<gray>It is also reachable from the book button in the Alloy Crucible tab of the Forge.</gray>"));
     }
 
+    /**
+     * Help shown to whoever holds part of the administration.
+     *
+     * <p>Only the subcommands the sender may actually run are printed: a server that handed one player
+     * the item giver and another the forger must not advertise the rest to either of them — least of
+     * all the reload, which is the one that can change the rules.</p>
+     */
     private void sendHelp(CommandSender sender, String label) {
         sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give any raw ore, ingot, nugget, block, molten bucket, part, cast, smeltery or brush. The mvtink_ prefix is optional, and a crucible pair id from the codex is forged and registered on the spot.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " codex [player]</yellow> <gray>- Open the browsable Alloy Codex: the mineral catalog, legendary recipes, catalysts, forged composites and primes, a combination explorer and the totals.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " verify</yellow> <gray>- Check that every material and every item kind is registered and resolvable.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));
-        sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " reload</yellow> <gray>- Reload configuration and caches.</gray>"));
+        if (AccessControl.allows(sender, AdminCommand.CRAFT)) {
+            sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
+        }
+        if (AccessControl.allows(sender, AdminCommand.GIVE)) {
+            sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " give <player> <mvtink_id> [amount]</yellow> <gray>- Give any raw ore, ingot, nugget, block, molten bucket, part, cast, smeltery or brush. The mvtink_ prefix is optional, and a crucible pair id from the codex is forged and registered on the spot.</gray>"));
+        }
+        if (AccessControl.allows(sender, Surface.CODEX)) {
+            sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " codex [player]</yellow> <gray>- Open the browsable Alloy Codex: the mineral catalog, legendary recipes, catalysts, forged composites and primes, a combination explorer and the totals.</gray>"));
+        }
+        if (AccessControl.allows(sender, AdminCommand.VERIFY)) {
+            sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " verify</yellow> <gray>- Check that every material and every item kind is registered and resolvable.</gray>"));
+        }
+        if (AccessControl.allows(sender, AdminCommand.FORGE)) {
+            sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " forge <build|check|gui> [rotation]</yellow> <gray>- Manage the multiblock Forge and open custom GUI.</gray>"));
+        }
+        if (AccessControl.allows(sender, AdminCommand.RELOAD)) {
+            sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " reload</yellow> <gray>- Reload configuration and caches.</gray>"));
+        }
     }
 
     @Override
     public List<String> onTabComplete(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String alias, @Nonnull String[] args) {
         if (args.length == 1) {
-            List<String> subcommands;
-            if (AccessControl.allows(sender, Surface.ADMIN_COMMANDS)) {
-                subcommands = List.of("craft", "give", "forge", "codex", "verify", "reload");
-            } else if (AccessControl.allows(sender, Surface.CODEX)) {
-                subcommands = List.of("codex");
-            } else {
-                // Nothing this sender may run, so nothing is suggested.
-                subcommands = List.of();
-            }
+            // Only what this sender may actually run, in the order the executor lists them: a server that
+            // granted one slice must not have the other five advertised to its holder.
+            List<String> subcommands = new ArrayList<>();
+            if (AccessControl.allows(sender, AdminCommand.CRAFT)) subcommands.add("craft");
+            if (AccessControl.allows(sender, AdminCommand.GIVE)) subcommands.add("give");
+            if (AccessControl.allows(sender, AdminCommand.FORGE)) subcommands.add("forge");
+            if (AccessControl.allows(sender, Surface.CODEX)) subcommands.add("codex");
+            if (AccessControl.allows(sender, AdminCommand.VERIFY)) subcommands.add("verify");
+            if (AccessControl.allows(sender, AdminCommand.RELOAD)) subcommands.add("reload");
             return filter(subcommands, args[0]);
         }
 
@@ -549,7 +593,9 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
             return AccessControl.allows(sender, Surface.ADMIN_COMMANDS) ? null : Collections.emptyList();
         }
 
-        if (!AccessControl.allows(sender, Surface.ADMIN_COMMANDS)) {
+        // Every deeper suggestion belongs to one subcommand, so it follows that subcommand's node.
+        AdminCommand completed = AdminCommand.of(args[0]);
+        if (completed == null || !AccessControl.allows(sender, completed)) {
             return Collections.emptyList();
         }
 

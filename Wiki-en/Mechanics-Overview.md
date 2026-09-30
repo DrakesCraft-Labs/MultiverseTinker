@@ -211,7 +211,7 @@ the brush and the casts belong to no material at all, any active filter hides th
 
 | Command | Who | What it does |
 |---|---|---|
-| `/mvtink` | everyone | Public help (only `codex`). With `multiversetinker.admin`: the full help |
+| `/mvtink` | everyone | Public help (only `codex`). With `multiversetinker.admin` or any of its per-subcommand nodes: the help for the subcommands that player may run |
 | `/mvtink codex [player]` | codex users; another player needs admin | Opens the Alloy Codex |
 | `/mvtink craft <weapon\|tool\|armor> <type> <m1> <m2> [m3] [tier]` | admin | Forges equipment instantly |
 | `/mvtink give <player> <id> [amount]` | admin | Gives any registered item, forging and registering the alloy when the id names a crucible pair nobody has smelted yet |
@@ -220,10 +220,13 @@ the brush and the casts belong to no material at all, any active filter hides th
 | `/mvtink reload` | admin | Reloads config, items and loot |
 
 `/mvtink codex` is the only command a player is meant to have; every other subcommand is administrator work and
-asks for `multiversetinker.admin` first, which **no config can open** — operators hold the node by default and a
-permissions plugin can grant it to a player.
+asks for a node first, which **no config can open** — the umbrella `multiversetinker.admin` grants all five, while
+`multiversetinker.admin.craft`, `.give`, `.forge`, `.verify` and `.reload` grant a single subcommand each, so a
+server can hand out just one slice. Operators hold the umbrella (and every slice) by default and a permissions
+plugin can grant either to a player.
 
-Permissions: `multiversetinker.admin` (op) · `multiversetinker.forge` (everyone) ·
+Permissions: `multiversetinker.admin` and its per-subcommand nodes
+(`multiversetinker.admin.craft`, `.give`, `.forge`, `.verify`, `.reload`) (op) · `multiversetinker.forge` (everyone) ·
 `multiversetinker.codex` (everyone) · `multiversetinker.archaeology` (everyone) — and the `access` block of
 `config.yml` opens or closes the codex, the forge and archaeology as **public**, **op** or **permission**, so a
 server decides without installing a permissions plugin. See **[Configuration](Configuration.md#-who-may-use-what-access)**.

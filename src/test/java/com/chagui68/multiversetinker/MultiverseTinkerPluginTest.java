@@ -74,6 +74,25 @@ class MultiverseTinkerPluginTest {
     }
 
     @Test
+    @DisplayName("plugin.yml declares one node per administrative subcommand, under the umbrella")
+    void testAdministrativeNodesAreDeclared() {
+        YamlConfiguration descriptor = loadResource("plugin.yml");
+
+        assertEquals(AccessControl.Surface.ADMIN_COMMANDS.permission(), AccessControl.AdminCommand.UMBRELLA,
+                "The umbrella and the administrative surface must be the same node");
+        assertEquals("op", descriptor.getString("permissions." + AccessControl.AdminCommand.UMBRELLA + ".default"),
+                "The umbrella must stay restricted by default");
+
+        for (AccessControl.AdminCommand command : AccessControl.AdminCommand.values()) {
+            assertEquals("multiversetinker.admin." + command.label(), command.permission());
+            assertNotNull(descriptor.getString("permissions." + command.permission() + ".description"),
+                    command.permission() + " must be declared in plugin.yml, so a permissions plugin can grant it");
+            assertEquals("op", descriptor.getString("permissions." + command.permission() + ".default"),
+                    command.permission() + " must stay restricted by default");
+        }
+    }
+
+    @Test
     @DisplayName("config.yml documents the lore wrapping options and the plugin applies them on enable")
     void testLoreConfiguration() {
         YamlConfiguration config = loadResource("config.yml");

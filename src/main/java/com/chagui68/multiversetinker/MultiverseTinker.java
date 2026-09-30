@@ -311,13 +311,15 @@ public class MultiverseTinker extends JavaPlugin {
             // A stale key that is also dangerous gets the sharper message below, not both.
             if (reported.contains(key)) continue;
             getLogger().warning("Ignoring " + key + ": the administrative /mvtink subcommands are always"
-                    + " behind " + MultiverseTinkerCommand.ADMIN_PERMISSION + " (operators by default, or whoever a"
-                    + " permissions plugin grants it to). Only the codex can be opened to players.");
+                    + " behind " + MultiverseTinkerCommand.ADMIN_PERMISSION + " or one of its subcommand nodes"
+                    + " (operators by default, or whoever a permissions plugin grants one to). Only the codex"
+                    + " can be opened to players.");
         }
         for (AccessControl.Advisory advisory : advisories) {
             getLogger().warning(advisory.severity() + " access rule — " + advisory.message());
         }
         getLogger().info("Access control — " + AccessControl.summary());
+        getLogger().info("Administrative nodes — " + AccessControl.adminNodeSummary());
     }
 
     /**

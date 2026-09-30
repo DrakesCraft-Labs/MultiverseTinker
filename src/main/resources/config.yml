@@ -145,9 +145,12 @@ equipment:
 # forge. Changing a value applies on /mvtink reload, no restart.
 #
 # The administrative /mvtink subcommands are NOT here, on purpose: giving items, forging equipment,
-# counting the registry and reloading the plugin are administrator work, so they always require
-# multiversetinker.admin (operators by default, or whoever a permissions plugin grants it to). The
-# only command meant for players is /mvtink codex, and this file decides whether they get it.
+# counting the registry and reloading the plugin are administrator work, so they always require a
+# node — multiversetinker.admin for all of them, or its per-subcommand nodes
+# (multiversetinker.admin.give, .craft, .forge, .verify, .reload) to hand out a single slice.
+# Operators hold the umbrella by default, and a permissions plugin can grant either the umbrella or
+# one subcommand to a player. The only command meant for players is /mvtink codex, and this file
+# decides whether they get it.
 access:
   # Browse the Alloy Codex (/mvtink codex, and the book button in the Alloy Crucible tab)
   codex: public

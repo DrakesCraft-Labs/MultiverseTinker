@@ -144,7 +144,8 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
 > `/mvtink` is the plugin's only command name and it registers **no aliases** — nothing else will ever respond to it.
 
 **Permissions:**
-* `multiversetinker.admin` — Access to **every** administrative `/mvtink` subcommand (`craft`, `give`, `forge`, `verify`, `reload`) and to aiming the codex at another player (default: `op`, so operators hold it out of the box). This one is **never configurable**: `/mvtink codex` is the only command players are meant to have.
+* `multiversetinker.admin` — The umbrella: access to **every** administrative `/mvtink` subcommand (`craft`, `give`, `forge`, `verify`, `reload`) and to aiming the codex at another player (default: `op`, so operators hold it out of the box). This one is **never configurable**: `/mvtink codex` is the only command players are meant to have.
+* `multiversetinker.admin.craft`, `.give`, `.forge`, `.verify`, `.reload` — One node per administrative subcommand, so a server can hand out **a single slice** of the administration instead of all of it (default: `op`). A player granted only `multiversetinker.admin.give` can give items and nothing else; the umbrella still grants all five, and the plugin honours that itself, so the answer is the same with LuckPerms, a vanilla `permissions.yml` or no permissions plugin at all.
 * `multiversetinker.forge` — Allows using the multiverse Forge, its GUI, the Alloy Crucible and the casting cauldron (default: `true`).
 * `multiversetinker.codex` — Allows opening the Alloy Codex, the public reference menu (default: `true`).
 * `multiversetinker.archaeology` — Allows using brushes for geological extraction (default: `true`).
@@ -275,7 +276,7 @@ access:
   archaeology: public
 ```
 
-The administrative `/mvtink` subcommands are deliberately **not** in that table. Giving items, forging equipment, counting the registry and reloading the plugin are administrator work, so `craft`, `give`, `forge`, `verify`, `reload` and aiming the codex at another player always require the `multiversetinker.admin` node — operators hold it by default and a permissions plugin can grant it to a player it trusts. `/mvtink codex` is the only command meant for players, and `access.codex` is what decides whether they get it. A config that still carries `access.admin-commands` is ignored rather than obeyed, and the plugin says so in the log.
+The administrative `/mvtink` subcommands are deliberately **not** in that table. Giving items, forging equipment, counting the registry and reloading the plugin are administrator work, so each of them always requires a node: the umbrella `multiversetinker.admin` grants all five, while `multiversetinker.admin.craft`, `.give`, `.forge`, `.verify` and `.reload` grant one subcommand each — enough to hand an event host the item giver without the reload. Aiming the codex at another player stays with the umbrella. Operators hold the umbrella (and every slice) by default and a permissions plugin can grant either the umbrella or a single node to a player it trusts. `/mvtink codex` is the only command meant for players, and `access.codex` is what decides whether they get it. A config that still carries `access.admin-commands` is ignored rather than obeyed, and the plugin says so in the log.
 
 Anything unrecognised (a typo such as `flase`) **falls back to the default** instead of locking the server out of its own forge, and the values a server owner is likely to write are accepted: `everyone` and `all` mean `public`, `ops` and `admin` mean `op`, `node` means `permission`. Refusals are configurable too — `messages.access-denied.codex`, `.forge` and `.archaeology` word the surfaces above, and `.admin-commands` words the refusal a player meets on a command only administrators may run. All four are MiniMessage strings, so a Spanish server can phrase them its own way.
 
@@ -290,7 +291,7 @@ Two rules are called out on startup **and** on `/mvtink reload`, because neither
 
 | Section | Purpose |
 | --- | --- |
-| `access` | Who may use the configurable surfaces — the codex, the forge (GUI, crucible and casting) and archaeology — as `public`, `op` or `permission`. The administrative commands are not configurable: they always need `multiversetinker.admin`. |
+| `access` | Who may use the configurable surfaces — the codex, the forge (GUI, crucible and casting) and archaeology — as `public`, `op` or `permission`. The administrative commands are not configurable: they always need a node — the umbrella `multiversetinker.admin`, or its subcommand nodes to grant a single slice. |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour, anti-macro cooldown and brush yields. |
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
 | `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage and whether armor defends with the protection rolled from its minerals, or the vanilla material values instead (vanilla wear is always disabled). |

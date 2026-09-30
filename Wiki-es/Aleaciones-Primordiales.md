@@ -146,7 +146,7 @@ que porta.
 Todo lo anterior es navegable in-game. Abre el **Codex de Aleaciones** con `/mvtink codex` o pulsando el
 botón del libro en la pestaña del Crisol de Aleaciones (shift-clic para imprimir los totales en el
 chat). El codex está **abierto a todos los jugadores** — es material de referencia, no una herramienta de
-administración — y `/mvtink codex` es el único comando pensado para los jugadores. Solo apuntarlo a otro jugador con `/mvtink codex <jugador>` exige el nodo `multiversetinker.admin`, que no se configura (`access.codex` decide si los jugadores tienen el codex). El codex es un menú paginado de 54 slots con siete secciones:
+administración — y `/mvtink codex` es el único comando pensado para los jugadores. Solo apuntarlo a otro jugador con `/mvtink codex <jugador>` exige el paraguas `multiversetinker.admin` — los nodos por subcomando conceden solo el suyo —, que no se configura (`access.codex` decide si los jugadores tienen el codex). El codex es un menú paginado de 54 slots con siete secciones:
 
 | Sección | Qué muestra |
 |---|---|

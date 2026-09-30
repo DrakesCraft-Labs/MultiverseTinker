@@ -227,11 +227,14 @@ access:
 ```
 
 The administrative `/mvtink` subcommands are deliberately absent from that table. Giving items, forging equipment,
-counting the registry and reloading the plugin are administrator work, so `craft`, `give`, `forge`, `verify`,
-`reload` and aiming the codex at another player always require the `multiversetinker.admin` node — operators hold it by
-default and a permissions plugin can grant it to a player it trusts. `/mvtink codex` is the only command meant for
-players, and `access.codex` is what decides whether they get it. A config that still carries `access.admin-commands` is
-therefore ignored, not obeyed, and the plugin warns about it on startup and on `/mvtink reload`.
+counting the registry and reloading the plugin are administrator work, so each of them always requires a node: the
+umbrella `multiversetinker.admin` grants all five, while `multiversetinker.admin.craft`, `.give`, `.forge`, `.verify`
+and `.reload` grant one subcommand each — so a server can hand an event host the item giver without the reload.
+Aiming the codex at another player stays with the umbrella. Operators hold the umbrella (and every slice) by default
+and a permissions plugin can grant either the umbrella or a single node to a player it trusts. `/mvtink codex` is the
+only command meant for players, and `access.codex` is what decides whether they get it. A config that still carries
+`access.admin-commands` is therefore ignored, not obeyed, and the plugin warns about it on startup and on
+`/mvtink reload`.
 
 ```yaml
 messages:

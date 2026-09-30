@@ -1,6 +1,7 @@
 package com.chagui68.multiversetinker.access;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.access.AccessControl.AdminCommand;
 import com.chagui68.multiversetinker.access.AccessControl.Mode;
 import com.chagui68.multiversetinker.access.AccessControl.Surface;
 import com.chagui68.multiversetinker.api.CastType;
@@ -32,6 +33,7 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -117,6 +119,51 @@ class AccessControlTest {
 
         // The console is above all of this: it owns plugin.yml.
         assertTrue(AccessControl.allows(server.getConsoleSender(), Surface.ADMIN_COMMANDS));
+    }
+
+    @Test
+    @DisplayName("Each administrative subcommand has its own node, and the umbrella still grants every one")
+    void administrativeNodesSliceTheAdministration() {
+        assertEquals(5, AdminCommand.values().length,
+                "One node for every administrative subcommand: craft, give, forge, verify and reload");
+        for (AdminCommand command : AdminCommand.values()) {
+            assertEquals("multiversetinker.admin." + command.label(), command.permission(),
+                    "A subcommand's node must be spelled after it");
+        }
+        assertEquals(5, Set.copyOf(AdminCommand.permissions()).size(), "Every node must be distinct");
+        assertEquals(Surface.ADMIN_COMMANDS.permission(), AdminCommand.UMBRELLA,
+                "The umbrella literal and the administrative surface must be the same node");
+        assertEquals(AdminCommand.GIVE, AdminCommand.of(" give "), "The subcommand name is read forgivingly");
+        assertNull(AdminCommand.of("codex"), "The codex is not an administrative subcommand");
+        assertNull(AdminCommand.of(null));
+
+        PlayerMock host = server.addPlayer("host");
+        assertFalse(host.isOp());
+
+        // Nothing granted: every slice is closed, and so is the umbrella.
+        for (AdminCommand command : AdminCommand.values()) {
+            assertFalse(AccessControl.allows(host, command), command.label() + " must start closed");
+        }
+        assertFalse(AccessControl.allowsAnyAdmin(host));
+
+        // One slice: exactly that subcommand opens, and the umbrella itself does not.
+        host.addAttachment(plugin, AdminCommand.GIVE.permission(), true);
+        assertTrue(AccessControl.allows(host, AdminCommand.GIVE));
+        assertTrue(AccessControl.allowsAnyAdmin(host),
+                "One slice is enough to be an administrator of something");
+        for (AdminCommand command : AdminCommand.values()) {
+            if (command == AdminCommand.GIVE) continue;
+            assertFalse(AccessControl.allows(host, command), command.label() + " must stay closed");
+        }
+        assertFalse(AccessControl.allows(host, Surface.ADMIN_COMMANDS), "The umbrella itself is not granted");
+
+        // The umbrella opens every slice at once: what a server that always granted it keeps having.
+        PlayerMock keeper = server.addPlayer("keeper");
+        keeper.addAttachment(plugin, AdminCommand.UMBRELLA, true);
+        for (AdminCommand command : AdminCommand.values()) {
+            assertTrue(AccessControl.allows(keeper, command), command.label() + " must follow the umbrella");
+        }
+        assertTrue(AccessControl.allowsAnyAdmin(keeper));
     }
 
     @Test
