@@ -24,13 +24,20 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.world.WorldMock;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import static com.chagui68.multiversetinker.api.ModularArmorType.BOOTS;
 import static com.chagui68.multiversetinker.api.ModularArmorType.CHESTPLATE;
 import static com.chagui68.multiversetinker.api.ModularArmorType.HELMET;
 import static com.chagui68.multiversetinker.api.ModularArmorType.LEGGINGS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -62,11 +69,12 @@ class ArmorPerkScalingTest {
     private WorldMock world;
     private MaterialRegistry registry;
     private Player player;
+    private MultiverseTinker plugin;
 
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        MultiverseTinker plugin = MockBukkit.load(MultiverseTinker.class);
+        plugin = MockBukkit.load(MultiverseTinker.class);
         registry = plugin.getMaterialRegistry();
         world = server.addSimpleWorld("world");
         player = server.addPlayer("smith");
@@ -111,6 +119,136 @@ class ArmorPerkScalingTest {
         assertEquals(0.65, rolled(HELMET, 10_000), 1e-9);
         assertEquals(0.60, rolled(CHESTPLATE, 10_000), 1e-9);
         assertEquals(0.75, rolled(BOOTS, 10_000), 1e-9);
+    }
+
+    // ==========================================
+    // THE TUNABLE CURVE
+    // ==========================================
+
+    @Test
+    @DisplayName("a server retunes the step and the caps from config.yml, and the next piece obeys it")
+    void theConfigRetunesTheCurve() {
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_SCALE_PER_POINT, 0.01);
+        // Deliberately under the 25% the Kinetic Dampener shipped with: the file has the last word, so the
+        // piece must sit exactly on the ceiling whatever its roll.
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + "chestplate", 0.20);
+        plugin.applyEquipmentSettings();
+
+        assertEquals(0.01, TinkerItemBuilder.getPerkScalePerPoint(), 1e-9,
+                "One rolled point must buy what the file says");
+        assertEquals(0.20, TinkerItemBuilder.getPerkCap(CHESTPLATE), 1e-9);
+        assertEquals(0.20, rolled(CHESTPLATE, 0), 1e-9, "A ceiling under the floor wins over the floor");
+        assertEquals(0.20, rolled(CHESTPLATE, 40), 1e-9, "No roll may climb past the ceiling");
+
+        // And the piece obeys it in the sentence it prints and in the damage combat subtracts alike.
+        ItemStack chestplate = wear(CHESTPLATE, EvolutionTier.WOOD);
+        assertEquals(0.20, TinkerItemBuilder.mitigationOf(chestplate, registry), 1e-9);
+        assertTrue(perkRow(chestplate).contains("absorbs 20%"), "got: " + perkRow(chestplate));
+
+        Zombie attacker = world.spawn(player.getLocation(), Zombie.class);
+        assertEquals(10.0 * 0.80, hitFor(attacker, 10.0), 1e-6,
+                "Combat must dampen the configured share, not the shipped one");
+    }
+
+    @Test
+    @DisplayName("the configured step is what one rolled point buys")
+    void theConfiguredStepBuysEachPoint() {
+        for (double step : List.of(0.0, 0.01, 0.05)) {
+            TinkerItemBuilder.configurePerkScaling(step, Map.of());
+            for (int surplus = 0; surplus <= 5; surplus++) {
+                assertEquals(0.25 + step * surplus, rolled(CHESTPLATE, surplus), 1e-9,
+                        "At " + step + " per point, a surplus of " + surplus + " must buy exactly that much");
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("a slot the file leaves out keeps its shipped ceiling, and removing a key restores it")
+    void unsetCapsKeepTheirShippedCeiling() {
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + "helmet", 0.40);
+        plugin.applyEquipmentSettings();
+
+        assertEquals(0.40, TinkerItemBuilder.getPerkCap(HELMET), 1e-9);
+        assertEquals(TinkerItemBuilder.DEFAULT_PERK_CAPS.get(CHESTPLATE),
+                TinkerItemBuilder.getPerkCap(CHESTPLATE), 1e-9, "An untouched slot must not move");
+
+        // Removing the key hands the slot back to the plugin: the shipped ceiling, not the last value.
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + "helmet", null);
+        plugin.applyEquipmentSettings();
+        assertEquals(TinkerItemBuilder.DEFAULT_PERK_CAPS.get(HELMET),
+                TinkerItemBuilder.getPerkCap(HELMET), 1e-9);
+    }
+
+    @Test
+    @DisplayName("a retune is clamped, so no file can invert the curve or promise more than a whole hit")
+    void aretuneIsClamped() {
+        // A negative step would make a better roll ward less, so it is treated as no scaling at all.
+        TinkerItemBuilder.configurePerkScaling(-1.0, Map.of());
+        assertEquals(0.0, TinkerItemBuilder.getPerkScalePerPoint(), 1e-9);
+        assertEquals(0.25, rolled(CHESTPLATE, 30), 1e-9, "The floor is what is left with no scaling");
+
+        // A share above a whole hit is clamped to it, and a negative one to nothing at all.
+        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(CHESTPLATE, 2.0, BOOTS, -0.5));
+        assertEquals(1.0, TinkerItemBuilder.getPerkCap(CHESTPLATE), 1e-9);
+        assertEquals(0.0, rolled(BOOTS, 0), 1e-9, "A slot capped at nothing mitigates nothing");
+
+        // A ceiling under a slot's floor wins over the floor: what a server sets is what happens.
+        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(CHESTPLATE, 0.10));
+        assertEquals(0.10, rolled(CHESTPLATE, 0), 1e-9);
+        assertEquals(0.10, rolled(CHESTPLATE, 30), 1e-9);
+
+        // And a slot that mitigates nothing keeps nothing, whatever is configured for it.
+        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(LEGGINGS, 0.5));
+        assertEquals(0.0, TinkerItemBuilder.getPerkCap(LEGGINGS), 1e-9);
+        assertEquals(0.0, rolled(LEGGINGS, 30), 1e-9);
+        assertFalse(TinkerItemBuilder.printsMitigation(LEGGINGS));
+        assertTrue(TinkerItemBuilder.printsMitigation(HELMET));
+    }
+
+    @Test
+    @DisplayName("a cap for a slot with no share to cap is reported instead of silently ignored")
+    void aCapForASlotWithoutAShareIsReported() {
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + "leggings", 0.5);
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + "shield", 0.5);
+
+        List<String> log = captureLog(plugin::applyEquipmentSettings);
+
+        assertTrue(log.stream().anyMatch(line -> line.contains("equipment.armor-perk.caps.leggings")),
+                "A leggings cap must be called out, got: " + log);
+        assertTrue(log.stream().anyMatch(line -> line.contains("equipment.armor-perk.caps.shield")),
+                "A key naming no slot at all must be called out, got: " + log);
+        assertEquals(0.0, TinkerItemBuilder.getPerkCap(LEGGINGS), 1e-9);
+    }
+
+    /** Captures what the plugin logs while an action runs. */
+    private List<String> captureLog(Runnable action) {
+        List<String> lines = new ArrayList<>();
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                lines.add(String.valueOf(record.getMessage()));
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        handler.setLevel(Level.ALL);
+        Logger logger = plugin.getLogger();
+        Level previous = logger.getLevel();
+        logger.setLevel(Level.ALL);
+        logger.addHandler(handler);
+        try {
+            action.run();
+        } finally {
+            logger.removeHandler(handler);
+            logger.setLevel(previous);
+        }
+        return lines;
     }
 
     @Test

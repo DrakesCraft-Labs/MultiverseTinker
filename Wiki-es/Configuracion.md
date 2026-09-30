@@ -137,12 +137,44 @@ golpe y una espada se rompería con el calendario vanilla mientras su contador m
 | --- | --- | --- | --- |
 | `equipment.modular-attack-damage` | booleano | `true` | `true` hace que el arma golpee con el daño de ataque calculado a partir de sus minerales — el valor que imprime su lore. `false` conserva el daño del material vanilla base. La durabilidad sigue siendo modular en ambos casos. |
 | `equipment.modular-armor-defense` | booleano | `true` | `true` hace que la armadura defienda con la **Defensa**, la **Dureza** y la resistencia al empuje calculadas a partir de sus minerales y su tier de evolución — los valores que imprime su lore. `false` conserva la protección vanilla del material del tier. Las piezas ya forjadas se refrescan cuando evoluciona su tier. |
+| `equipment.armor-perk.scale-per-point` | decimal | `0.02` | Mitigación que compra cada punto de Defensa y Dureza calculados para el perk de armadura de un hueco. `0` convierte el perk en un porcentaje fijo por hueco. |
+| `equipment.armor-perk.caps.helmet` | decimal | `0.65` | Techo del porcentaje de la Guarda Craneal. |
+| `equipment.armor-perk.caps.chestplate` | decimal | `0.60` | Techo del porcentaje del Amortiguador Cinético. |
+| `equipment.armor-perk.caps.boots` | decimal | `0.75` | Techo del porcentaje del Anclaje Plumado. |
 
 ```yaml
 equipment:
   modular-attack-damage: true
   modular-armor-defense: true
+  armor-perk:
+    scale-per-point: 0.02
+    caps:
+      helmet: 0.65
+      chestplate: 0.60
+      boots: 0.75
 ```
+
+### Ajustar la curva de los perks de armadura
+
+La Guarda Craneal, el Amortiguador Cinético y el Anclaje Plumado responden a un golpe con un porcentaje de él, y ese
+porcentaje crece con la pieza: cada punto de Defensa y Dureza por encima de lo que tira el hueco desnudo compra
+`scale-per-point`, hasta el techo de ese hueco. Los dos extremos de la curva se pueden reajustar en `/mvtink reload`,
+así que los perks pueden pesar más o menos sin recompilar.
+
+* **Un porcentaje es un decimal**: `0.02` es 2%, `0.75` es 75%. Todos los valores se recortan — un paso negativo se
+  trata como sin escalado, y un porcentaje mayor que `1.0` como `1.0`.
+* **Un techo por debajo del suelo de un hueco fija ese hueco en el techo.** Lo que dice el archivo siempre manda sobre
+  lo que el perk traía de fábrica, así que bajar un techo por debajo de su suelo es una forma legítima de convertir el
+  hueco en un porcentaje fijo.
+* **Un hueco que falte conserva su techo de fábrica**, así que borrar una clave lo restaura en la siguiente recarga.
+* **Los leggings no tienen porcentaje que limitar**: el Impulso de Zancada responde con movilidad, y una clave para él
+  se avisa en el log en lugar de leerse.
+* **Un reajuste llega al combate al instante y al lore desde ese momento.** Una pieza forjada antes del cambio
+  conserva el porcentaje ya escrito en su lore hasta que evoluciona o se forja de nuevo, porque ese número forma parte
+  del ítem.
+
+Los techos de fábrica mantienen todos los valores en porcentajes de dos dígitos, que es lo que hace que la frase del
+perk ocupe el mismo ancho en todos los tiers; un techo de `1.0` se imprime como `100%`, un carácter más ancho.
 
 ### Cómo se calcula un golpe modular
 

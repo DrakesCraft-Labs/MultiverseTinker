@@ -3,6 +3,7 @@ package com.chagui68.multiversetinker;
 import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.CastType;
+import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.archaeology.ArchaeologyListener;
 import com.chagui68.multiversetinker.archaeology.ArchaeologyLootTable;
 import com.chagui68.multiversetinker.archaeology.ArchaeologyManager;
@@ -25,14 +26,21 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 public class MultiverseTinker extends JavaPlugin {
@@ -181,12 +189,22 @@ public class MultiverseTinker extends JavaPlugin {
      * <p>Forged equipment is always unbreakable for vanilla — its own durability counter is the only
      * wear it can take — while the attack damage printed in its lore can be toggled between the
      * mineral-rolled value and the plain vanilla material value.</p>
+     *
+     * <p>The armor perk curve is read here too, so a server retunes how much of a hit each slot
+     * answers with without a rebuild. The curve is applied to everything the plugin derives from that
+     * moment on, both the sentence a freshly forged piece prints and the damage combat subtracts; a
+     * piece forged before the change keeps the percentage already baked into its lore until it evolves
+     * or is reforged.</p>
      */
     public void applyEquipmentSettings() {
         TinkerItemBuilder.configureEquipment(
                 getConfig().getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ATTACK_DAMAGE, true));
         TinkerItemBuilder.configureArmorDefense(
                 getConfig().getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE, true));
+        TinkerItemBuilder.configurePerkScaling(
+                getConfig().getDouble(TinkerItemBuilder.CONFIG_PERK_SCALE_PER_POINT,
+                        TinkerItemBuilder.DEFAULT_PERK_SCALE_PER_POINT),
+                readArmorPerkCaps());
 
         getLogger().info("Modular equipment: vanilla durability disabled, attack damage "
                 + (TinkerItemBuilder.isModularAttackDamage() ? "taken from the forged materials."
@@ -195,6 +213,78 @@ public class MultiverseTinker extends JavaPlugin {
                 + (TinkerItemBuilder.isModularArmorDefense()
                         ? "rolled from the forged minerals (Defense, Toughness, knockback)."
                         : "left at the vanilla values of the tier material."));
+        getLogger().info("Armor perk scaling: " + percent(TinkerItemBuilder.getPerkScalePerPoint())
+                + " of mitigation per point of rolled Defense and Toughness, capped at " + perkCapsSummary() + ".");
+    }
+
+    /**
+     * The mitigation ceiling of every slot a server has set one for.
+     *
+     * <p>A slot left out of the file keeps the ceiling the plugin ships with, so removing a key
+     * restores it on the next reload instead of freezing whatever value was applied last. A key that
+     * names no slot with a share to cap is reported, because it would otherwise do nothing at all.</p>
+     */
+    @Nonnull
+    private Map<ModularArmorType, Double> readArmorPerkCaps() {
+        Map<ModularArmorType, Double> caps = new EnumMap<>(ModularArmorType.class);
+        for (ModularArmorType type : ModularArmorType.values()) {
+            String key = TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + type.name().toLowerCase(Locale.ROOT);
+            if (getConfig().isSet(key)) {
+                caps.put(type, getConfig().getDouble(key));
+            }
+        }
+
+        ConfigurationSection section = getConfig()
+                .getConfigurationSection("equipment.armor-perk.caps");
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                ModularArmorType type = armorTypeByKey(key);
+                if (type == null || !TinkerItemBuilder.printsMitigation(type)) {
+                    getLogger().warning("Ignoring equipment.armor-perk.caps." + key + ": only "
+                            + printMitigatingSlots() + " answer a hit with a share of it. Leggings answer with"
+                            + " mobility, so they have no number to cap.");
+                }
+            }
+        }
+        return caps;
+    }
+
+    /** The armor slot a config key names, or {@code null} when it names none. */
+    @Nullable
+    private static ModularArmorType armorTypeByKey(@Nonnull String key) {
+        for (ModularArmorType type : ModularArmorType.values()) {
+            if (type.name().equalsIgnoreCase(key.trim())) return type;
+        }
+        return null;
+    }
+
+    /** The slots with a perk share worth capping, spelled the way {@code config.yml} spells them. */
+    @Nonnull
+    private static String printMitigatingSlots() {
+        StringJoiner joiner = new StringJoiner(", ");
+        for (ModularArmorType type : ModularArmorType.values()) {
+            if (TinkerItemBuilder.printsMitigation(type)) {
+                joiner.add(type.name().toLowerCase(Locale.ROOT));
+            }
+        }
+        return joiner.toString();
+    }
+
+    /** The perk curve as one log line: {@code helmet 65% · chestplate 60% · boots 75%}. */
+    @Nonnull
+    private static String perkCapsSummary() {
+        StringJoiner joiner = new StringJoiner(" · ");
+        for (ModularArmorType type : ModularArmorType.values()) {
+            if (!TinkerItemBuilder.printsMitigation(type)) continue;
+            joiner.add(type.name().toLowerCase(Locale.ROOT) + " " + percent(TinkerItemBuilder.getPerkCap(type)));
+        }
+        return joiner.toString();
+    }
+
+    /** A share the way the lore prints it: {@code 0.38} becomes {@code 38%}. */
+    @Nonnull
+    private static String percent(double fraction) {
+        return String.format(Locale.US, "%.0f%%", fraction * 100);
     }
 
     /**

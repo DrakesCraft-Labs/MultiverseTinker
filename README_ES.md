@@ -225,12 +225,26 @@ Las armas, herramientas y armaduras forjadas llevan su **propio contador de dura
 | --- | --- | --- | --- |
 | `equipment.modular-attack-damage` | booleano | `true` | `true` hace que el arma golpee con el daño de ataque calculado a partir de sus minerales (el valor que imprime su lore). `false` conserva el daño del material vanilla base; la durabilidad sigue siendo modular en ambos casos. |
 | `equipment.modular-armor-defense` | booleano | `true` | `true` hace que la armadura defienda con la **Defensa**, la **Dureza** y la resistencia al empuje calculadas a partir de sus minerales y su tier de evolución (los valores que imprime su lore). `false` conserva la protección vanilla del material del tier. Las piezas ya forjadas se refrescan cuando evoluciona su tier. |
+| `equipment.armor-perk.scale-per-point` | decimal | `0.02` | Mitigación que compra cada punto de Defensa y Dureza calculados para el perk de armadura de un hueco. `0` convierte el perk en un porcentaje fijo por hueco. |
+| `equipment.armor-perk.caps.helmet` | decimal | `0.65` | Techo del porcentaje de la Guarda Craneal. |
+| `equipment.armor-perk.caps.chestplate` | decimal | `0.60` | Techo del porcentaje del Amortiguador Cinético. |
+| `equipment.armor-perk.caps.boots` | decimal | `0.75` | Techo del porcentaje del Anclaje Plumado. |
 
 ```yaml
 equipment:
   modular-attack-damage: true
   modular-armor-defense: true
+  armor-perk:
+    scale-per-point: 0.02
+    caps:
+      helmet: 0.65
+      chestplate: 0.60
+      boots: 0.75
 ```
+
+Los **perks de armadura** (Guarda Craneal, Amortiguador Cinético, Anclaje Plumado) responden a un golpe con un porcentaje de él, y ese porcentaje crece con la tirada de la pieza: cada punto de Defensa y Dureza por encima de lo que tira el hueco desnudo compra el paso configurado, hasta el techo del hueco. Tanto el paso como los techos se pueden reajustar en `/mvtink reload`, así que un servidor decide cuánto pesan los perks sin recompilar. Los valores se recortan — un paso negativo se trata como sin escalado, un porcentaje mayor que `1.0` como `1.0` — y un techo por debajo del suelo de un hueco deja ese hueco fijado en el techo, porque lo que dice el archivo manda. Los **leggings** no están en la lista: el Impulso de Zancada responde con movilidad, así que no tiene porcentaje que limitar. Un hueco que falte en `caps` conserva el valor de fábrica, así que borrar una clave lo restaura.
+
+Un reajuste se aplica al instante a todo lo que se **pelee o forje** desde ese momento, pero una pieza forjada antes conserva el porcentaje ya escrito en su lore hasta que evoluciona o se forja de nuevo — ese número forma parte del ítem. Así que tras un reajuste, cuenta con que las piezas anteriores sigan imprimiendo el porcentaje viejo hasta re-forjarlas.
 
 Con la regla activa, el golpe conserva críticos, fuerza y encantamientos: la contribución vanilla se mide desde el atributo de daño de ataque en vivo del jugador y solo se sustituye la base, de modo que los multiplicadores siguen escalando el daño forjado.
 

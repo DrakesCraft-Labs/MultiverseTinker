@@ -2,6 +2,7 @@ package com.chagui68.multiversetinker;
 
 import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.api.CastType;
+import com.chagui68.multiversetinker.api.ModularArmorType;
 import com.chagui68.multiversetinker.items.LoreWrap;
 import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
@@ -20,6 +21,7 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -119,6 +121,26 @@ class MultiverseTinkerPluginTest {
                 TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE + " must be a boolean");
         assertEquals(config.getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE),
                 TinkerItemBuilder.isModularArmorDefense());
+
+        // The armor perk curve: one step for every slot, one ceiling per slot that prints a share.
+        assertTrue(config.isDouble(TinkerItemBuilder.CONFIG_PERK_SCALE_PER_POINT),
+                TinkerItemBuilder.CONFIG_PERK_SCALE_PER_POINT + " must be a decimal");
+        assertEquals(config.getDouble(TinkerItemBuilder.CONFIG_PERK_SCALE_PER_POINT),
+                TinkerItemBuilder.getPerkScalePerPoint(),
+                "The plugin must run with the step the shipped file declares");
+
+        for (ModularArmorType type : ModularArmorType.values()) {
+            String key = TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + type.name().toLowerCase(Locale.ROOT);
+            if (!TinkerItemBuilder.printsMitigation(type)) {
+                // Leggings answer with mobility, so the shipped file must not offer a number to cap.
+                assertFalse(config.isSet(key), key
+                        + " must not exist in config.yml, because that slot has no share to cap");
+                continue;
+            }
+            assertTrue(config.isDouble(key), key + " must be a decimal");
+            assertEquals(config.getDouble(key), TinkerItemBuilder.getPerkCap(type), 1e-9,
+                    key + " must be the ceiling the plugin applied on enable");
+        }
     }
 
     @Test
