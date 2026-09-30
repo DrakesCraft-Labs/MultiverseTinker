@@ -7,6 +7,7 @@
  * crucible forged.
  */
 
+import { createBuilder } from './builder.js';
 import { format, LABELS, LANGUAGES, preferredLanguage, STRINGS } from './i18n.js';
 import { COMPOSITE, fuse, LEGENDARY, PRIME } from './mix.js';
 
@@ -28,6 +29,7 @@ const state = {
 let data;
 let index;
 let maxStats;
+let builder;
 
 start().catch((error) => {
   document.getElementById('detail').textContent = `Could not load the catalog (${error.message}).`
@@ -57,6 +59,20 @@ async function start() {
   state.selected = first.id;
   state.slotA = first.id;
   state.slotB = suggestionFor(first);
+
+  // The build calculator keeps its own state and rebuilds its controls from it, so the page hands it
+  // the shared helpers once and only asks it to draw.
+  builder = createBuilder({
+    equipment: data.equipment,
+    materials: data.materials,
+    t,
+    format,
+    label,
+    number,
+    el,
+    mount,
+    text,
+  });
 
   document.documentElement.lang = state.lang;
   render();
@@ -91,7 +107,14 @@ function el(tag, props = {}, ...children) {
     if (value === null || value === undefined || value === false) continue;
     if (key === 'class') node.className = value;
     else if (key === 'text') node.textContent = value;
-    else if (key === 'style') Object.assign(node.style, value);
+    // A custom property (`--swatch`) cannot be written by assigning to `node.style`, so it goes through
+    // `setProperty`; everything else keeps the plain assignment that handles camelCase for free.
+    else if (key === 'style') {
+      for (const [name, setting] of Object.entries(value)) {
+        if (name.startsWith('--')) node.style.setProperty(name, setting);
+        else Object.assign(node.style, { [name]: setting });
+      }
+    }
     else if (key.startsWith('on')) node.addEventListener(key.slice(2).toLowerCase(), value);
     else node.setAttribute(key, value === true ? '' : String(value));
   }
@@ -254,6 +277,7 @@ function render() {
   renderList();
   renderDetail();
   renderCrucible();
+  builder.render();
 }
 
 // ==========================================

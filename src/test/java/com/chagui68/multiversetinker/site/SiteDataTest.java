@@ -1,6 +1,10 @@
 package com.chagui68.multiversetinker.site;
 
 import com.chagui68.multiversetinker.MultiverseTinker;
+import com.chagui68.multiversetinker.api.ModularArmorType;
+import com.chagui68.multiversetinker.api.ModularToolType;
+import com.chagui68.multiversetinker.api.ModularWeaponType;
+import com.chagui68.multiversetinker.evolution.EvolutionTier;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
 import org.junit.jupiter.api.AfterEach;
@@ -152,6 +156,68 @@ class SiteDataTest {
         assertFalse(json.contains("NaN"), "JSON has no NaN");
         assertEquals(json.length() - json.replace("{", "").length(),
                 json.length() - json.replace("}", "").length(), "The braces must balance");
+    }
+
+    @Test
+    @DisplayName("The equipment tables publish every tier and every family the Forge builds")
+    void equipmentTablesCoverTheForge() {
+        String json = data.json();
+
+        // The calculator offers what the plugin has and nothing else: a tier the page forgets is a build
+        // nobody can price, and one it invents is a build that does not exist.
+        assertEquals(EvolutionTier.values().length, count(json, "\"speedMultiplier\":"),
+                "Every tier must be published exactly once");
+        assertEquals(ModularWeaponType.values().length, count(json, "\"twoPart\":"),
+                "Every weapon must be published exactly once");
+        assertEquals(ModularArmorType.values().length, count(json, "\"baseDefense\":"),
+                "Every armor slot must be published exactly once");
+
+        for (ModularToolType tool : ModularToolType.values()) {
+            assertTrue(json.contains("\"displayName\": \"" + tool.getDisplayName() + "\""),
+                    tool.name() + " must be published as equipment");
+        }
+        // The retired sword alias shares its display name with the weapon it duplicates, so a single
+        // occurrence is the proof the tools table skipped it instead of listing the same item twice.
+        assertEquals(1, count(json, "\"displayName\": \"" + ModularToolType.SWORD.getDisplayName() + "\""),
+                "The deprecated tool alias must not be published next to the weapon it duplicates");
+    }
+
+    @Test
+    @DisplayName("The builds the page prices are builds the Forge really assembled")
+    void goldenBuildsCoverEveryFamily() {
+        String json = data.json();
+
+        // Only a build row carries a tier, so this counts the builds without parsing the file.
+        int builds = count(json, "\"tier\":");
+        assertTrue(builds >= 8, "The golden builds must cover the Forge, got " + builds);
+
+        for (String kind : new String[]{"\"kind\": \"weapon\"", "\"kind\": \"tool\"", "\"kind\": \"armor\""}) {
+            assertTrue(json.contains(kind), "The golden builds must pin a " + kind);
+        }
+        // A weapon reads its damage from a different part depending on how many it takes, so both
+        // arities are pinned: one alone would let the calculator use the other's rule unnoticed.
+        assertTrue(json.contains("two-part weapon"), "A two-part weapon must be pinned");
+        assertTrue(json.contains("three-part weapon"), "A three-part weapon must be pinned");
+
+        // A build is assembled from shipped materials: a composite or a prime only exists on a server
+        // where somebody already forged it, so a build forged from one would name a part the reader
+        // cannot pick from the catalog.
+        String goldenBuilds = json.substring(json.indexOf("\"goldenBuilds\": ["));
+        assertTrue(goldenBuilds.contains("\"parts\": ["), "A build must name the parts it was assembled from");
+        assertFalse(goldenBuilds.contains("mvtink_alloy_"), "A build must be forged from shipped materials");
+        assertFalse(goldenBuilds.contains("mvtink_prime_"), "A build must be forged from shipped materials");
+    }
+
+    /**
+     * How often a fragment appears, which is how a generated section's size is checked without parsing
+     * the JSON twice.
+     */
+    private static int count(String json, String fragment) {
+        int total = 0;
+        for (int index = json.indexOf(fragment); index >= 0; index = json.indexOf(fragment, index + fragment.length())) {
+            total++;
+        }
+        return total;
     }
 
     /**

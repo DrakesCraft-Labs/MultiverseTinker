@@ -4053,6 +4053,240 @@
       "b": "mvtink_voidstone"
     }
   ],
+  "equipment": {
+    "tiers": [
+      {
+        "id": "WOOD",
+        "ordinal": 0,
+        "displayName": "Wood Tier",
+        "armorDisplayName": "Leather Tier",
+        "bonusDurability": 0,
+        "bonusDamage": 0,
+        "speedMultiplier": 1
+      },
+      {
+        "id": "STONE",
+        "ordinal": 1,
+        "displayName": "Stone Tier",
+        "armorDisplayName": "Copper Tier",
+        "bonusDurability": 150,
+        "bonusDamage": 0.8,
+        "speedMultiplier": 1.15
+      },
+      {
+        "id": "COPPER",
+        "ordinal": 2,
+        "displayName": "Copper Tier",
+        "armorDisplayName": "Chainmail Tier",
+        "bonusDurability": 350,
+        "bonusDamage": 1.5,
+        "speedMultiplier": 1.3
+      },
+      {
+        "id": "IRON",
+        "ordinal": 3,
+        "displayName": "Iron Tier",
+        "armorDisplayName": "Iron Tier",
+        "bonusDurability": 650,
+        "bonusDamage": 2.5,
+        "speedMultiplier": 1.5
+      },
+      {
+        "id": "GOLD",
+        "ordinal": 4,
+        "displayName": "Gold Tier",
+        "armorDisplayName": "Gold Tier",
+        "bonusDurability": 900,
+        "bonusDamage": 3.5,
+        "speedMultiplier": 1.8
+      },
+      {
+        "id": "DIAMOND",
+        "ordinal": 5,
+        "displayName": "Diamond Tier",
+        "armorDisplayName": "Diamond Tier",
+        "bonusDurability": 1500,
+        "bonusDamage": 5,
+        "speedMultiplier": 2.2
+      },
+      {
+        "id": "NETHERITE",
+        "ordinal": 6,
+        "displayName": "Netherite Tier",
+        "armorDisplayName": "Netherite Tier",
+        "bonusDurability": 2500,
+        "bonusDamage": 7,
+        "speedMultiplier": 2.8
+      }
+    ],
+    "weapons": [
+      {
+        "id": "SWORD",
+        "displayName": "Modular Broadsword",
+        "parts": [
+          "Head / Blade",
+          "Handle / Hilt",
+          "Pommel / Guard"
+        ],
+        "twoPart": false
+      },
+      {
+        "id": "BOW",
+        "displayName": "Modular Longbow",
+        "parts": [
+          "Bow Limbs",
+          "Bowstring"
+        ],
+        "twoPart": true
+      },
+      {
+        "id": "CROSSBOW",
+        "displayName": "Modular Heavy Crossbow",
+        "parts": [
+          "Head / Prod",
+          "Handle / Stock",
+          "Pommel / Mechanism"
+        ],
+        "twoPart": false
+      },
+      {
+        "id": "TRIDENT",
+        "displayName": "Modular Elder Trident",
+        "parts": [
+          "Head / Prongs",
+          "Handle / Shaft",
+          "Pommel / Counterweight"
+        ],
+        "twoPart": false
+      },
+      {
+        "id": "SPEAR",
+        "displayName": "Modular Kinetic Spear",
+        "parts": [
+          "Head / Spearhead",
+          "Handle / Shaft",
+          "Pommel / Butt Cap"
+        ],
+        "twoPart": false
+      },
+      {
+        "id": "MACE",
+        "displayName": "Modular War Mace",
+        "parts": [
+          "Head / Heavy Head",
+          "Handle / Shaft",
+          "Pommel / Flanged Pommel"
+        ],
+        "twoPart": false
+      },
+      {
+        "id": "SHIELD",
+        "displayName": "Modular Tower Shield",
+        "parts": [
+          "Shield Faceplate",
+          "Shield Boss"
+        ],
+        "twoPart": true
+      }
+    ],
+    "tools": [
+      {
+        "id": "PICKAXE",
+        "displayName": "Modular Pickaxe",
+        "parts": [
+          "Modular Head",
+          "Modular Handle",
+          "Modular Pommel"
+        ]
+      },
+      {
+        "id": "AXE",
+        "displayName": "Modular Battleaxe",
+        "parts": [
+          "Modular Head",
+          "Modular Handle",
+          "Modular Pommel"
+        ]
+      },
+      {
+        "id": "SHOVEL",
+        "displayName": "Modular Excavator",
+        "parts": [
+          "Modular Head",
+          "Modular Handle",
+          "Modular Pommel"
+        ]
+      },
+      {
+        "id": "HOE",
+        "displayName": "Modular Scythe",
+        "parts": [
+          "Modular Head",
+          "Modular Handle",
+          "Modular Pommel"
+        ]
+      },
+      {
+        "id": "FISHING_ROD",
+        "displayName": "Modular Fishing Rod",
+        "parts": [
+          "Modular Head",
+          "Modular Handle",
+          "Modular Pommel"
+        ]
+      }
+    ],
+    "armor": [
+      {
+        "id": "HELMET",
+        "displayName": "Modular Helmet",
+        "baseDefense": 3,
+        "baseToughness": 2,
+        "baseDurability": 500,
+        "parts": [
+          "Armor Plate",
+          "Armor Lining",
+          "Armor Trim"
+        ]
+      },
+      {
+        "id": "CHESTPLATE",
+        "displayName": "Modular Chestplate",
+        "baseDefense": 8,
+        "baseToughness": 3,
+        "baseDurability": 750,
+        "parts": [
+          "Armor Plate",
+          "Armor Lining",
+          "Armor Trim"
+        ]
+      },
+      {
+        "id": "LEGGINGS",
+        "displayName": "Modular Leggings",
+        "baseDefense": 6,
+        "baseToughness": 2,
+        "baseDurability": 650,
+        "parts": [
+          "Armor Plate",
+          "Armor Lining",
+          "Armor Trim"
+        ]
+      },
+      {
+        "id": "BOOTS",
+        "displayName": "Modular Boots",
+        "baseDefense": 3,
+        "baseToughness": 2,
+        "baseDurability": 450,
+        "parts": [
+          "Armor Plate",
+          "Armor Lining",
+          "Armor Trim"
+        ]
+      }
+    ]
+  },
   "golden": [
     {
       "a": "mvtink_copper",
@@ -4353,6 +4587,158 @@
       "b": "mvtink_zinc",
       "case": "netherite alone is refused: it is not freely blendable",
       "craftable": false
+    }
+  ],
+  "goldenBuilds": [
+    {
+      "kind": "weapon",
+      "type": "SWORD",
+      "tier": "WOOD",
+      "parts": [
+        "mvtink_copper",
+        "mvtink_gold",
+        "mvtink_tin"
+      ],
+      "case": "three-part weapon at the first tier, where the pommel counts for a third",
+      "durability": 390,
+      "damage": 6.3
+    },
+    {
+      "kind": "weapon",
+      "type": "BOW",
+      "tier": "DIAMOND",
+      "parts": [
+        "mvtink_bronze",
+        "mvtink_amethyst"
+      ],
+      "case": "two-part weapon, where the second part counts for half and no pommel is added",
+      "durability": 2250,
+      "damage": 15.75
+    },
+    {
+      "kind": "weapon",
+      "type": "SHIELD",
+      "tier": "COPPER",
+      "parts": [
+        "mvtink_bronze",
+        "mvtink_silver"
+      ],
+      "case": "the other two-part weapon, whose parts differ from the bow's",
+      "durability": 950,
+      "damage": 12.1
+    },
+    {
+      "kind": "weapon",
+      "type": "SWORD",
+      "tier": "NETHERITE",
+      "parts": [
+        "mvtink_steel",
+        "mvtink_silver",
+        "mvtink_celestine"
+      ],
+      "case": "three-part weapon at the top tier, where the tier bonus dominates the parts",
+      "durability": 3920,
+      "damage": 15.666667
+    },
+    {
+      "kind": "weapon",
+      "type": "SPEAR",
+      "tier": "IRON",
+      "parts": [
+        "mvtink_cosmic_netherite",
+        "mvtink_manyullyn",
+        "mvtink_cobalt"
+      ],
+      "case": "three-part weapon forged from legendary alloys",
+      "durability": 3250,
+      "damage": 18
+    },
+    {
+      "kind": "tool",
+      "type": "PICKAXE",
+      "tier": "IRON",
+      "parts": [
+        "mvtink_iron",
+        "mvtink_gold",
+        "mvtink_tin"
+      ],
+      "case": "tool, where the tier multiplies the head's mining speed",
+      "durability": 1090,
+      "damage": 9,
+      "speed": 9
+    },
+    {
+      "kind": "tool",
+      "type": "AXE",
+      "tier": "GOLD",
+      "parts": [
+        "mvtink_bronze",
+        "mvtink_silver",
+        "mvtink_copper"
+      ],
+      "case": "tool whose handle adds a third of its attack damage",
+      "durability": 1600,
+      "damage": 13.733334,
+      "speed": 13.5
+    },
+    {
+      "kind": "tool",
+      "type": "HOE",
+      "tier": "NETHERITE",
+      "parts": [
+        "mvtink_adamant_steel",
+        "mvtink_glacial_silver",
+        "mvtink_zinc"
+      ],
+      "case": "tool at the top tier, where the speed multiplier is largest",
+      "durability": 4685,
+      "damage": 21.666666,
+      "speed": 32.2
+    },
+    {
+      "kind": "armor",
+      "type": "HELMET",
+      "tier": "STONE",
+      "parts": [
+        "mvtink_copper",
+        "mvtink_tin",
+        "mvtink_zinc"
+      ],
+      "case": "armor, where the plate rolls defense and the lining rolls toughness",
+      "durability": 1135,
+      "defense": 5,
+      "toughness": 2.875,
+      "knockback": 0.07
+    },
+    {
+      "kind": "armor",
+      "type": "CHESTPLATE",
+      "tier": "NETHERITE",
+      "parts": [
+        "mvtink_cosmic_netherite",
+        "mvtink_adamant_steel",
+        "mvtink_bronze"
+      ],
+      "case": "armor at the top tier, where the tier raises defense and toughness at once",
+      "durability": 6425,
+      "defense": 18,
+      "toughness": 8.125,
+      "knockback": 0.16999999999999998
+    },
+    {
+      "kind": "armor",
+      "type": "BOOTS",
+      "tier": "DIAMOND",
+      "parts": [
+        "mvtink_amber",
+        "mvtink_ruby",
+        "mvtink_quartz"
+      ],
+      "case": "armor whose trim rolls the knockback resistance",
+      "durability": 2900,
+      "defense": 9,
+      "toughness": 5.375,
+      "knockback": 0.15000000000000002
     }
   ]
 }

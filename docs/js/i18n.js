@@ -106,6 +106,21 @@ export const STRINGS = {
     samePair: 'El mismo par que el Crisol de Aleaciones acepta.',
     parentsNote: 'Padres: {a} + {b}',
 
+    builderTitle: 'Calculadora de builds',
+    builderHint: 'Elige un arma, una herramienta o una pieza de armadura, sus partes y su tier, y mira el daño y la durabilidad finales. Cada parte se forja con un solo material, y la cuenta es la del propio plugin, hecha en tu navegador.',
+    builderMode: 'Equipo',
+    builderType: 'Tipo',
+    builderTier: 'Tier de evolución',
+    builderResultTitle: 'Build resultante',
+    builderWeaponNote: 'Un arma de tres piezas saca su daño de la cabeza y de un tercio del pomo; una de dos, de la mitad de su segunda pieza. El tier {tier} añade +{durability} de durabilidad y +{damage} de daño.',
+    builderToolNote: 'El cabezal aporta el daño y la velocidad de minado, el mango un tercio de su impacto y el pomo la mitad de su durabilidad. El tier {tier} añade +{durability} de durabilidad, +{damage} de daño y multiplica la velocidad por {speed}.',
+    builderArmorNote: 'La placa rueda la defensa, el forro la dureza y el ribete la resistencia al empuje. El tier {tier} suma su escalón a la defensa y la mitad a la dureza.',
+    builderSourceNote: 'Son las fórmulas del propio plugin, con los números que el item lleva al forjarse. Aquí no se forja nada.',
+    builderRefused: 'Esa combinación no se puede calcular: falta una parte o el equipo elegido ya no está en el catálogo.',
+    defense: 'Defensa',
+    toughness: 'Dureza',
+    knockback: 'Resistencia al empuje',
+
     footerTitle: 'Más información',
     footerWiki: 'Wiki del proyecto',
     footerCombos: 'Las mejores combinaciones de espada y arco',
@@ -209,6 +224,21 @@ export const STRINGS = {
     samePair: 'The same pair the Alloy Crucible accepts.',
     parentsNote: 'Parents: {a} + {b}',
 
+    builderTitle: 'Build calculator',
+    builderHint: 'Pick a weapon, a tool or an armor piece, its parts and its tier, and read the final damage and durability. Each part is forged from one material, and the arithmetic is the plugin\'s own, done in your browser.',
+    builderMode: 'Equipment',
+    builderType: 'Type',
+    builderTier: 'Evolution tier',
+    builderResultTitle: 'Resulting build',
+    builderWeaponNote: 'A three-part weapon takes its damage from the head and a third of the pommel; a two-part one takes half of its second part. The {tier} adds +{durability} durability and +{damage} damage.',
+    builderToolNote: 'The head yields the damage and the mining speed, the handle a third of its impact and the pommel half of its durability. The {tier} adds +{durability} durability, +{damage} damage and multiplies the speed by {speed}.',
+    builderArmorNote: 'The plate rolls Defense, the lining Toughness and the trim knockback resistance. The {tier} adds its step to Defense and half of it to Toughness.',
+    builderSourceNote: 'These are the plugin\'s own formulas, with the numbers the item carries when it is forged. Nothing is forged here.',
+    builderRefused: 'That combination cannot be priced: a part is missing, or the chosen equipment is no longer in the catalog.',
+    defense: 'Defense',
+    toughness: 'Toughness',
+    knockback: 'Knockback resistance',
+
     footerTitle: 'More information',
     footerWiki: 'Project wiki',
     footerCombos: 'The best sword and bow combinations',
@@ -221,6 +251,7 @@ export const STRINGS = {
 export const LABELS = {
   es: {
     kind: { mineral: 'Mineral', legendary: 'Aleación legendaria', catalyst: 'Catalizador' },
+    equipmentKind: { weapon: 'Arma', tool: 'Herramienta', armor: 'Armadura' },
     origin: { OVERWORLD: 'Overworld', NETHER: 'El Nether', THE_END: 'El End', VANILLA: 'Menas vanilla' },
     rarity: { COMMON: 'Común', UNCOMMON: 'Poco común', RARE: 'Rara', EPIC: 'Épica', LEGENDARY: 'Legendaria' },
     type: {
@@ -234,6 +265,7 @@ export const LABELS = {
   },
   en: {
     kind: { mineral: 'Mineral', legendary: 'Legendary alloy', catalyst: 'Catalyst' },
+    equipmentKind: { weapon: 'Weapon', tool: 'Tool', armor: 'Armor' },
     origin: { OVERWORLD: 'Overworld', NETHER: 'The Nether', THE_END: 'The End', VANILLA: 'Vanilla ores' },
     rarity: { COMMON: 'Common', UNCOMMON: 'Uncommon', RARE: 'Rare', EPIC: 'Epic', LEGENDARY: 'Legendary' },
     type: {

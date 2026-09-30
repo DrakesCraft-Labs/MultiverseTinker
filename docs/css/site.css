@@ -201,6 +201,13 @@ h3.section + p.hint, p.hint { margin: 0 0 10px; color: var(--dim); font-size: .8
 .result-card h4 { margin: 0; font-size: 1.15rem; }
 .result-card .note { color: var(--dim); font-size: .83rem; margin: 8px 0 0; }
 
+/* ---------- build calculator ---------- */
+.builder { margin-top: 22px; padding: 18px; }
+/* One column per control, wrapping to as many rows as the parts need: a two-part weapon draws two
+   part pickers, a three-part one draws three, without the grid being told which. */
+.builder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 12px; }
+.builder .result-card .kv { margin-top: 12px; }
+
 /* ---------- footer ---------- */
 footer.foot { margin-top: 34px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--dim); font-size: .86rem; }
 footer.foot ul { margin: 8px 0 0; padding-left: 18px; }

@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MultiverseTinker · Alloys</title>
+  <title>MultiverseTinker · Alloys &amp; Builds</title>
   <meta name="description"
-        content="Interactive explorer for every MultiverseTinker material, trait, essence and crucible fusion.">
+        content="Interactive explorer for every MultiverseTinker material, trait, essence and crucible fusion, with a build calculator that prices a weapon, tool or armor piece from its parts and tier.">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="css/site.css">
 </head>
@@ -43,6 +43,13 @@
     <p class="hint" id="crucibleHint"></p>
     <div class="crucible-grid" id="crucibleSelectors"></div>
     <div class="result" id="result" aria-live="polite"></div>
+  </section>
+
+  <section class="panel builder" id="builder">
+    <h3 class="section" id="builderTitle"></h3>
+    <p class="hint" id="builderHint"></p>
+    <div class="builder-grid" id="builderControls"></div>
+    <div class="result" id="builderResult" aria-live="polite"></div>
   </section>
 
   <footer class="foot">

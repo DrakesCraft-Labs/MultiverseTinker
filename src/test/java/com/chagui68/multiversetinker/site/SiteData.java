@@ -2,8 +2,16 @@ package com.chagui68.multiversetinker.site;
 
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.alloys.TinkerAlloy;
+import com.chagui68.multiversetinker.api.ModularArmorType;
+import com.chagui68.multiversetinker.api.ModularToolType;
+import com.chagui68.multiversetinker.api.ModularWeaponType;
+import com.chagui68.multiversetinker.api.ToolPartType;
+import com.chagui68.multiversetinker.evolution.EvolutionTier;
+import com.chagui68.multiversetinker.items.PartComposition;
+import com.chagui68.multiversetinker.items.TinkerItemBuilder;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
+import com.chagui68.multiversetinker.storage.TinkerKeys;
 import com.chagui68.multiversetinker.tools.PerkEpithet;
 import com.chagui68.multiversetinker.tools.PrimeArmorState;
 import com.chagui68.multiversetinker.tools.PrimeUltimate;
@@ -26,6 +34,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 /**
  * Publishes the registries as the JSON behind the interactive alloy site.
@@ -89,7 +101,9 @@ public final class SiteData {
         root.put("essences", essences());
         root.put("materials", shipped.stream().map(this::material).toList());
         root.put("recipes", recipes());
+        root.put("equipment", equipment());
         root.put("golden", goldenPairs());
+        root.put("goldenBuilds", goldenBuilds());
         return Json.write(root);
     }
 
@@ -353,6 +367,216 @@ public final class SiteData {
         if (AlloyRegistry.LEGENDARY_IDS.contains(alloy.id().toLowerCase(Locale.ROOT))) return "legendary";
         if (alloy.id().startsWith(PRIME_PREFIX)) return "prime";
         return "composite";
+    }
+
+    // ==========================================
+    // EQUIPMENT TABLES
+    // ==========================================
+
+    /**
+     * The three equipment families and the evolution ladder, read off the enums the Forge builds from.
+     *
+     * <p>The page's build calculator adds numbers together, and every number it adds comes from here: a
+     * tier's durability and damage bonus, an armor slot's bare protection, the name the game gives each
+     * part. Publishing them keeps the calculator honest for the same reason the catalog is generated — a
+     * tier that gains a bonus in the plugin changes the page with it, and a slot that grows a fourth part
+     * stops being described as three.</p>
+     */
+    @Nonnull
+    private static Map<String, Object> equipment() {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("tiers", tiers());
+        out.put("weapons", weapons());
+        out.put("tools", tools());
+        out.put("armor", armor());
+        return out;
+    }
+
+    @Nonnull
+    private static List<Map<String, Object>> tiers() {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (EvolutionTier tier : EvolutionTier.values()) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", tier.name());
+            row.put("ordinal", tier.ordinal());
+            row.put("displayName", tier.getDisplayName());
+            row.put("armorDisplayName", tier.getArmorDisplayName());
+            row.put("bonusDurability", tier.getBonusDurability());
+            row.put("bonusDamage", tier.getBonusDamage());
+            row.put("speedMultiplier", tier.getSpeedMultiplier());
+            out.add(row);
+        }
+        return out;
+    }
+
+    /** Every weapon the Forge assembles, with how many parts it takes and what the game calls them. */
+    @Nonnull
+    private static List<Map<String, Object>> weapons() {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (ModularWeaponType weapon : ModularWeaponType.values()) {
+            List<String> parts = new ArrayList<>();
+            parts.add(weapon.getPart1Name());
+            parts.add(weapon.getPart2Name());
+            if (weapon.getPart3Name() != null) parts.add(weapon.getPart3Name());
+
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", weapon.name());
+            row.put("displayName", weapon.getDisplayName());
+            row.put("parts", parts);
+            row.put("twoPart", weapon.isTwoPart());
+            out.add(row);
+        }
+        return out;
+    }
+
+    /** Every tool the Forge assembles: always a head, a handle and a pommel. */
+    @Nonnull
+    private static List<Map<String, Object>> tools() {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (ModularToolType tool : ModularToolType.values()) {
+            // The deprecated sword alias is the weapon enum's business: its id is already published as a
+            // weapon, and listing it twice would offer the reader the same item under two families.
+            if (isDeprecated(tool)) continue;
+
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", tool.name());
+            row.put("displayName", tool.getDisplayName());
+            row.put("parts", List.of(ToolPartType.HEAD.getDisplayName(), ToolPartType.ROD.getDisplayName(),
+                    ToolPartType.BINDING.getDisplayName()));
+            out.add(row);
+        }
+        return out;
+    }
+
+    /** Every armor slot, with the protection its bare form rolls before any mineral is cast into it. */
+    @Nonnull
+    private static List<Map<String, Object>> armor() {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (ModularArmorType slot : ModularArmorType.values()) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", slot.name());
+            row.put("displayName", slot.getDisplayName());
+            row.put("baseDefense", slot.getBaseDefense());
+            row.put("baseToughness", slot.getBaseToughness());
+            row.put("baseDurability", slot.getBaseDurability());
+            row.put("parts", List.of(slot.getPart1Name(), slot.getPart2Name(), slot.getPart3Name()));
+            out.add(row);
+        }
+        return out;
+    }
+
+    /** Whether an enum constant carries {@code @Deprecated}, so a retired alias can be skipped. */
+    private static boolean isDeprecated(@Nonnull Enum<?> constant) {
+        try {
+            return constant.getDeclaringClass().getField(constant.name()).isAnnotationPresent(Deprecated.class);
+        } catch (NoSuchFieldException exception) {
+            return false;
+        }
+    }
+
+    // ==========================================
+    // GOLDEN BUILDS
+    // ==========================================
+
+    /**
+     * Builds the page has to reproduce, each one written down for a reason.
+     *
+     * <p>A weapon reads its damage from different parts depending on whether it takes two or three, a tool
+     * scales its head with the tier, and armor rolls its protection from three different parts. These rows
+     * cover each of those, at both ends of the tier ladder, so the calculator cannot quietly apply one
+     * equipment family's arithmetic to another's.</p>
+     */
+    private static final List<Build> GOLDEN_BUILDS = List.of(
+            new Build("weapon", "SWORD", "WOOD", List.of("mvtink_copper", "mvtink_gold", "mvtink_tin"),
+                    "three-part weapon at the first tier, where the pommel counts for a third"),
+            new Build("weapon", "BOW", "DIAMOND", List.of("mvtink_bronze", "mvtink_amethyst"),
+                    "two-part weapon, where the second part counts for half and no pommel is added"),
+            new Build("weapon", "SHIELD", "COPPER", List.of("mvtink_bronze", "mvtink_silver"),
+                    "the other two-part weapon, whose parts differ from the bow's"),
+            new Build("weapon", "SWORD", "NETHERITE", List.of("mvtink_steel", "mvtink_silver", "mvtink_celestine"),
+                    "three-part weapon at the top tier, where the tier bonus dominates the parts"),
+            new Build("weapon", "SPEAR", "IRON", List.of("mvtink_cosmic_netherite", "mvtink_manyullyn", "mvtink_cobalt"),
+                    "three-part weapon forged from legendary alloys"),
+            new Build("tool", "PICKAXE", "IRON", List.of("mvtink_iron", "mvtink_gold", "mvtink_tin"),
+                    "tool, where the tier multiplies the head's mining speed"),
+            new Build("tool", "AXE", "GOLD", List.of("mvtink_bronze", "mvtink_silver", "mvtink_copper"),
+                    "tool whose handle adds a third of its attack damage"),
+            new Build("tool", "HOE", "NETHERITE", List.of("mvtink_adamant_steel", "mvtink_glacial_silver", "mvtink_zinc"),
+                    "tool at the top tier, where the speed multiplier is largest"),
+            new Build("armor", "HELMET", "STONE", List.of("mvtink_copper", "mvtink_tin", "mvtink_zinc"),
+                    "armor, where the plate rolls defense and the lining rolls toughness"),
+            new Build("armor", "CHESTPLATE", "NETHERITE", List.of("mvtink_cosmic_netherite", "mvtink_adamant_steel", "mvtink_bronze"),
+                    "armor at the top tier, where the tier raises defense and toughness at once"),
+            new Build("armor", "BOOTS", "DIAMOND", List.of("mvtink_amber", "mvtink_ruby", "mvtink_quartz"),
+                    "armor whose trim rolls the knockback resistance"));
+
+    /** One build worth pinning: the equipment, its parts, its tier, and the reason it is pinned. */
+    private record Build(String kind, String type, String tier, List<String> parts, String why) {
+    }
+
+    /**
+     * Assembles every golden build through the Forge's own code and records the numbers it produced.
+     *
+     * <p>The rows are read back off the assembled item — the maximum durability it recorded, its attack
+     * damage, its mining speed — so they are the plugin's output rather than a second telling of its
+     * formulas. Armor is the exception: its protection rides on attribute modifiers rather than in the
+     * item's data, so those three numbers come from the same {@link TinkerItemBuilder#armorStats} call the
+     * piece itself was armed with.</p>
+     */
+    @Nonnull
+    private List<Map<String, Object>> goldenBuilds() {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (Build build : GOLDEN_BUILDS) {
+            List<PartComposition> parts = new ArrayList<>();
+            for (String id : build.parts()) {
+                TinkerMaterial material = materials.get(id);
+                Objects.requireNonNull(material, "Golden build part " + id + " must be a registered material");
+                parts.add(PartComposition.fromMaterials(List.of(material)));
+            }
+
+            EvolutionTier tier = EvolutionTier.valueOf(build.tier());
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("kind", build.kind());
+            row.put("type", build.type());
+            row.put("tier", build.tier());
+            row.put("parts", build.parts());
+            row.put("case", build.why());
+
+            ItemMeta meta = assemble(build, parts, tier).getItemMeta();
+            Objects.requireNonNull(meta, "A forged item always has meta");
+            PersistentDataContainer pdc = meta.getPersistentDataContainer();
+            row.put("durability", pdc.get(TinkerKeys.TOOL_MAX_DURABILITY, PersistentDataType.INTEGER));
+
+            if (build.kind().equals("armor")) {
+                TinkerItemBuilder.ArmorStats stats = TinkerItemBuilder.armorStats(ModularArmorType.valueOf(build.type()),
+                        parts.get(0), parts.get(1), parts.get(2), tier);
+                row.put("defense", stats.defense());
+                row.put("toughness", stats.toughness());
+                row.put("knockback", stats.knockbackResistance());
+            } else {
+                row.put("damage", pdc.get(TinkerKeys.TOOL_ATTACK_DAMAGE, PersistentDataType.FLOAT));
+            }
+            if (build.kind().equals("tool")) {
+                row.put("speed", pdc.get(TinkerKeys.TOOL_MINING_SPEED, PersistentDataType.FLOAT));
+            }
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    /** Runs one golden build through the Forge, exactly as the in-game GUI does. */
+    @Nonnull
+    private static ItemStack assemble(@Nonnull Build build, @Nonnull List<PartComposition> parts,
+                                      @Nonnull EvolutionTier tier) {
+        return switch (build.kind()) {
+            case "weapon" -> TinkerItemBuilder.createModularWeapon(ModularWeaponType.valueOf(build.type()),
+                    parts.get(0), parts.get(1), parts.size() > 2 ? parts.get(2) : null, tier, 0);
+            case "tool" -> TinkerItemBuilder.createModularTool(ModularToolType.valueOf(build.type()),
+                    parts.get(0), parts.get(1), parts.get(2), tier, 0);
+            case "armor" -> TinkerItemBuilder.createModularArmor(ModularArmorType.valueOf(build.type()),
+                    parts.get(0), parts.get(1), parts.get(2), tier, 0);
+            default -> throw new IllegalArgumentException("Unknown golden build kind " + build.kind());
+        };
     }
 
     // ==========================================

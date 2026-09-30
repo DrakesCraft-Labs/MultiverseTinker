@@ -65,7 +65,7 @@ A practical forging guide: what to put in each part to forge the best modular br
 ## 🧪 How to verify your own combination
 
 * **In game**: open the **Alloy Codex** (the book button on the *Alloy Crucible* tab) and use the **Combination Explorer** to list every valid partner of a mineral.
-* **In the browser**: the [interactive alloy explorer](https://drakescraft-labs.github.io/MultiverseTinker/) lists every material with its forge stats and essences, and its two-material crucible shows the name, id, durability, speed, damage and inherited essences of the prime any pair would forge — without spending an ingot.
+* **In the browser**: the [interactive alloy explorer](https://drakescraft-labs.github.io/MultiverseTinker/) lists every material with its forge stats and essences, and its two-material crucible shows the name, id, durability, speed, damage and inherited essences of the prime any pair would forge — without spending an ingot. Its build calculator prices the same broadsword and longbow from their parts and tier before you forge them, so a combination can be checked against the numbers on this page first.
 * **In the weapon's lore**: the `✦ Weapon Perk` and `• Essence Focus` lines tell you the dominant essence and the percentage; at **100%** you know the ultimate is guaranteed.
 * **Forge a prime legendary**: fuse your favourite legendary alloy with one of the **12 vanilla catalysts** in the crucible; the catalyst decides the ultimate and the armor state, and that fusion is the most powerful head of that identity.
 * **Raise the tier**: wood → stone → copper → iron → gold → diamond → netherite only adds flat damage and durability, so the optimal combination is the same in every era.

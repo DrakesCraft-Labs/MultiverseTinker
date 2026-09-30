@@ -7,6 +7,10 @@
  * `docs/js/mix.js` and fails when the page would predict a different alloy — a name, an id, a stat or
  * an essence that drifted means the site is promising something the crucible will not do.
  *
+ * The same file carries builds the Forge really assembled, through `TinkerItemBuilder`; those are
+ * replayed through `docs/js/build.js` so the build calculator cannot quote a number the item will not
+ * have.
+ *
  * It also validates the file's shape, so a broken catalog fails here rather than in a browser.
  *
  * Run it with `node docs/js/selfcheck.mjs`. The Pages workflow runs it before every deploy.
@@ -16,6 +20,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { ARMOR, buildStats, TOOL, WEAPON } from './build.js';
 import { canForge, COMPOSITE, fuse, LEGENDARY, pairKey, PRIME } from './mix.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -138,15 +143,97 @@ for (const fusion of [LEGENDARY, PRIME, COMPOSITE]) {
 }
 
 // ==========================================
+// The builds the Forge actually assembled
+// ==========================================
+const buildLabels = { [WEAPON]: 'weapon', [TOOL]: 'tool', [ARMOR]: 'armor' };
+let priced = 0;
+
+for (const row of data.goldenBuilds) {
+  const parts = row.parts.map((id) => byId.get(id));
+  const built = `${row.tier} ${row.type}`;
+  if (parts.some((material) => !material)) {
+    failures.push(`golden build ${built} names a material that is not published`);
+    continue;
+  }
+
+  const result = buildStats(data.equipment, row.kind, row.type, row.tier, parts);
+  if (!result) {
+    failures.push(`golden build ${built}: the page cannot price it (${row.case})`);
+    continue;
+  }
+  priced++;
+
+  check(result.kind === row.kind, `${row.case}: expected a ${buildLabels[row.kind]}, the page says ${result.kind}`);
+  check(result.durability === row.durability,
+    `${row.case}: expected ${row.durability} durability, the page says ${result.durability}`);
+  if (row.damage !== undefined) {
+    check(close(row.damage, result.damage),
+      `${row.case}: expected ${row.damage} damage, the page says ${result.damage}`);
+  }
+  if (row.speed !== undefined) {
+    check(close(row.speed, result.speed),
+      `${row.case}: expected ${row.speed} speed, the page says ${result.speed}`);
+  }
+  if (row.defense !== undefined) {
+    check(result.defense === row.defense,
+      `${row.case}: expected ${row.defense} defense, the page says ${result.defense}`);
+  }
+  if (row.toughness !== undefined) {
+    check(close(row.toughness, result.toughness),
+      `${row.case}: expected ${row.toughness} toughness, the page says ${result.toughness}`);
+  }
+  if (row.knockback !== undefined) {
+    check(close(row.knockback, result.knockback),
+      `${row.case}: expected ${row.knockback} knockback resistance, the page says ${result.knockback}`);
+  }
+}
+
+if (priced < 8) failures.push(`only ${priced} golden builds were priced, which proves too little`);
+for (const kind of [WEAPON, TOOL, ARMOR]) {
+  check(data.goldenBuilds.some((row) => row.kind === kind), `no golden build pins a ${buildLabels[kind]}`);
+}
+// A weapon reads its damage from different parts depending on how many it takes, so both arities are
+// pinned: one arity alone would let the calculator use the other's rule unnoticed.
+for (const arity of [2, 3]) {
+  check(data.goldenBuilds.some((row) => row.kind === WEAPON && row.parts.length === arity),
+    `no golden build pins a ${arity}-part weapon`);
+}
+
+// ==========================================
+// The equipment tables the calculator reads
+// ==========================================
+check(data.equipment.tiers.length >= 7, `the tier ladder only has ${data.equipment.tiers.length} tiers`);
+check(data.equipment.weapons.length >= 6, `only ${data.equipment.weapons.length} weapons are published`);
+check(data.equipment.armor.length === 4, `armor must publish its four slots, got ${data.equipment.armor.length}`);
+check(data.equipment.tools.length >= 5, `only ${data.equipment.tools.length} tools are published`);
+check(!data.equipment.tools.some((tool) => data.equipment.weapons.some((weapon) => weapon.id === tool.id)),
+  'a retired alias must not be published as both a tool and a weapon');
+
+for (const tier of data.equipment.tiers) {
+  check(Number.isInteger(tier.ordinal) && tier.bonusDurability >= 0 && tier.bonusDamage >= 0
+    && tier.speedMultiplier >= 1, `the ${tier.id} tier has no usable bonus`);
+  check(Boolean(tier.displayName) && Boolean(tier.armorDisplayName), `the ${tier.id} tier has no name`);
+}
+for (const family of ['weapons', 'tools', 'armor']) {
+  for (const row of data.equipment[family]) {
+    check(Boolean(row.displayName), `${row.id} has no name`);
+    check(Array.isArray(row.parts) && row.parts.length >= 2 && row.parts.every(Boolean),
+      `${row.id} does not name its parts`);
+  }
+}
+
+// ==========================================
 // Report
 // ==========================================
 if (failures.length > 0) {
-  console.error(`\n✗ The page's mixing math has drifted from the plugin (${failures.length} problems):`);
+  console.error(`\n✗ The page's game math has drifted from the plugin (${failures.length} problems):`);
   for (const failure of failures) console.error(`   - ${failure}`);
-  console.error('\n   docs/js/mix.js must reproduce AlloyRegistry. Fix it, then run this check again.\n');
+  console.error('\n   docs/js/mix.js must reproduce AlloyRegistry and docs/js/build.js must reproduce'
+    + ' TinkerItemBuilder. Fix it, then run this check again.\n');
   process.exit(1);
 }
 
 console.log(`✓ ${data.materials.length} materials, ${data.recipes.length} recipes and `
   + `${data.essences.length} essences are published`);
 console.log(`✓ ${replayed} pairs forged by the plugin were replayed through docs/js/mix.js unchanged`);
+console.log(`✓ ${priced} builds assembled by the plugin were priced through docs/js/build.js unchanged`);
