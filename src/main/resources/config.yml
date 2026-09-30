@@ -107,16 +107,18 @@ equipment:
   # How much of a hit each armor slot answers with, and what a server may retune about it
   #
   # Helmet, chestplate and boots each mitigate a share of their signature threat, and that share grows
-  # with the piece's roll: every point of Defense and Toughness above what the bare slot rolls buys
-  # `scale-per-point` more, up to the cap of the slot. Boots start higher and climb further because a
-  # fall is a single lethal hit, while a helmet wards less because headshots are rarer.
+  # with the piece's roll: it starts at the slot's floor, and every point of Defense and Toughness above
+  # what the bare slot rolls buys `scale-per-point` more, up to the cap of the slot. Boots start higher
+  # and climb further because a fall is a single lethal hit, while a helmet wards less because headshots
+  # are rarer.
   #
   # Leggings are absent on purpose: Stride Momentum answers a hit with mobility rather than mitigation,
-  # so they print no percentage and there is nothing to cap. A slot's floor — the percentage the perk
-  # shipped with when it was a fixed number — stays as it is, so no build that existed gets weaker.
+  # so they print no percentage and have no curve to tune. The shipped floors are the percentages the
+  # perks had when they were fixed numbers, so a server that changes nothing keeps every build as strong
+  # as it was.
   #
-  # All three keys are decimals: 0.02 is 2%, 0.65 is 65%. A cap below a slot's floor pins every piece
-  # of that slot at the cap, and a cap of 1.0 is printed as 100%, which is one character wider than the
+  # Every value is a decimal: 0.02 is 2%, 0.65 is 65%. A cap below a slot's floor pins every piece of
+  # that slot at the cap, and a value of 1.0 is printed as 100%, which is one character wider than the
   # shipped two-digit percentages. Removing a key restores the shipped value on the next reload.
   #
   # The retune applies to everything forged or fought from then on; a piece forged earlier keeps the
@@ -126,6 +128,13 @@ equipment:
     # Mitigation bought by one point of rolled Defense and Toughness. 0 makes the perk a flat share per
     # slot, and a large value pins a good build to the cap immediately.
     scale-per-point: 0.02
+    # Where each slot's share starts, before a single point is bought: the percentages the perks shipped
+    # with when they were fixed numbers. Raising one makes every piece of that slot ward more.
+    floors:
+      helmet: 0.30
+      chestplate: 0.25
+      boots: 0.50
+    # The ceiling each floor climbs towards.
     caps:
       helmet: 0.65
       chestplate: 0.60

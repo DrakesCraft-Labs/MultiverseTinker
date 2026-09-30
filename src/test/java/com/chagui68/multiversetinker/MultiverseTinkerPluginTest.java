@@ -141,7 +141,8 @@ class MultiverseTinkerPluginTest {
         assertEquals(config.getBoolean(TinkerItemBuilder.CONFIG_MODULAR_ARMOR_DEFENSE),
                 TinkerItemBuilder.isModularArmorDefense());
 
-        // The armor perk curve: one step for every slot, one ceiling per slot that prints a share.
+        // The armor perk curve: one step for every slot, and both ends of the curve per slot that
+        // prints a share.
         assertTrue(config.isDouble(TinkerItemBuilder.CONFIG_PERK_SCALE_PER_POINT),
                 TinkerItemBuilder.CONFIG_PERK_SCALE_PER_POINT + " must be a decimal");
         assertEquals(config.getDouble(TinkerItemBuilder.CONFIG_PERK_SCALE_PER_POINT),
@@ -149,16 +150,28 @@ class MultiverseTinkerPluginTest {
                 "The plugin must run with the step the shipped file declares");
 
         for (ModularArmorType type : ModularArmorType.values()) {
-            String key = TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + type.name().toLowerCase(Locale.ROOT);
+            String slot = type.name().toLowerCase(Locale.ROOT);
+            String floorKey = TinkerItemBuilder.CONFIG_PERK_FLOOR_PREFIX + slot;
+            String capKey = TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + slot;
             if (!TinkerItemBuilder.printsMitigation(type)) {
-                // Leggings answer with mobility, so the shipped file must not offer a number to cap.
-                assertFalse(config.isSet(key), key
+                // Leggings answer with mobility, so the shipped file must not offer a curve to tune.
+                assertFalse(config.isSet(floorKey), floorKey
+                        + " must not exist in config.yml, because that slot has no share to start from");
+                assertFalse(config.isSet(capKey), capKey
                         + " must not exist in config.yml, because that slot has no share to cap");
                 continue;
             }
-            assertTrue(config.isDouble(key), key + " must be a decimal");
-            assertEquals(config.getDouble(key), TinkerItemBuilder.getPerkCap(type), 1e-9,
-                    key + " must be the ceiling the plugin applied on enable");
+            assertTrue(config.isDouble(floorKey), floorKey + " must be a decimal");
+            assertEquals(config.getDouble(floorKey), TinkerItemBuilder.getPerkFloor(type), 1e-9,
+                    floorKey + " must be the starting share the plugin applied on enable");
+            assertEquals(TinkerItemBuilder.DEFAULT_PERK_FLOORS.get(type), config.getDouble(floorKey), 1e-9,
+                    floorKey + " must ship the value the plugin falls back to");
+
+            assertTrue(config.isDouble(capKey), capKey + " must be a decimal");
+            assertEquals(config.getDouble(capKey), TinkerItemBuilder.getPerkCap(type), 1e-9,
+                    capKey + " must be the ceiling the plugin applied on enable");
+            assertEquals(TinkerItemBuilder.DEFAULT_PERK_CAPS.get(type), config.getDouble(capKey), 1e-9,
+                    capKey + " must ship the value the plugin falls back to");
         }
     }
 

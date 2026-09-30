@@ -41,6 +41,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 public class MultiverseTinker extends JavaPlugin {
@@ -204,7 +205,8 @@ public class MultiverseTinker extends JavaPlugin {
         TinkerItemBuilder.configurePerkScaling(
                 getConfig().getDouble(TinkerItemBuilder.CONFIG_PERK_SCALE_PER_POINT,
                         TinkerItemBuilder.DEFAULT_PERK_SCALE_PER_POINT),
-                readArmorPerkCaps());
+                readArmorPerkShares(TinkerItemBuilder.CONFIG_PERK_FLOOR_PREFIX, "start from"),
+                readArmorPerkShares(TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX, "cap"));
 
         getLogger().info("Modular equipment: vanilla durability disabled, attack damage "
                 + (TinkerItemBuilder.isModularAttackDamage() ? "taken from the forged materials."
@@ -214,39 +216,46 @@ public class MultiverseTinker extends JavaPlugin {
                         ? "rolled from the forged minerals (Defense, Toughness, knockback)."
                         : "left at the vanilla values of the tier material."));
         getLogger().info("Armor perk scaling: " + percent(TinkerItemBuilder.getPerkScalePerPoint())
-                + " of mitigation per point of rolled Defense and Toughness, capped at " + perkCapsSummary() + ".");
+                + " of mitigation per point of rolled Defense and Toughness, starting at "
+                + perkCurveSummary(TinkerItemBuilder::getPerkFloor) + ", capped at "
+                + perkCurveSummary(TinkerItemBuilder::getPerkCap) + ".");
     }
 
     /**
-     * The mitigation ceiling of every slot a server has set one for.
+     * The share of every slot a server has set for one end of the perk curve.
      *
-     * <p>A slot left out of the file keeps the ceiling the plugin ships with, so removing a key
-     * restores it on the next reload instead of freezing whatever value was applied last. A key that
-     * names no slot with a share to cap is reported, because it would otherwise do nothing at all.</p>
+     * <p>Floors and ceilings are read the same way: a slot left out of the file keeps the value the plugin
+     * ships with, so removing a key restores it on the next reload instead of freezing whatever was applied
+     * last. A key that names no slot with a share to tune is reported, because it would otherwise do
+     * nothing at all.</p>
+     *
+     * @param prefix the config path the keys hang under, ending in a dot
+     * @param verb   what a slot with no share is missing, for the warning
      */
     @Nonnull
-    private Map<ModularArmorType, Double> readArmorPerkCaps() {
-        Map<ModularArmorType, Double> caps = new EnumMap<>(ModularArmorType.class);
+    private Map<ModularArmorType, Double> readArmorPerkShares(@Nonnull String prefix, @Nonnull String verb) {
+        Map<ModularArmorType, Double> shares = new EnumMap<>(ModularArmorType.class);
         for (ModularArmorType type : ModularArmorType.values()) {
-            String key = TinkerItemBuilder.CONFIG_PERK_CAP_PREFIX + type.name().toLowerCase(Locale.ROOT);
+            String key = prefix + type.name().toLowerCase(Locale.ROOT);
             if (getConfig().isSet(key)) {
-                caps.put(type, getConfig().getDouble(key));
+                shares.put(type, getConfig().getDouble(key));
             }
         }
 
+        // The prefix is the section plus a dot, so the section is the prefix without it.
         ConfigurationSection section = getConfig()
-                .getConfigurationSection("equipment.armor-perk.caps");
+                .getConfigurationSection(prefix.substring(0, prefix.length() - 1));
         if (section != null) {
             for (String key : section.getKeys(false)) {
                 ModularArmorType type = armorTypeByKey(key);
                 if (type == null || !TinkerItemBuilder.printsMitigation(type)) {
-                    getLogger().warning("Ignoring equipment.armor-perk.caps." + key + ": only "
+                    getLogger().warning("Ignoring " + prefix + key + ": only "
                             + printMitigatingSlots() + " answer a hit with a share of it. Leggings answer with"
-                            + " mobility, so they have no number to cap.");
+                            + " mobility, so they have no number to " + verb + ".");
                 }
             }
         }
-        return caps;
+        return shares;
     }
 
     /** The armor slot a config key names, or {@code null} when it names none. */
@@ -270,13 +279,13 @@ public class MultiverseTinker extends JavaPlugin {
         return joiner.toString();
     }
 
-    /** The perk curve as one log line: {@code helmet 65% · chestplate 60% · boots 75%}. */
+    /** One end of the perk curve as a log fragment: {@code helmet 65% · chestplate 60% · boots 75%}. */
     @Nonnull
-    private static String perkCapsSummary() {
+    private static String perkCurveSummary(@Nonnull ToDoubleFunction<ModularArmorType> end) {
         StringJoiner joiner = new StringJoiner(" · ");
         for (ModularArmorType type : ModularArmorType.values()) {
             if (!TinkerItemBuilder.printsMitigation(type)) continue;
-            joiner.add(type.name().toLowerCase(Locale.ROOT) + " " + percent(TinkerItemBuilder.getPerkCap(type)));
+            joiner.add(type.name().toLowerCase(Locale.ROOT) + " " + percent(end.applyAsDouble(type)));
         }
         return joiner.toString();
     }

@@ -66,6 +66,9 @@ public class TinkerItemBuilder {
     /** Config key of the mitigation one point of rolled surplus buys a slot. */
     public static final String CONFIG_PERK_SCALE_PER_POINT = "equipment.armor-perk.scale-per-point";
 
+    /** Config key prefix of a slot's starting share, e.g. {@code equipment.armor-perk.floors.helmet}. */
+    public static final String CONFIG_PERK_FLOOR_PREFIX = "equipment.armor-perk.floors.";
+
     /** Config key prefix of a slot's mitigation ceiling, e.g. {@code equipment.armor-perk.caps.helmet}. */
     public static final String CONFIG_PERK_CAP_PREFIX = "equipment.armor-perk.caps.";
 
@@ -79,13 +82,14 @@ public class TinkerItemBuilder {
     public static final double DEFAULT_PERK_SCALE_PER_POINT = 0.02;
 
     /**
-     * The share each slot mitigates before a single point of surplus is bought.
+     * The share each slot starts at before a single point of surplus is bought, as shipped.
      *
      * <p>These are the percentages the perks shipped with when they were fixed numbers, so no build that
-     * existed before the scaling got weaker. Leggings are absent on purpose: they answer a hit with
-     * mobility, not mitigation, and have no share to print.</p>
+     * existed before the scaling got weaker. They are the fallback of {@code equipment.armor-perk.floors},
+     * and the set of slots that have a curve at all: leggings are absent on purpose, because they answer a
+     * hit with mobility, not mitigation, and have no share to print.</p>
      */
-    private static final Map<ModularArmorType, Double> PERK_FLOORS = Map.of(
+    public static final Map<ModularArmorType, Double> DEFAULT_PERK_FLOORS = Map.of(
             ModularArmorType.HELMET, 0.30,
             ModularArmorType.CHESTPLATE, 0.25,
             ModularArmorType.BOOTS, 0.50);
@@ -109,6 +113,7 @@ public class TinkerItemBuilder {
 
     /** The armor perk curve, replaced wholesale by {@link #configurePerkScaling} on every config read. */
     private static volatile double perkScalePerPoint = DEFAULT_PERK_SCALE_PER_POINT;
+    private static volatile Map<ModularArmorType, Double> perkFloors = DEFAULT_PERK_FLOORS;
     private static volatile Map<ModularArmorType, Double> perkCaps = DEFAULT_PERK_CAPS;
 
     /**
@@ -137,42 +142,71 @@ public class TinkerItemBuilder {
      * Applies the armor perk curve of {@code config.yml}.
      *
      * <p>How much of its signature threat a slot answers grows with the piece's rolled Defense and
-     * Toughness, and a server may retune both ends of that curve without a rebuild: one step shared by
-     * every slot, and a ceiling per slot. Values are clamped rather than trusted — a negative step would
-     * invert the curve, and a share above 1 would promise more mitigation than there is damage — and a
-     * slot the map leaves out keeps the ceiling it shipped with, so removing a key restores it.</p>
+     * Toughness, and a server may retune the whole curve without a rebuild: one step shared by every slot,
+     * where each slot starts, and the ceiling it climbs towards. Values are clamped rather than trusted — a
+     * negative step would invert the curve, and a share above 1 would promise more mitigation than there is
+     * damage — and a slot a map leaves out keeps the value it shipped with, so removing a key restores it.</p>
      *
      * @param scalePerPoint the mitigation one point of rolled surplus buys,
      *                      {@value #DEFAULT_PERK_SCALE_PER_POINT} as shipped
+     * @param floors        the starting share of each slot that prints a number
      * @param caps          the ceiling of each slot that prints a number
      */
-    public static void configurePerkScaling(double scalePerPoint, @Nonnull Map<ModularArmorType, Double> caps) {
+    public static void configurePerkScaling(double scalePerPoint,
+                                            @Nonnull Map<ModularArmorType, Double> floors,
+                                            @Nonnull Map<ModularArmorType, Double> caps) {
         perkScalePerPoint = Math.max(0.0, scalePerPoint);
+        perkFloors = effectiveShares(DEFAULT_PERK_FLOORS, floors);
+        perkCaps = effectiveShares(DEFAULT_PERK_CAPS, caps);
+    }
 
+    /**
+     * Folds a configured share per slot over the one the plugin ships.
+     *
+     * <p>A slot the map leaves out keeps its shipped value, so removing a key restores it, and every
+     * share is clamped to the same range at both ends of the curve: nothing below nothing, and nothing
+     * above a whole hit.</p>
+     *
+     * @param shipped    the value each tunable slot falls back to
+     * @param configured what the server set, as far as it set anything
+     */
+    @Nonnull
+    private static Map<ModularArmorType, Double> effectiveShares(
+            @Nonnull Map<ModularArmorType, Double> shipped,
+            @Nonnull Map<ModularArmorType, Double> configured) {
         Map<ModularArmorType, Double> effective = new EnumMap<>(ModularArmorType.class);
-        for (Map.Entry<ModularArmorType, Double> shipped : DEFAULT_PERK_CAPS.entrySet()) {
-            Double configured = caps.get(shipped.getKey());
-            double cap = configured == null ? shipped.getValue() : configured;
-            effective.put(shipped.getKey(), Math.min(1.0, Math.max(0.0, cap)));
+        for (Map.Entry<ModularArmorType, Double> fallback : shipped.entrySet()) {
+            Double configuredValue = configured.get(fallback.getKey());
+            double share = configuredValue == null ? fallback.getValue() : configuredValue;
+            effective.put(fallback.getKey(), Math.min(1.0, Math.max(0.0, share)));
         }
-        perkCaps = Map.copyOf(effective);
+        return Map.copyOf(effective);
     }
 
     /** Restores the shipped defaults (rolled damage, rolled armor protection and the perk curve). */
     public static void resetEquipment() {
         configureEquipment(true);
         configureArmorDefense(true);
-        configurePerkScaling(DEFAULT_PERK_SCALE_PER_POINT, DEFAULT_PERK_CAPS);
+        configurePerkScaling(DEFAULT_PERK_SCALE_PER_POINT, DEFAULT_PERK_FLOORS, DEFAULT_PERK_CAPS);
     }
 
     /** Whether a slot answers a hit with a share of it, and therefore has a curve to tune. */
     public static boolean printsMitigation(@Nonnull ModularArmorType armorType) {
-        return PERK_FLOORS.containsKey(armorType);
+        return DEFAULT_PERK_FLOORS.containsKey(armorType);
     }
 
     /** The mitigation one point of rolled surplus currently buys, as {@code config.yml} sets it. */
     public static double getPerkScalePerPoint() {
         return perkScalePerPoint;
+    }
+
+    /**
+     * The share a slot starts at, before a single point of surplus is bought.
+     *
+     * @return the starting share, or {@code 0} for a slot that mitigates nothing at all
+     */
+    public static double getPerkFloor(@Nonnull ModularArmorType armorType) {
+        return perkFloors.getOrDefault(armorType, 0.0);
     }
 
     /**
@@ -1042,26 +1076,27 @@ public class TinkerItemBuilder {
      *
      * <p>These used to be fixed numbers, so a tin chestplate dampened a hammer blow exactly like a
      * prime-alloy one and the piece's own Defense and Toughness only mattered for the damage vanilla
-     * already subtracted. The share now grows with the piece's roll: every point of Defense and
-     * Toughness above what the bare slot rolls buys the configured step more, and each floor is the
-     * percentage the perk shipped with, so no build that existed got weaker.</p>
+     * already subtracted. The share now grows with the piece's roll: it starts at the slot's floor — the
+     * percentage the perk shipped with, unless the file moved it — and every point of Defense and Toughness
+     * above what the bare slot rolls buys the configured step more, so no build that existed got weaker.</p>
      *
-     * <p>The step and the ceilings come from {@code config.yml} ({@link #configurePerkScaling}), so a
-     * server retunes the curve without a rebuild. The shipped ceilings keep every value a two-digit
-     * percentage, which is what keeps the perk sentence the same width at every tier — a server that
-     * raises one to {@code 1.0} trades that for a three-digit row. A ceiling below a slot's floor pins
-     * the slot at the ceiling: what a server sets always wins over what the perk shipped with.</p>
+     * <p>The step, where each slot starts and the ceilings come from {@code config.yml}
+     * ({@link #configurePerkScaling}), so a server retunes the whole curve without a rebuild. The shipped
+     * values keep every percentage two digits wide, which is what keeps the perk sentence the same width
+     * at every tier — a server that raises a ceiling to {@code 1.0} trades that for a three-digit row. A
+     * ceiling below a slot's floor pins the slot at the ceiling: what a server sets always wins over what
+     * the perk shipped with.</p>
      *
      * <p>Leggings answer a hit with mobility (Stride Momentum) rather than mitigation, so their share
      * is zero and only the other three slots have a number worth printing.</p>
      */
     public static double signatureMitigation(@Nonnull ModularArmorType armorType, @Nonnull ArmorStats stats) {
-        Double floor = PERK_FLOORS.get(armorType);
-        if (floor == null) return 0.0;
+        if (!printsMitigation(armorType)) return 0.0;
 
         double surplus = Math.max(0.0, stats.defense() - armorType.getBaseDefense())
                 + Math.max(0.0, stats.toughness() - armorType.getBaseToughness());
 
+        double floor = getPerkFloor(armorType);
         double cap = getPerkCap(armorType);
         return Math.min(cap, Math.min(floor, cap) + perkScalePerPoint * surplus);
     }

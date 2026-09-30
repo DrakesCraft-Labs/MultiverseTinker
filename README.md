@@ -229,6 +229,9 @@ Forged weapons, tools and armor carry their **own durability counter**, so vanil
 | `equipment.modular-attack-damage` | boolean | `true` | `true` makes a weapon hit for the attack damage rolled from its minerals (the value printed in its lore). `false` keeps the base vanilla material's damage; durability stays modular either way. |
 | `equipment.modular-armor-defense` | boolean | `true` | `true` makes armor defend with the **Defense**, **Toughness** and knockback resistance rolled from its minerals and its evolution tier (the values printed in its lore). `false` keeps the vanilla protection of the tier material. Already-forged pieces are refreshed when their tier evolves. |
 | `equipment.armor-perk.scale-per-point` | decimal | `0.02` | Mitigation one point of rolled Defense and Toughness buys a slot's armor perk. `0` turns the perk into a flat share per slot. |
+| `equipment.armor-perk.floors.helmet` | decimal | `0.30` | Share the Cranium Ward starts at, before a single rolled point is bought. |
+| `equipment.armor-perk.floors.chestplate` | decimal | `0.25` | Starting share of the Kinetic Dampener. |
+| `equipment.armor-perk.floors.boots` | decimal | `0.50` | Starting share of the Feathered Grounding. |
 | `equipment.armor-perk.caps.helmet` | decimal | `0.65` | Ceiling of the Cranium Ward's share. |
 | `equipment.armor-perk.caps.chestplate` | decimal | `0.60` | Ceiling of the Kinetic Dampener's share. |
 | `equipment.armor-perk.caps.boots` | decimal | `0.75` | Ceiling of the Feathered Grounding's share. |
@@ -239,13 +242,17 @@ equipment:
   modular-armor-defense: true
   armor-perk:
     scale-per-point: 0.02
+    floors:
+      helmet: 0.30
+      chestplate: 0.25
+      boots: 0.50
     caps:
       helmet: 0.65
       chestplate: 0.60
       boots: 0.75
 ```
 
-**Armor perks** (Cranium Ward, Kinetic Dampener, Feathered Grounding) answer a hit with a share of it, and that share grows with the piece's roll: every point of Defense and Toughness above what the bare slot rolls buys the configured step, up to the cap of the slot. Both the step and the caps are yours to retune on `/mvtink reload`, so a server can make the perks matter more or less without a rebuild. Values are clamped — a negative step is treated as no scaling, a share above `1.0` as `1.0` — and a cap below a slot's floor pins that slot at the cap, because what the file says wins. **Leggings** are not on the list: Stride Momentum answers with mobility, so it has no share to cap. A slot left out of `caps` keeps the value the plugin ships with, so deleting a key restores it.
+**Armor perks** (Cranium Ward, Kinetic Dampener, Feathered Grounding) answer a hit with a share of it, and that share grows with the piece's roll: it starts at the slot's floor, and every point of Defense and Toughness above what the bare slot rolls buys the configured step, up to the cap of the slot. The step, the floors and the caps are all yours to retune on `/mvtink reload`, so a server can make the perks matter more or less without a rebuild. Values are clamped — a negative step is treated as no scaling, a share above `1.0` as `1.0` — and a cap below a slot's floor pins that slot at the cap, because what the file says wins. **Leggings** are not on the list: Stride Momentum answers with mobility, so it has no curve to tune. A slot left out of `floors` or `caps` keeps the value the plugin ships with, so deleting a key restores it.
 
 A retune takes effect at once for everything that is **fought or forged** from that moment on, but a piece forged earlier keeps the percentage already written into its lore until it evolves or is forged again — that number is part of the item. So after a retune, expect pieces forged before it to still print the old share until they are re-forged.
 

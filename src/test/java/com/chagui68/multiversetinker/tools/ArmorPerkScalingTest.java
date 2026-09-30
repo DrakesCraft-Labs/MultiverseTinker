@@ -46,9 +46,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * <p>Kinetic Dampener, Cranium Ward and Feathered Grounding used to mitigate a fixed percentage, so a
  * tin piece protected exactly like a prime-alloy one and the Defense and Toughness printed in the lore
- * changed nothing about the perk. These tests pin both halves of the new contract: the curve keeps the
- * percentages the perks shipped with as its floor, and combat applies the same number the piece's own
- * lore prints.</p>
+ * changed nothing about the perk. These tests pin both halves of the new contract: the curve starts at
+ * the percentages the perks shipped with as its floor — both ends of it retunable from {@code config.yml}
+ * — and combat applies the same number the piece's own lore prints.</p>
  *
  * <p>The pieces are forged from minerals the trait engine leaves alone — a plate of Singularite and a
  * lining of Cosmic Netherite, which cost nothing in damage — because a mineral that scales the blow
@@ -151,10 +151,37 @@ class ArmorPerkScalingTest {
     }
 
     @Test
+    @DisplayName("a server retunes the floor from config.yml, and the next piece starts there")
+    void theConfigRetunesTheFloor() {
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_FLOOR_PREFIX + "chestplate", 0.40);
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_FLOOR_PREFIX + "helmet", 0.10);
+        plugin.applyEquipmentSettings();
+
+        assertEquals(0.40, TinkerItemBuilder.getPerkFloor(CHESTPLATE), 1e-9, "The file must set the floor");
+        assertEquals(0.10, TinkerItemBuilder.getPerkFloor(HELMET), 1e-9);
+        assertEquals(TinkerItemBuilder.DEFAULT_PERK_FLOORS.get(BOOTS), TinkerItemBuilder.getPerkFloor(BOOTS), 1e-9,
+                "A slot the file leaves out keeps the floor it shipped with");
+        assertEquals(0.40, rolled(CHESTPLATE, 0), 1e-9, "A bare piece must start at the configured floor");
+        assertEquals(0.40 + 0.02 * 8, rolled(CHESTPLATE, 8), 1e-9,
+                "And each rolled point must still buy the configured step on top of it");
+
+        // The forged piece obeys the new floor in its sentence and in the damage combat subtracts alike.
+        ItemStack chestplate = wear(CHESTPLATE, EvolutionTier.WOOD);
+        double share = TinkerItemBuilder.mitigationOf(chestplate, registry);
+        assertTrue(share >= 0.40, "A rolled plate must start at the configured floor, got " + share);
+        assertTrue(perkRow(chestplate).contains("absorbs " + Math.round(share * 100) + "%"),
+                "got: " + perkRow(chestplate));
+
+        Zombie attacker = world.spawn(player.getLocation(), Zombie.class);
+        assertEquals(10.0 * (1.0 - share), hitFor(attacker, 10.0), 1e-6,
+                "Combat must dampen the share the configured floor starts");
+    }
+
+    @Test
     @DisplayName("the configured step is what one rolled point buys")
     void theConfiguredStepBuysEachPoint() {
         for (double step : List.of(0.0, 0.01, 0.05)) {
-            TinkerItemBuilder.configurePerkScaling(step, Map.of());
+            TinkerItemBuilder.configurePerkScaling(step, Map.of(), Map.of());
             for (int surplus = 0; surplus <= 5; surplus++) {
                 assertEquals(0.25 + step * surplus, rolled(CHESTPLATE, surplus), 1e-9,
                         "At " + step + " per point, a surplus of " + surplus + " must buy exactly that much");
@@ -180,25 +207,51 @@ class ArmorPerkScalingTest {
     }
 
     @Test
+    @DisplayName("a slot the file leaves out keeps its shipped floor, and removing a key restores it")
+    void unsetFloorsKeepTheirShippedStart() {
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_FLOOR_PREFIX + "helmet", 0.10);
+        plugin.applyEquipmentSettings();
+
+        assertEquals(0.10, TinkerItemBuilder.getPerkFloor(HELMET), 1e-9);
+        assertEquals(TinkerItemBuilder.DEFAULT_PERK_FLOORS.get(BOOTS), TinkerItemBuilder.getPerkFloor(BOOTS), 1e-9,
+                "An untouched slot must not move");
+
+        // Removing the key hands the slot back to the plugin: the shipped floor, not the last value.
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_FLOOR_PREFIX + "helmet", null);
+        plugin.applyEquipmentSettings();
+        assertEquals(TinkerItemBuilder.DEFAULT_PERK_FLOORS.get(HELMET),
+                TinkerItemBuilder.getPerkFloor(HELMET), 1e-9);
+    }
+
+    @Test
     @DisplayName("a retune is clamped, so no file can invert the curve or promise more than a whole hit")
     void aretuneIsClamped() {
         // A negative step would make a better roll ward less, so it is treated as no scaling at all.
-        TinkerItemBuilder.configurePerkScaling(-1.0, Map.of());
+        TinkerItemBuilder.configurePerkScaling(-1.0, Map.of(), Map.of());
         assertEquals(0.0, TinkerItemBuilder.getPerkScalePerPoint(), 1e-9);
         assertEquals(0.25, rolled(CHESTPLATE, 30), 1e-9, "The floor is what is left with no scaling");
 
         // A share above a whole hit is clamped to it, and a negative one to nothing at all.
-        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(CHESTPLATE, 2.0, BOOTS, -0.5));
+        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(), Map.of(CHESTPLATE, 2.0, BOOTS, -0.5));
         assertEquals(1.0, TinkerItemBuilder.getPerkCap(CHESTPLATE), 1e-9);
         assertEquals(0.0, rolled(BOOTS, 0), 1e-9, "A slot capped at nothing mitigates nothing");
 
         // A ceiling under a slot's floor wins over the floor: what a server sets is what happens.
-        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(CHESTPLATE, 0.10));
+        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(), Map.of(CHESTPLATE, 0.10));
         assertEquals(0.10, rolled(CHESTPLATE, 0), 1e-9);
         assertEquals(0.10, rolled(CHESTPLATE, 30), 1e-9);
 
-        // And a slot that mitigates nothing keeps nothing, whatever is configured for it.
-        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(LEGGINGS, 0.5));
+        // A floor is clamped the same way: nothing below nothing, and nothing above a whole hit.
+        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(CHESTPLATE, -0.5, HELMET, 2.0), Map.of());
+        assertEquals(0.0, TinkerItemBuilder.getPerkFloor(CHESTPLATE), 1e-9, "No floor can be negative");
+        assertEquals(0.02, rolled(CHESTPLATE, 1), 1e-9,
+                "A negative floor is treated as no floor at all, so the curve starts at nothing");
+        assertEquals(1.0, TinkerItemBuilder.getPerkFloor(HELMET), 1e-9, "No share can exceed a whole hit");
+        assertEquals(0.65, rolled(HELMET, 0), 1e-9, "The shipped ceiling still caps whatever floor it is given");
+
+        // And a slot that mitigates nothing keeps nothing, whatever is configured for either end.
+        TinkerItemBuilder.configurePerkScaling(0.02, Map.of(LEGGINGS, 0.5), Map.of(LEGGINGS, 0.5));
+        assertEquals(0.0, TinkerItemBuilder.getPerkFloor(LEGGINGS), 1e-9);
         assertEquals(0.0, TinkerItemBuilder.getPerkCap(LEGGINGS), 1e-9);
         assertEquals(0.0, rolled(LEGGINGS, 30), 1e-9);
         assertFalse(TinkerItemBuilder.printsMitigation(LEGGINGS));
@@ -218,6 +271,24 @@ class ArmorPerkScalingTest {
         assertTrue(log.stream().anyMatch(line -> line.contains("equipment.armor-perk.caps.shield")),
                 "A key naming no slot at all must be called out, got: " + log);
         assertEquals(0.0, TinkerItemBuilder.getPerkCap(LEGGINGS), 1e-9);
+    }
+
+    @Test
+    @DisplayName("a floor for a slot with no share to start is reported instead of silently ignored")
+    void aFloorForASlotWithoutAShareIsReported() {
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_FLOOR_PREFIX + "leggings", 0.5);
+        plugin.getConfig().set(TinkerItemBuilder.CONFIG_PERK_FLOOR_PREFIX + "shield", 0.5);
+
+        List<String> log = captureLog(plugin::applyEquipmentSettings);
+
+        assertTrue(log.stream().anyMatch(line -> line.contains("equipment.armor-perk.floors.leggings")),
+                "A leggings floor must be called out, got: " + log);
+        assertTrue(log.stream().anyMatch(line -> line.contains("equipment.armor-perk.floors.shield")),
+                "A key naming no slot at all must be called out, got: " + log);
+        assertTrue(log.stream().anyMatch(line -> line.contains("no number to start from")),
+                "got: " + log);
+        assertEquals(0.0, TinkerItemBuilder.getPerkFloor(LEGGINGS), 1e-9);
+        assertEquals(0.0, rolled(LEGGINGS, 30), 1e-9, "A configured floor must not give leggings a share");
     }
 
     /** Captures what the plugin logs while an action runs. */
