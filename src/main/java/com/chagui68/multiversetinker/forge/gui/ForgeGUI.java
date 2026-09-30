@@ -17,6 +17,7 @@ import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
+import com.chagui68.multiversetinker.tools.ForgePerkPreview;
 import com.chagui68.multiversetinker.tools.PrimeArmorState;
 import com.chagui68.multiversetinker.tools.PrimeUltimate;
 import com.chagui68.multiversetinker.tools.VanillaCatalyst;
@@ -112,6 +113,15 @@ public class ForgeGUI implements InventoryHolder {
     public static final int SLOT_ARMOR_TRIM = 33;
     public static final int SLOT_ARMOR_ASSEMBLE = 39;
     public static final int SLOT_ARMOR_OUTPUT = 41;
+
+    /**
+     * Where an assembly tab prints the perk the parts in its slots would forge.
+     *
+     * <p>One slot shared by the three assembly tabs, since only one of them is on screen at a time. It
+     * sits directly under the assemble anvil so it reads as that button's answer, and it is a slot no
+     * other tab claims — the alloy crucible puts its codex button next door.</p>
+     */
+    public static final int SLOT_PERK_PREVIEW = 48;
 
     private static final List<CastType> CARVABLE_CASTS = List.of(
             CastType.HEAD,
@@ -545,6 +555,9 @@ public class ForgeGUI implements InventoryHolder {
                 )));
         inventory.setItem(40, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>Forged Weapon ▶</b></green>"));
         inventory.setItem(SLOT_WEAPON_OUTPUT, null);
+
+        // Row 6: the perk these parts would name, so it can be read before the parts are spent.
+        renderPerkPreview();
     }
 
     // ==========================================
@@ -588,6 +601,8 @@ public class ForgeGUI implements InventoryHolder {
                 )));
         inventory.setItem(40, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>Forged Tool ▶</b></green>"));
         inventory.setItem(SLOT_TOOL_OUTPUT, null);
+
+        renderPerkPreview();
     }
 
     // ==========================================
@@ -634,6 +649,98 @@ public class ForgeGUI implements InventoryHolder {
                 )));
         inventory.setItem(40, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>Forged Armor ▶</b></green>"));
         inventory.setItem(SLOT_ARMOR_OUTPUT, null);
+
+        renderPerkPreview();
+    }
+
+    // ==========================================
+    // PERK PREVIEW
+    // ==========================================
+
+    /**
+     * Draws the perk the current assembly would produce into {@link #SLOT_PERK_PREVIEW}.
+     *
+     * <p>Called when an assembly tab is drawn, and again one tick after every click in the inventory.
+     * The second call is what makes the name grow as the player fills the slots: re-rendering the tab
+     * instead would clear the very slots being read, and a part clicked into place does not reach its
+     * slot until the event that delivered the click has finished.</p>
+     *
+     * <p>Does nothing outside the three assembly tabs, so the slot keeps the tab's own backing.</p>
+     */
+    private void renderPerkPreview() {
+        ForgePerkPreview preview = switch (currentTab) {
+            case TAB_WEAPONS -> ForgePerkPreview.weapon(selectedWeaponType,
+                    compositionIn(SLOT_WEAPON_PART1), compositionIn(SLOT_WEAPON_PART2),
+                    selectedWeaponType.isTwoPart() ? null : compositionIn(SLOT_WEAPON_PART3));
+            case TAB_TOOLS -> ForgePerkPreview.tool(selectedToolType,
+                    compositionIn(SLOT_TOOL_HEAD), compositionIn(SLOT_TOOL_HANDLE), compositionIn(SLOT_TOOL_POMMEL));
+            case TAB_ARMOR -> ForgePerkPreview.armor(selectedArmorType,
+                    compositionIn(SLOT_ARMOR_PLATE), compositionIn(SLOT_ARMOR_LINING), compositionIn(SLOT_ARMOR_TRIM));
+            default -> null;
+        };
+        if (preview == null) return;
+
+        inventory.setItem(SLOT_PERK_PREVIEW, perkPreviewItem(preview));
+    }
+
+    @Nullable
+    private PartComposition compositionIn(int slot) {
+        return getCompositionFromPart(inventory.getItem(slot));
+    }
+
+    /** The preview as an item: the name it would print, the word each part lends, and the mechanic. */
+    @Nonnull
+    private ItemStack perkPreviewItem(@Nonnull ForgePerkPreview preview) {
+        ItemStack item = new ItemStack(Material.NAME_TAG);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        meta.displayName(miniMessage.deserialize("<gradient:#ffd700:#ff8c00><b>✦ Perk Preview</b></gradient>")
+                .decoration(TextDecoration.ITALIC, false));
+
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(preview.equipment() + " · " + preview.placed() + "/" + preview.required()
+                + " parts", NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Perk: ", NamedTextColor.GOLD)
+                .append(Component.text(preview.name(), NamedTextColor.WHITE))
+                .decoration(TextDecoration.ITALIC, false));
+
+        if (!preview.parts().isEmpty()) {
+            lore.add(Component.empty());
+            lore.add(Component.text("✦ Compound epithet:", NamedTextColor.GOLD)
+                    .decoration(TextDecoration.ITALIC, false));
+            for (ForgePerkPreview.PartLine part : preview.parts()) {
+                lore.add(Component.text("  • " + part.position() + ": ", NamedTextColor.GRAY)
+                        .append(Component.text(part.epithet(), NamedTextColor.AQUA))
+                        .append(Component.text(" (" + part.material() + ")", NamedTextColor.DARK_GRAY))
+                        .decoration(TextDecoration.ITALIC, false));
+            }
+        }
+
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Mechanic: ", NamedTextColor.GOLD)
+                .append(Component.text(preview.mechanic(), preview.color()))
+                .decoration(TextDecoration.ITALIC, false));
+
+        if (preview.complete() && preview.description() != null) {
+            lore.add(Component.text("  " + preview.description(), NamedTextColor.GRAY)
+                    .decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("✦ Essence focus: ", NamedTextColor.DARK_GRAY)
+                    .append(Component.text(preview.focusLine(), preview.color()))
+                    .decoration(TextDecoration.ITALIC, false));
+        } else {
+            lore.add(Component.text("★ Missing: ", NamedTextColor.YELLOW)
+                    .append(Component.text(String.join(", ", preview.missing()), NamedTextColor.WHITE))
+                    .decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("The full mechanic is written once every part is in place.", NamedTextColor.DARK_GRAY)
+                    .decoration(TextDecoration.ITALIC, false));
+        }
+
+        meta.lore(LoreWrap.wrapAll(lore));
+        markAsSystemItem(meta);
+        item.setItemMeta(meta);
+        return item;
     }
 
     // ==========================================
@@ -732,6 +839,13 @@ public class ForgeGUI implements InventoryHolder {
             case TAB_WEAPONS -> handleWeaponsClicks(event, player, rawSlot);
             case TAB_TOOLS -> handleToolsClicks(event, player, rawSlot);
             case TAB_ARMOR -> handleArmorClicks(event, player, rawSlot);
+        }
+
+        // A part clicked into a slot only lands there once this event has finished, so the perk preview
+        // is refreshed on the next tick: reading it here would price the assembly the player is mid-way
+        // through changing, and re-rendering the tab would clear the part they just placed.
+        if (currentTab == TAB_WEAPONS || currentTab == TAB_TOOLS || currentTab == TAB_ARMOR) {
+            Bukkit.getScheduler().runTask(plugin, this::renderPerkPreview);
         }
     }
 
