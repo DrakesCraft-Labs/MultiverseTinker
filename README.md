@@ -336,3 +336,11 @@ Tests live in `src/test/java/com/chagui68/multiversetinker/`, in one folder per 
 License: **GPL-3.0**
 
 </div>
+
+---
+
+## 📄 License & Sovereign Authorship
+
+Copyright © 2026 [**Chagui68**](https://github.com/Chagui68) · [**DrakesCraft Labs**](https://github.com/DrakesCraft-Labs).
+
+This project is an **original sovereign creation** engineered by **Chagui68** for the DrakesCraft network. All intellectual authorship belongs to Chagui68. Commercial resale, repackaging in paid setups, or removing creator attribution is strictly prohibited.
