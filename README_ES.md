@@ -2,11 +2,12 @@
 
 # ⚒️ MultiverseTinker (Español)
 
-**Herramientas Modulares, Arqueología Geológica, Crisol de Fundición y Metalurgia para Paper 1.21+ (Java 21)**
+**Herramientas Modulares, Arqueología Geológica, Crisol de Fundición y Metalurgia para Paper 1.21.11, 26.1 y 26.2**
 
 <p>
-  <img src="https://img.shields.io/badge/Paper-1.21.11-38BDF8?style=for-the-badge&logo=minecraft&logoColor=white" alt="Paper 1.21.11"/>
-  <img src="https://img.shields.io/badge/Java-21-F89820?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21"/>
+  <img src="https://img.shields.io/badge/Paper-1.21.11_·_26.1_·_26.2-38BDF8?style=for-the-badge&logo=minecraft&logoColor=white" alt="Paper 1.21.11 · 26.1 · 26.2"/>
+  <img src="https://img.shields.io/badge/Java-21+-F89820?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21+"/>
+  <a href="https://github.com/DrakesCraft-Labs/MultiverseTinker/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/DrakesCraft-Labs/MultiverseTinker/tests.yml?branch=main&style=for-the-badge&label=Tests" alt="Tests"/></a>
   <img src="https://img.shields.io/badge/Licencia-GPLv3-blue?style=for-the-badge" alt="GPLv3"/>
   <img src="https://img.shields.io/badge/Autor-Chagui68-22C55E?style=for-the-badge" alt="Chagui68"/>
   <img src="https://img.shields.io/badge/Minerales-90_Total-purple?style=for-the-badge" alt="90 Minerales"/>
@@ -27,7 +28,7 @@ Parte del **Ecosistema Soberano Multiverse de Chagui68** junto a [MultiverseNets
 
 ## 🌟 ¿Qué es MultiverseTinker?
 
-**MultiverseTinker** traslada la metalurgia modular, aleaciones avanzadas y geología arqueológica inspiradas en Tinkers' Construct a Minecraft moderno como un **plugin 100% nativo y standalone para Paper/Purpur 1.21+** y **Java 21**, sin dependencias forzosas.
+**MultiverseTinker** traslada la metalurgia modular, aleaciones avanzadas y geología arqueológica inspiradas en Tinkers' Construct a Minecraft moderno como un **plugin 100% nativo y standalone para Paper/Purpur**, sin dependencias forzosas. Un único jar funciona en **Paper 1.21.11** (Java 21) y en **Paper 26.1 y 26.2** (Java 25).
 
 * **Cero Problemas de Generación de Terreno**: Los minerales se descubren mediante un sistema interactivo de **Arqueología y Cepillado Geológico** sobre roca, netherrack y piedra del end sin alterar los generadores de chunks.
 * **90 Minerales Únicos**: Distribuidos de forma equilibrada en **exactamente 30 minerales por cada dimensión** (Overworld, Nether y The End).
@@ -80,9 +81,9 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
   * Centrada en torno a un Yunque central, construida con Ladrillos de Toba Cincelados, Baldosas y Ladrillos de Pizarra Profunda, Losas/Escaleras de Ladrillos de Toba y 4 pilares esquineros de Lava térmica (243 bloques en total). Admite rotaciones a $0^\circ, 90^\circ, 180^\circ, 270^\circ$.
 * **Simulación de Partículas y Aura Ambiental**:
   * La estructura completada cuenta con barrido de validación térmica y un aura continua de brasas volcánicas sobre el yunque central.
-* **Nueva GUI de 6 Secciones**:
+* **Nueva GUI de 6 Secciones**: marco con color propio por sección, vistas previas en vivo (pieza, fusión del crisol con pedigrí y arte, perk), shift-clic inteligente, guía de pedigrí y botón de cerrar en la fila inferior, y resultados que nunca se sobrescriben:
   * **[1. Codex & Guide]**: Códices interactivos con información de la estructura, forja, recetas de aleaciones, progresión de rarezas y habilidades especiales.
-  * **[2. Molds & Parts]**: Tallado rápido de moldes (1 Ladrillo de Arcilla = 1 molde reutilizable) y forja multimaterial (coloca de 1 a 3 materiales para dividir los rasgos al 100%, 50/50 o 33/33/33 en proporción a su concentración).
+  * **[2. Molds & Parts]**: Tallado rápido de moldes (1 Ladrillo de Arcilla = 1 molde reutilizable) y forja de tres materiales (cada parte lleva 3 materiales, 33/33/33 — repite un mineral para una parte pura), con **vista previa de pieza** en vivo.
   * **[3. Alloy Crucible]**: Mezcla **cualquier par de minerales distintos** obtenidos con la brocha o refinados de menas vanilla — 110 minerales mezclables y **5.995 pares de minerales**. Las **16 recetas legendarias** (Bronce, Electro, Manyullyn, Damaso del Vacío, Netherita Cósmica, etc.) son forjables; cada otro par sintetiza su propia aleación compuesta. Un servidor nuevo expone **8.085** combinaciones forjables. La netherita vanilla solo se mezcla dentro de sus dos recetas curadas. Cada compuesta que forjas se guarda en `dynamic-alloys.yml` y se restaura al reiniciar, así que los lingotes antiguos siguen funcionando.
   * **[3b. Aleaciones Primordiales]**: Funde una **aleación legendaria** con otra aleación, un mineral o uno de los **12 catalizadores vanilla** (Estrella del Nether, Hielo Azul, Fragmento de Eco, Aliento de Dragón, Corazón del Mar…) para forjar una **aleación primordial** — rareza Legendary, stats superiores y su propio ultimate cinematográfico más un estado de armadura nuevo. Con todas las compuestas descubiertas el crisol llega a **103.781 aleaciones distintas**.
   * **[4. Weapon Assembly]**: Ensamblado de 7 tipos de armas (Espada, Arco, Ballesta, Tridente, Lanza, Mazo, Escudo) que comienzan en **Rareza de Madera** y evolucionan mediante **Bajas en Combate**.
@@ -92,6 +93,7 @@ Extracción de minerales en bruto manteniendo el click derecho con una brocha so
   * **Mazo de Guerra (Seismic Smash)**: Golpes en caída desatan una onda sísmica en el suelo con daño en área.
   * **Arco (Infused Volley)**: Las flechas heredan los rasgos elementales de los brazos y de la cuerda, y un arco enfocado dispara una **flecha de réplica** contra el mismo objetivo (25% base, hasta 60% con enfoque de esencia completo).
   * **Ballesta Pesada (Piercing Velocity)**: Los virotes detonan una explosión cinética real y sin dañar bloques que daña y empuja a todas las criaturas en 4 bloques, más +6.0 de daño directo perforante.
+* **✦ Artes de Firma y Pedigrí de Forja**: cada aleación forjada en un arma despierta una **habilidad con nombre, mecánica y animación propias**, y cuanto más difícil fue conseguirla, más grande es. Cada una de las **5.981 compuestas** ejecuta su propio arte de fusión, leído a través de sus dos minerales — con el nombre de ambos epítetos (*Verdant-Rubicund Fault*), la carga del primer mineral en la forma del segundo, dibujado con los dos colores y repitiendo los rasgos de forja de ambos minerales en cada enemigo alcanzado; cada una de las **16 aleaciones legendarias** tiene un arte hecho a mano — el Bronce deja caer una *Bell of the First Age*, el Electrum encadena un *Thunderchain Conduit*, el Void Damascus rasga un *Abyssal Rend* que perfora armadura, la Netherita Cósmica provoca un *Gravity Collapse*; las primas ejecutan ese arte **ascendido** con una capa extra de su segundo ingrediente, y las primas **míticas** (legendaria + catalizador o legendaria + legendaria) encadenan dos artes y terminan con rayos, obeliscos brillantes y un título en pantalla. Las armas legendarias o superiores llevan un aura de pedigrí, y los ultimates también escalan con él. Ver [Artes de Firma](Wiki-es/Artes-de-Firma.md).
 * **Espectáculos de Ataque Cinematográficos**:
   * **12 ultimates de esencia** que se activan con un arma enfocada, cada uno con sus propias partículas, sonidos, retención y multiplicador de daño.
   * **7 ultimates primordiales**: **Absolute Zero** y **Glacier Tomb** hacen brotar **diez pinchos de hielo** en anillo y congelan a la víctima **300–400 ticks**, mientras **Meteor Cascade** hace caer **8 meteoritos** en espiral con fuego y lava. Supernova, Event Horizon, Tectonic Rift y Prismatic Ascension completan el set.
@@ -317,15 +319,42 @@ La página es un sitio estático en [`docs/`](docs), desplegado por el [workflow
 
 ---
 
+## ✅ Versiones soportadas
+
+Un solo jar para todos los servidores soportados — no hay descargas por versión.
+
+| Servidor | Minecraft | Java en el servidor | Estado |
+|---|---|---|---|
+| Paper / Purpur | **1.21.11** | 21+ | ✅ Soportado (mínima) |
+| Paper / Purpur | **26.1** (26.1.1, 26.1.2) | 25+ | ✅ Soportado |
+| Paper / Purpur | **26.2** | 25+ | ✅ Soportado |
+
+El jar se compila contra la API más antigua soportada (Paper 1.21.11, bytecode de Java 21), así que carga sin cambios en los servidores más nuevos; `plugin.yml` declara `api-version: 1.21.11`, de modo que Paper lo rechaza en versiones anteriores en lugar de fallar en ejecución. Las pocas llamadas que Paper marcó para eliminación en 26.x pasan por [`ServerCompat`](src/main/java/com/chagui68/multiversetinker/compat/ServerCompat.java), que elige la forma más nueva que ofrece el servidor en ejecución.
+
+---
+
 ## 🛠️ Compilación y tests
 
 ```bash
-mvn clean package
+./mvnw clean package
 ```
 
-Compilado y verificado para **Paper / Purpur 1.21+** con **Java 21**.
+Genera `target/MultiverseTinker-v<versión>.jar` contra Paper 1.21.11 con **JDK 21** o superior. Para compilar y testear contra una API más nueva, usa su perfil (requieren **JDK 25**, el Java con el que se publica Paper 26.x):
 
-Los tests viven en `src/test/java/com/chagui68/multiversetinker/`, en una carpeta por subsistema cubierto — `alloys`, `items`, `tools`, `forge`, `archaeology`, `commands`, `materials`, `evolution` y `access` — más `wiki` y `site` para las páginas generadas y el JSON que las respalda. Se ejecutan todos con `./mvnw -o test`, o una sola clase por su nombre simple con `./mvnw -o test -Dtest=SiteDataTest`, esté en la carpeta que esté.
+```bash
+./mvnw clean test -Pmc-26.1
+./mvnw clean test -Pmc-26.2
+```
+
+### Integración continua
+
+Cada push y pull request ejecuta el [workflow `Tests`](.github/workflows/tests.yml) en GitHub Actions:
+
+* **Build** — JDK 21 compila el jar de release contra Paper 1.21.11 y ejecuta toda la suite de MockBukkit.
+* **Compatibilidad** — JDK 25 ejecuta la suite en Paper 26.1 y 26.2 dos veces: sobre el mismo bytecode 1.21.11 que va en el jar (debe seguir enlazando con la API nueva) y recompilado desde el código fuente.
+* **Servidor real** — arranca servidores Paper **1.21.11**, **26.1.2** y **26.2** reales con el jar generado, ejecuta `/mvtink verify` y `/mvtink reload` desde la consola y falla ante cualquier error o problema de enlace que registre el plugin.
+
+Los tests viven en `src/test/java/com/chagui68/multiversetinker/`, en una carpeta por subsistema cubierto — `alloys`, `items`, `tools`, `forge`, `archaeology`, `commands`, `materials`, `evolution`, `access` y `compat` — más `wiki` y `site` para las páginas generadas y el JSON que las respalda. Se ejecutan todos con `./mvnw -o test`, o una sola clase por su nombre simple con `./mvnw -o test -Dtest=SiteDataTest`, esté en la carpeta que esté.
 
 ---
 

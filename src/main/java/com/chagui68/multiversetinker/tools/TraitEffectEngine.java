@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker.tools;
 
+import com.chagui68.multiversetinker.compat.ServerCompat;
 import com.chagui68.multiversetinker.api.MaterialType;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
@@ -261,7 +262,7 @@ public final class TraitEffectEngine {
             case "mvtink_sanguine_gold" -> {
                 if (player != null && event != null) {
                     double heal = Math.max(1.0, event.getDamage() * 0.25 * r);
-                    player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + heal));
+                    player.setHealth(Math.min(ServerCompat.maxHealth(player), player.getHealth() + heal));
                     world.spawnParticle(Particle.HEART, player.getLocation().add(0, 1.5, 0), 3, 0.2, 0.2, 0.2, 0.0);
                 }
             }
@@ -461,7 +462,7 @@ public final class TraitEffectEngine {
         switch (affinity) {
             case TEMPERED, BULWARK -> player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, (int) Math.max(30, 60 * r), 0, false, false));
             case RADIANT -> {
-                player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + 0.5));
+                player.setHealth(Math.min(ServerCompat.maxHealth(player), player.getHealth() + 0.5));
                 world.spawnParticle(Particle.HEART, at, 2, 0.2, 0.2, 0.2, 0.0);
             }
             case RESONANT -> {

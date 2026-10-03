@@ -18,6 +18,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -119,6 +120,23 @@ public class ForgeListener implements Listener {
         if (event.getInventory().getHolder() instanceof AlloyCodexGUI codex) {
             event.setCancelled(true);
             codex.handleClick((Player) event.getWhoClicked(), event.getRawSlot(), event.isShiftClick());
+        }
+    }
+
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (event.getInventory().getHolder() instanceof ForgeGUI gui) {
+            gui.handleDrag(event);
+            return;
+        }
+        if (event.getInventory().getHolder() instanceof AlloyCodexGUI) {
+            // The codex is read-only: nothing may be painted into its icons.
+            for (int raw : event.getRawSlots()) {
+                if (raw < event.getInventory().getSize()) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
         }
     }
 

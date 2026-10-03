@@ -1,6 +1,6 @@
 # ⚒️ Documentación de MultiverseTinker (Español)
 
-¡Bienvenido a la wiki oficial de **MultiverseTinker**! MultiverseTinker es un plugin soberano para Paper 1.21+ diseñado por **Chagui68** que incorpora metalurgia modular, arqueología geológica, crisoles de fundición y templado en caldero sin necesidad de mods de cliente ni dependencias como Slimefun.
+¡Bienvenido a la wiki oficial de **MultiverseTinker**! MultiverseTinker es un plugin soberano para Paper 1.21.11, 26.1 y 26.2 (un único jar para las tres) diseñado por **Chagui68** que incorpora metalurgia modular, arqueología geológica, crisoles de fundición y templado en caldero sin necesidad de mods de cliente ni dependencias como Slimefun.
 
 ---
 
@@ -16,6 +16,7 @@
 * **[Guía de Mezcla de Materiales y Aleaciones](Mezcla-de-Materiales.md)**: Crisol de aleaciones, mezcla universal de minerales brocha/vanilla (110 minerales mezclables, 5.995 pares de minerales) y listado de las 16 aleaciones personalizadas.
 * **[Referencia de Materiales](Fuentes-de-Materiales.md)**: Cómo obtener cada material — fuente, clase, rareza, estadísticas de forja, rasgo (en arma, herramienta y armadura) y esencias, material por material.
 * **[Índice de Recetas](Indice-de-Recetas.md)**: Cada par mezclable (5.995) con la aleación que forja y las esencias que hereda, más las 16 recetas legendarias y los 12 catalizadores vanilla.
+* **[✦ Artes de Firma y Pedigrí de Forja](Artes-de-Firma.md)**: Cada aleación despierta una habilidad con nombre, mecánica y animación propias — un arte de fusión único para cada una de las 5.981 compuestas, las 16 artes legendarias hechas a mano, artes primordiales ascendidas y cinemáticas míticas con rayos, obeliscos y títulos en pantalla.
 * **[Aleaciones Primordiales](Aleaciones-Primordiales.md)**: El tercer nivel de aleación — funde una aleación legendaria con otra aleación, un mineral o uno de los 12 catalizadores vanilla para desbloquear campos de hielo congelantes, cascadas de meteoritos y los 9 estados de armadura nuevos (hasta **103.781** aleaciones distintas).
 * **[Referencia de Afinidades de Rasgos](Afinidades-de-Rasgos.md)**: Las 12 esencias deterministas, cómo se comportan en armas, herramientas y armaduras, y cómo el mineral de la cabeza define cada perk de arma.
 * **[Mejores Combinaciones de Espada y Arco](Mejores-Combos-Espada-Arco.md)**: Guía práctica con las forjas óptimas de espadón modular y arco largo — las cabezas primordiales, sus daños y durabilidades verificados y cómo alcanzar el 100% de enfoque de esencia.

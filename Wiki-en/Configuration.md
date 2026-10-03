@@ -125,6 +125,31 @@ When the animation plays:
 
 ---
 
+## ✦ Signature arts (`signature-arts`)
+
+Every alloy forged into a weapon awakens a **signature art** whose size follows the weapon's forge pedigree (see **[Signature Arts](Signature-Arts.md)**). Particles and sounds follow the `animations` section above; the mechanic still lands when animations are off.
+
+| Key | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `signature-arts.enabled` | boolean | `true` | Let alloy weapons fire their signature art on hit. |
+| `signature-arts.chance-multiplier` | number | `1.0` | Multiplies the proc chance of every pedigree (II 15% · III 20% · IV 24% · V 28%), clamped to `0.0` – `5.0`. `0` turns arts off without touching ultimates. |
+| `signature-arts.cooldown-multiplier` | number | `1.0` | Multiplies the per-player cooldown (II 8 s · III 10 s · IV 12 s · V 14 s), clamped to `0.1` – `10.0`. |
+| `signature-arts.mythic-titles` | boolean | `true` | Show the art's name as an on-screen title for prime and mythic arts and ultimates. |
+| `signature-arts.display-entities` | boolean | `true` | Let arts raise temporary block displays (the bronze bell, magma geysers, ice spikes, mythic obelisks). They are never saved to the world and are removed when the art ends or the plugin disables. |
+
+```yaml
+signature-arts:
+  enabled: true
+  chance-multiplier: 1.0
+  cooldown-multiplier: 1.0
+  mythic-titles: true
+  display-entities: true
+```
+
+`/mvtink reload` applies a changed value without a restart.
+
+---
+
 ## ⚔️ Modular equipment rules (`equipment`)
 
 A forged weapon, tool or armor piece carries its **own durability counter**. Vanilla wear is therefore off: the
@@ -326,6 +351,7 @@ Changes apply on `/mvtink reload` and are echoed on startup:
 | `access` | Who may use the codex, the forge (GUI, crucible and casting), archaeology and the admin commands, as `public`, `op` or `permission`. |
 | `archaeology` | Brushing system: enable flag, brushing duration, brush durability cost, per-dimension success chance, block degradation behaviour (`DEGRADE` / `COOLDOWN` / `NONE`), anti-macro cooldown and brush yields. |
 | `animations` | Signature perk animations: enable flag, particle multiplier, sound toggle and per-type cooldown. |
+| `signature-arts` | Alloy signature arts: enable flag, chance and cooldown multipliers, prime/mythic titles and temporary display entities. |
 | `equipment` | Modular equipment rules: whether a forged weapon fights with its rolled attack damage and whether armor defends with the protection rolled from its minerals, or the vanilla material values instead (vanilla wear is always disabled). |
 | `smeltery` | Crucible tuning: chance to consume the lava source and the Magma Block heat-source slowdown multiplier. |
 | `rarity-weights` | Rarity weights of the archaeology drop table (`common` 50, `uncommon` 30, `rare` 14, `epic` 5, `legendary` 1). Weights are relative, `0` takes a rarity off geology entirely, negatives are read as 0, and an all-zero section falls back to the shipped values so the table can never run dry. A missing or non-numeric key keeps its shipped value. |

@@ -4,11 +4,12 @@
 
 # ⚒️ MultiverseTinker
 
-**Modular Tools, Geological Archaeology, Smeltery Crucible & Metallurgy for Paper 1.21+ (Java 21)**
+**Modular Tools, Geological Archaeology, Smeltery Crucible & Metallurgy for Paper 1.21.11, 26.1 & 26.2**
 
 <p>
-  <img src="https://img.shields.io/badge/Paper-1.21.11-38BDF8?style=for-the-badge&logo=minecraft&logoColor=white" alt="Paper 1.21.11"/>
-  <img src="https://img.shields.io/badge/Java-21-F89820?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21"/>
+  <img src="https://img.shields.io/badge/Paper-1.21.11_·_26.1_·_26.2-38BDF8?style=for-the-badge&logo=minecraft&logoColor=white" alt="Paper 1.21.11 · 26.1 · 26.2"/>
+  <img src="https://img.shields.io/badge/Java-21+-F89820?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21+"/>
+  <a href="https://github.com/DrakesCraft-Labs/MultiverseTinker/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/DrakesCraft-Labs/MultiverseTinker/tests.yml?branch=main&style=for-the-badge&label=Tests" alt="Tests"/></a>
   <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" alt="GPLv3"/>
   <img src="https://img.shields.io/badge/Author-Chagui68-22C55E?style=for-the-badge" alt="Chagui68"/>
   <img src="https://img.shields.io/badge/Minerals-90_Total-purple?style=for-the-badge" alt="90 Minerals"/>
@@ -29,7 +30,7 @@ Part of **Chagui68's Sovereign Multiverse Suite** alongside [MultiverseNets](htt
 
 ## 🌟 What is MultiverseTinker?
 
-**MultiverseTinker** brings the modular metallurgy, custom alloys, and archaeological geology of Tinkers' Construct into modern Minecraft as a **100% standalone Paper/Purpur plugin** built natively for **Java 21** and **Paper 1.21+**.
+**MultiverseTinker** brings the modular metallurgy, custom alloys, and archaeological geology of Tinkers' Construct into modern Minecraft as a **100% standalone Paper/Purpur plugin**. A single jar runs on **Paper 1.21.11** (Java 21) and on **Paper 26.1 and 26.2** (Java 25).
 
 * **Zero Worldgen Issues**: Minerals are discovered through an interactive **Geological Archaeology Brushing System** across stone, netherrack, and end stone without modifying chunk terrain generators.
 * **90 Unique Geological Materials**: Balanced with **exactly 30 minerals per dimension** (Overworld, Nether, and The End).
@@ -82,9 +83,9 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
   * Centered on an Anvil, constructed with Chiseled Tuff Bricks, Deepslate Tiles, Deepslate Bricks, Tuff Brick Slabs/Stairs, and 4 corner thermal Lava columns (243 blocks total). Supports all rotations ($0^\circ, 90^\circ, 180^\circ, 270^\circ$).
 * **Validation Particle Sweep & Ambient Aura**:
   * Completed forges feature a multi-phase validation particle sweep and continuous volcanic embers/smoke orbiting the anvil.
-* **Redesigned 6-Section GUI**:
+* **Redesigned 6-Section GUI**: a colour-themed frame per section, live previews (part, crucible fusion with pedigree and art, perk), smart shift-click routing, a pedigree guide and close button in the footer, and results that are never overwritten:
   * **[1. Codex & Guide]**: In-game encyclopedias covering multiblock structure, casting, alloy recipes, tier progression, and specialized perks.
-  * **[2. Molds & Parts]**: Quick mold carving (1 Clay Brick = 1 reusable cast) and multi-material forging (place 1 to 3 materials for 100%, 50/50, or 33/33/33 concentration-based trait splitting!).
+  * **[2. Molds & Parts]**: Quick mold carving (1 Clay Brick = 1 reusable cast) and three-material forging (every part takes 3 materials, 33/33/33 — repeat a mineral for a pure part), with a live **part preview**.
   * **[3. Alloy Crucible]**: Blend **any 2 distinct brush-extracted or vanilla minerals** into a unique alloy — 110 blendable minerals and **5,995 mineral pairs**. All **16 legendary recipes** (Bronze, Electrum, Manyullyn, Void Damascus, Cosmic Netherite, etc.) are craftable; every other pair synthesizes its own dynamic composite alloy. A fresh server exposes **8,085** forgeable combinations. Vanilla netherite only blends inside its own two curated recipes. Every composite you forge is saved to `dynamic-alloys.yml` and restored on restart, so old ingots keep working.
   * **[3b. Prime Alloys]**: Fuse a **legendary alloy** with a second alloy, a mineral or one of the **12 vanilla catalysts** (Nether Star, Blue Ice, Echo Shard, Dragon Breath, Heart of the Sea…) to forge a **prime alloy** — Legendary rarity, boosted stats, and its own cinematic ultimate plus a brand new armor state. With every composite discovered the crucible reaches **103,781 distinct alloys**.
   * **[4. Weapon Assembly]**: Assemble 7 weapon types (Broadsword, Longbow, Heavy Crossbow, Elder Trident, Kinetic Spear, War Mace, Tower Shield) starting at **Wood Tier** and leveling up through **Combat Kills**!
@@ -94,6 +95,7 @@ Extract raw mineral fragments directly from natural stone surfaces by holding ri
   * **War Mace (Seismic Smash)**: Downward fall strikes trigger seismic ground shockwaves dealing AOE damage.
   * **Longbow (Infused Volley)**: Arrows inherit limb and string elemental traits, and a focused bow looses a **follow-up volley arrow** at the same target (25% base chance, up to 60% at full essence focus).
   * **Heavy Crossbow (Piercing Velocity)**: Bolts trigger a real, block-safe kinetic explosion that damages and knocks back every creature in a 4-block radius, plus +6.0 armor-piercing direct damage.
+* **✦ Signature Arts & Forge Pedigree**: every alloy forged into a weapon awakens a **named ability with its own mechanic and animation**, and the harder the alloy was to reach, the bigger it gets. Each of the **5,981 composites** plays its own fusion art, read through both of its minerals — named after both epithets (*Verdant-Rubicund Fault*), the first mineral's payload in the second mineral's shape, drawn in both colours, and echoing both minerals' own forge traits on every foe it reaches; each of the **16 legendary alloys** owns a hand-made art — Bronze drops a *Bell of the First Age*, Electrum chains a *Thunderchain Conduit*, Void Damascus tears an armor-piercing *Abyssal Rend*, Cosmic Netherite triggers a *Gravity Collapse*; primes play that art **ascended** with an overlay from their second ingredient, and **mythic** primes (legendary + catalyst or legendary + legendary) chain two arts and end in a finale of thunder, glowing obelisks and an on-screen title. Legendary-and-above weapons wear a pedigree aura, and ultimates scale with the pedigree too. See [Signature Arts](Wiki-en/Signature-Arts.md).
 * **Cinematic Attack Spectacles**:
   * **12 essence ultimates** triggered by a focused weapon, each with its own particles, sounds, root and damage multiplier.
   * **7 prime ultimates**: **Absolute Zero** and **Glacier Tomb** erupt **ten ice spikes** in a ring and freeze the victim for **300–400 freeze ticks**, while **Meteor Cascade** spirals **8 meteors** down in flame and lava. Supernova, Event Horizon, Tectonic Rift and Prismatic Ascension complete the set.
@@ -318,15 +320,42 @@ The page is a static site in [`docs/`](docs), deployed by the [`pages` workflow]
 
 ---
 
+## ✅ Supported Versions
+
+One jar, every supported server — there is no per-version download.
+
+| Server | Minecraft | Java on the server | Status |
+|---|---|---|---|
+| Paper / Purpur | **1.21.11** | 21+ | ✅ Supported (minimum) |
+| Paper / Purpur | **26.1** (26.1.1, 26.1.2) | 25+ | ✅ Supported |
+| Paper / Purpur | **26.2** | 25+ | ✅ Supported |
+
+The jar is compiled against the oldest supported API (Paper 1.21.11, Java 21 bytecode), so it loads unchanged on the newer servers; `plugin.yml` declares `api-version: 1.21.11`, so Paper refuses it on anything older instead of failing at runtime. The few calls Paper has marked for removal in 26.x go through [`ServerCompat`](src/main/java/com/chagui68/multiversetinker/compat/ServerCompat.java), which picks the newest form the running server offers.
+
+---
+
 ## 🛠️ Build & Compilation
 
 ```bash
-mvn clean package
+./mvnw clean package
 ```
 
-Built and verified for **Paper / Purpur 1.21+** with **Java 21**.
+Builds `target/MultiverseTinker-v<version>.jar` against Paper 1.21.11 with **JDK 21** or newer. To build and test against a newer API, pick its profile (these need **JDK 25**, the Java Paper 26.x is published for):
 
-Tests live in `src/test/java/com/chagui68/multiversetinker/`, in one folder per subsystem they cover — `alloys`, `items`, `tools`, `forge`, `archaeology`, `commands`, `materials`, `evolution` and `access` — plus `wiki` and `site` for the generated pages and the JSON behind them. Run them all with `./mvnw -o test`, or a single class by its simple name with `./mvnw -o test -Dtest=SiteDataTest`, whatever folder it sits in.
+```bash
+./mvnw clean test -Pmc-26.1
+./mvnw clean test -Pmc-26.2
+```
+
+### Continuous integration
+
+Every push and pull request runs the [`Tests` workflow](.github/workflows/tests.yml) on GitHub Actions:
+
+* **Build** — JDK 21 builds the release jar against Paper 1.21.11 and runs the whole MockBukkit suite.
+* **Compatibility** — JDK 25 runs the suite on Paper 26.1 and 26.2 twice: on the exact 1.21.11 bytecode that ships in the jar (it must still link against the newer API) and recompiled from source.
+* **Real server** — boots real Paper **1.21.11**, **26.1.2** and **26.2** servers with the built jar, runs `/mvtink verify` and `/mvtink reload` from the console, and fails on any error or linkage problem the plugin logs.
+
+Tests live in `src/test/java/com/chagui68/multiversetinker/`, in one folder per subsystem they cover — `alloys`, `items`, `tools`, `forge`, `archaeology`, `commands`, `materials`, `evolution`, `access` and `compat` — plus `wiki` and `site` for the generated pages and the JSON behind them. Run them all with `./mvnw -o test`, or a single class by its simple name with `./mvnw -o test -Dtest=SiteDataTest`, whatever folder it sits in.
 
 ---
 

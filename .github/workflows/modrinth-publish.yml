@@ -264,8 +264,13 @@ jobs:
             paper
             purpur
             spigot
+          # Un solo jar para todas: compilado contra 1.21.11 y probado en 26.1 y 26.2 por tests.yml.
           game-versions: |
-            1.21.x
+            1.21.11
+            26.1
+            26.1.1
+            26.1.2
+            26.2
           changelog: ${{ needs.decidir.outputs.motivo }}
           # No fallar si algun campo opcional falta.
           modrinth-featured: false

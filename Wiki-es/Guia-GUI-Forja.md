@@ -17,16 +17,26 @@ La fila superior (ranuras 0 a 8) contiene controles persistentes perfectamente a
 - **Ranura 7**: `[ 6. Ensamblado de Armaduras ]` - ¡Nueva sección para forjar y evolucionar armaduras modulares!
 - **Ranura 8**: Panel de Cristal Borde.
 
+Todas las secciones comparten el mismo marco: rieles laterales con el color propio de la sección (dorado códice, naranja moldes, rojo crisol, azul armas, verde herramientas, morado armaduras), el botón activo brillando en la fila superior y una fila inferior con la escala de **✦ Pedigrí de Forja** (ranura **45**) y un botón **✖ Cerrar** (ranura **53**).
+
+### Reglas del taller
+- **Vistas previas en vivo**: la de pieza (ranura **49**, Moldes y Partes), la de fusión (ranura **22**, Crisol) y la de perk (ranura **48**, secciones de ensamblado) muestran el resultado antes de gastar nada.
+- **Shift-clic** en un ítem de tu inventario lo lleva a la ranura que le corresponde: moldes a la ranura de molde, materiales a las entradas de materiales o del crisol, partes forjadas a las entradas de ensamblado.
+- **Los resultados nunca se sobrescriben**: si queda un ítem en la ranura de salida, la Forja no golpea, funde ni ensambla (los resultados idénticos se apilan) y no gasta nada.
+- **No se puede meter nada en una ranura de salida**, y el doble clic o el arrastre nunca pueden llevarse los íconos de la Forja.
+- Todo lo que pongas vuelve a ti al cambiar de sección o cerrar la Forja — incluidos tus propios paneles de cristal.
+
 ---
 
 ## 📖 Sección 1: Códice Informativo y Mecánicas
 Muestra guías interactivas que explican:
-1. **Estructura Multibloque**: 243 bloques, yunque central, 4 columnas de lava en esquinas, toba cincelada, baldosas de pizarra profunda y escaleras/losas de toba.
-2. **Forjado Multimaterial**: Reglas de concentración (1, 2 o 3 materiales por parte con potencia proporcional de rasgos).
+1. **Estructura Multibloque**: un multibloque de 11×7×11 con 243 bloques, yunque central, 4 columnas de lava en esquinas, toba cincelada, baldosas de pizarra profunda y escaleras/losas de toba.
+2. **Partes de Tres Materiales**: cada parte se funde con exactamente 3 materiales (33/33/33); repite un mineral para una parte pura.
 3. **Crisol de Aleaciones**: Las 16 recetas de aleaciones registradas.
 4. **Tiers de Evolución**: Progresión de Madera a Netherite mediante bajas (armas), bloques rotos (herramientas) y daño absorbido (armaduras).
 5. **Ventajas Especializadas**: Mecánicas exclusivas para las 7 armas, 5 herramientas y 4 piezas de armadura.
-6. **Códice de Aleaciones**: cada material forjable, con el **epíteto de perk** que presta al nombre forjado — para leer la palabra de un mineral antes de gastarlo (ver [Nombres de Perk](Nombres-de-Perk.md)).
+6. **Pedigrí de Forja y Artes de Firma**: los cinco tiers y las 16 artes legendarias (ver [Artes de Firma](Artes-de-Firma.md)).
+7. **Códice de Aleaciones**: cada material forjable, con el **epíteto de perk** que presta al nombre forjado — para leer la palabra de un mineral antes de gastarlo (ver [Nombres de Perk](Nombres-de-Perk.md)).
 
 ---
 
@@ -60,15 +70,17 @@ La zona de forja en la fila 3 está visualmente y físicamente dividida mediante
   - La concentración se divide de manera proporcional (33.3% / 33.3% / 33.4%), permitiendo combinar hasta 3 rasgos de minerales diferentes en una sola pieza.
 - **Ranura 33**: ▌ Barrotes de Hierro (Separador físico).
 - **Ranura 34**: **Ranura de Salida** (Muestra la parte forjada lista para recoger).
-- Haz clic en el botón central **⚒ Golpear Yunque y Forjar Parte** (Ranura 40) para completar el forjado.
+- La **✦ Vista Previa de Pieza** (Ranura **49**) indica lo que falta y luego la composición, estadísticas, pedigrí y arte de firma de la pieza.
+- Haz clic en el botón central **⚒ Golpear el Yunque** (Ranura 40) para completar el forjado.
 
 ---
 
 ## 🧪 Sección 3: Crisol de Aleaciones
 - Coloca el Material 1 en la **Ranura 29** y el Material 2 en la **Ranura 33**.
-- Haz clic en **♨ Encender Crisol y Fundir Aleación** (Ranura 31).
+- La **✦ Vista Previa de Fusión** (Ranura **22**, justo encima del botón de encendido) nombra la aleación que formará el par, su **pedigrí**, su **arte de firma** y, en las primas, el ultimate primordial y el estado de armadura — o el motivo por el que no se puede fundir.
+- Haz clic en **♨ Encender el Crisol** (Ranura 31).
 - Obtén **2x Lingotes de Aleación Terminados** en la **Ranura 40**.
-- Haz clic en el **Códice de Recetas** (Ranura 49) para consultar en el chat las 16 fórmulas registradas.
+- Haz clic en el **Códice de Aleaciones** (Ranura 49) para abrir el códice navegable; agachado + clic imprime las recetas en el chat.
 - Cada par de los **110 minerales mezclables** (97 geológicos + 13 vanilla distintos de la netherita) produce su propia aleación: 5.995 pares mezclables, de los que 14 coinciden con una receta legendaria. La netherita vanilla es el único material vanilla que no se puede mezclar libremente (ya es una aleación), pero sí funciona dentro de sus dos recetas curadas (**Cinder Steel** y **Netherita Cósmica**), así que el crisol puede producir **5.997 aleaciones de minerales** en total.
 - **Fusión primordial**: una aleación legendaria puede volver a entrar en el crisol junto a otra aleación, cualquier mineral o uno de los **12 objetos catalizadores vanilla** (Estrella del Nether, Aliento de Dragón, Hielo Azul, Hielo Compacto, Fragmento de Eco, Corazón del Mar, Tótem de Inmortalidad, Cristal del End, Ancla de Reaparición, Cristales de Prismarina, Cúmulo de Amatista, Escombros Antiguos). La aleación primordial resultante es de rareza Legendary, supera a cualquier compuesta y desbloquea los ultimates primordiales y los 9 estados de armadura primordiales. Ver [Aleaciones Primordiales](Aleaciones-Primordiales.md). Un servidor nuevo expone **8.085** combinaciones forjables, hasta **103.781** cuando se descubren todas las compuestas.
 - Consulta la [Guía de Mezcla de Materiales](Mezcla-de-Materiales.md) para más detalles.

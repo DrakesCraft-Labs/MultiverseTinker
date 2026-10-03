@@ -1,6 +1,6 @@
 # ⚒️ MultiverseTinker Documentation (English)
 
-Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a sovereign Paper 1.21+ plugin engineered by **Chagui68** that brings modular metallurgy, geological archaeology, melting crucibles, and casting mechanics into Minecraft without requiring Forge, Fabric, or Slimefun.
+Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a sovereign plugin for Paper 1.21.11, 26.1 and 26.2 (one jar for all three) engineered by **Chagui68** that brings modular metallurgy, geological archaeology, melting crucibles, and casting mechanics into Minecraft without requiring Forge, Fabric, or Slimefun.
 
 ---
 
@@ -16,6 +16,7 @@ Welcome to the official **MultiverseTinker** wiki! MultiverseTinker is a soverei
 * **[Alloy Mixing & Metallurgy Guide](Alloy-Mixing.md)**: The Alloy Crucible, universal brush/vanilla mineral blending (110 blendable minerals, 5,995 mineral pairs), and exhaustive guide to all 16 custom alloys.
 * **[Material Reference](Material-Reference.md)**: How to obtain every material — source, class, rarity, forge stats, trait (on weapons, tools and armor) and essences, one block per material.
 * **[Alloy Recipe Index](Alloy-Recipe-Index.md)**: Every blendable pair (5,995) with the alloy it forges and the essences it inherits, plus the 16 legendary recipes and the 12 vanilla catalysts.
+* **[✦ Signature Arts & Forge Pedigree](Signature-Arts.md)**: Every alloy awakens a named ability with its own mechanic and animation — a unique fusion art for each of the 5,981 composites, the 16 hand-made legendary arts, ascended prime arts and mythic cinematics with thunder, obelisks and on-screen titles.
 * **[Prime Alloys](Prime-Alloys.md)**: The third alloy tier — fuse a legendary alloy with another alloy, a mineral or one of the 12 vanilla catalysts to unlock freezing ice fields, meteor cascades and the 9 new armor states (up to **103,781** distinct alloys).
 * **[Trait Affinities Reference](Trait-Affinities.md)**: The 12 deterministic essences, how they behave on weapons, tools and armor, and how the head mineral drives every weapon perk.
 * **[Best Sword and Bow Combinations](Best-Sword-and-Bow-Combos.md)**: Practical guide with the optimal modular broadsword and longbow forges — the prime-tier heads, their verified damage and durability, and how to reach 100% essence focus.

@@ -1,6 +1,8 @@
 package com.chagui68.multiversetinker.tools;
 
+import com.chagui68.multiversetinker.compat.ServerCompat;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,6 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nonnull;
+import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,10 +82,24 @@ public final class UltimateEffectEngine {
                                      @Nonnull LivingEntity target,
                                      @Nonnull WeaponPerkProfile profile,
                                      double baseDamage) {
+        return tryTrigger(plugin, player, target, profile, baseDamage, ForgeTier.MINERAL);
+    }
+
+    /**
+     * Same as {@link #tryTrigger(Plugin, Player, LivingEntity, WeaponPerkProfile, double)}, scaled by the
+     * pedigree of the weapon: an essence ultimate cast from a legendary alloy reaches further, hits harder
+     * and fills more of the screen than the same ultimate cast from raw minerals.
+     */
+    public static boolean tryTrigger(@Nonnull Plugin plugin,
+                                     @Nonnull Player player,
+                                     @Nonnull LivingEntity target,
+                                     @Nonnull WeaponPerkProfile profile,
+                                     double baseDamage,
+                                     @Nonnull ForgeTier tier) {
         if (profile.getPotency() < MIN_POTENCY) return false;
         if (!beginCooldown(plugin, player)) return false;
 
-        start(plugin, player, target, EssenceUltimate.of(profile.getAffinity()), Math.max(1.0, baseDamage));
+        start(plugin, player, target, EssenceUltimate.of(profile.getAffinity()), Math.max(1.0, baseDamage), tier);
         return true;
     }
 
@@ -97,10 +114,30 @@ public final class UltimateEffectEngine {
                                           @Nonnull LivingEntity target,
                                           @Nonnull PrimeUltimate ultimate,
                                           double baseDamage) {
+        return tryPrimeTrigger(plugin, player, target, ultimate, baseDamage, ForgeTier.PRIME);
+    }
+
+    /** Prime ultimate scaled by the weapon's pedigree: a mythic prime adds its own finale. */
+    public static boolean tryPrimeTrigger(@Nonnull Plugin plugin,
+                                          @Nonnull Player player,
+                                          @Nonnull LivingEntity target,
+                                          @Nonnull PrimeUltimate ultimate,
+                                          double baseDamage,
+                                          @Nonnull ForgeTier tier) {
         if (!beginCooldown(plugin, player)) return false;
 
-        start(plugin, player, target, ultimate, Math.max(1.0, baseDamage));
+        start(plugin, player, target, ultimate, Math.max(1.0, baseDamage), tier);
         return true;
+    }
+
+    /** Geometry multiplier of a pedigree: every level past the first widens the spectacle by 12%. */
+    public static double radiusScale(@Nonnull ForgeTier tier) {
+        return 1.0 + 0.12 * (tier.getLevel() - 1);
+    }
+
+    /** Damage bonus of a pedigree, added to the ultimate's own multiplier. */
+    public static double damageBonus(@Nonnull ForgeTier tier) {
+        return 0.05 * (tier.getLevel() - 1);
     }
 
     private static boolean beginCooldown(@Nonnull Plugin plugin, @Nonnull Player player) {
@@ -114,10 +151,18 @@ public final class UltimateEffectEngine {
     // SPECTACLE
     // ==========================================
     private static void start(@Nonnull Plugin plugin, @Nonnull Player player, @Nonnull LivingEntity target,
-                              @Nonnull CinematicUltimate ultimate, double baseDamage) {
+                              @Nonnull CinematicUltimate ultimate, double baseDamage, @Nonnull ForgeTier tier) {
         World world = target.getWorld();
+        Spectacle spectacle = new Spectacle(tier,
+                Math.min(4.5, tier.getVisualScale() * EquipmentAnimation.configuredParticleScale()));
         player.sendActionBar(MiniMessage.miniMessage().deserialize(
                 "<bold>⚡ " + ultimate.getMiniMessageTag() + "!</bold> <gray>" + ultimate.getDescription() + "</gray>"));
+        if (tier.atLeast(ForgeTier.PRIME) && SignatureArtEngine.isMythicTitles()) {
+            player.showTitle(Title.title(
+                    MiniMessage.miniMessage().deserialize("<bold>⚡ " + ultimate.getMiniMessageTag() + "</bold>"),
+                    MiniMessage.miniMessage().deserialize(tier.badge()),
+                    Title.Times.times(Duration.ofMillis(100), Duration.ofMillis(1400), Duration.ofMillis(400))));
+        }
 
         new BukkitRunnable() {
             private int step = 0;
@@ -132,16 +177,19 @@ public final class UltimateEffectEngine {
 
                 Location center = target.getLocation().add(0, 1.0, 0);
                 if (step < CHARGE_STEPS) {
-                    renderCharge(world, center, ultimate, step);
+                    renderCharge(world, center, ultimate, step, spectacle);
                 } else if (!impacted) {
                     impacted = true;
                     renderSkyFall(world, center, ultimate);
-                    renderImpact(world, center, ultimate, player, target, baseDamage);
+                    renderImpact(world, center, ultimate, player, target, baseDamage, spectacle);
+                    if (tier == ForgeTier.MYTHIC) {
+                        renderMythicImpact(world, center, ultimate, spectacle);
+                    }
                     if (!target.isDead()) {
                         target.setVelocity(new Vector(0, 0, 0));
                     }
                 } else {
-                    renderHold(world, center, ultimate, step - CHARGE_STEPS);
+                    renderHold(world, center, ultimate, step - CHARGE_STEPS, spectacle);
                     if (!target.isDead()) {
                         target.setVelocity(new Vector(0, 0, 0));
                         if (ultimate.getFreezeTicks() > 0) {
@@ -158,12 +206,12 @@ public final class UltimateEffectEngine {
     }
 
     private static void renderCharge(@Nonnull World world, @Nonnull Location center,
-                                     @Nonnull CinematicUltimate ultimate, int step) {
+                                     @Nonnull CinematicUltimate ultimate, int step, @Nonnull Spectacle spectacle) {
         double progress = (step + 1) / (double) CHARGE_STEPS;
-        double radius = 0.7 + progress * 2.3;
+        double radius = (0.7 + progress * 2.3) * radiusScale(spectacle.tier());
 
         // Ground ring that swells while the ultimate charges.
-        int points = 14;
+        int points = spectacle.count(14);
         for (int i = 0; i < points; i++) {
             double angle = (2 * Math.PI * i / points) + (step * 0.35);
             Location ring = center.clone().add(Math.cos(angle) * radius, 0.15, Math.sin(angle) * radius);
@@ -171,7 +219,8 @@ public final class UltimateEffectEngine {
         }
 
         // Rising streaks that climb skyward; a meteor storm charges through more lanes.
-        int lanes = ultimate.getAnimation() == CinematicUltimate.Animation.METEOR_STORM ? 6 : 3;
+        int lanes = (ultimate.getAnimation() == CinematicUltimate.Animation.METEOR_STORM ? 6 : 3)
+                + Math.max(0, spectacle.tier().getLevel() - 2);
         for (int i = 0; i < lanes; i++) {
             double angle = (2 * Math.PI * i / lanes) + (step * 0.5);
             Location streak = center.clone().add(
@@ -183,7 +232,17 @@ public final class UltimateEffectEngine {
             renderCryoCharge(world, center, radius, step);
         }
 
-        spawnColoredDust(world, center.clone().add(0, 0.25, 0), 4, ultimate);
+        spawnColoredDust(world, center.clone().add(0, 0.25, 0), spectacle.count(4), ultimate);
+        if (spectacle.tier().atLeast(ForgeTier.LEGENDARY)) {
+            // A second, counter-rotating ring in the pedigree's own colours.
+            Particle.DustOptions tierDust = new Particle.DustOptions(spectacle.tier().color(), 1.4f);
+            int tierPoints = spectacle.count(10);
+            for (int i = 0; i < tierPoints; i++) {
+                double angle = (2 * Math.PI * i / tierPoints) - (step * 0.45);
+                Location ring = center.clone().add(Math.cos(angle) * radius * 0.7, 0.6, Math.sin(angle) * radius * 0.7);
+                world.spawnParticle(Particle.DUST, ring, 1, 0, 0, 0, 0.0, tierDust);
+            }
+        }
         if (step == 0 || step == CHARGE_STEPS - 1) {
             world.playSound(center, ultimate.getChargeSound(), 1.1f, (float) (0.6 + progress * 0.8));
         }
@@ -250,8 +309,9 @@ public final class UltimateEffectEngine {
 
     private static void renderImpact(@Nonnull World world, @Nonnull Location center,
                                      @Nonnull CinematicUltimate ultimate, @Nonnull Player player,
-                                     @Nonnull LivingEntity target, double baseDamage) {
-        double radius = ultimate.getRadius();
+                                     @Nonnull LivingEntity target, double baseDamage,
+                                     @Nonnull Spectacle spectacle) {
+        double radius = ultimate.getRadius() * radiusScale(spectacle.tier());
 
         world.playSound(center, ultimate.getImpactSound(), 1.6f, 0.9f);
         world.spawnParticle(Particle.EXPLOSION_EMITTER, center, 1);
@@ -264,10 +324,11 @@ public final class UltimateEffectEngine {
             }
         }
 
-        // Expanding shockwave rings.
-        for (int ring = 0; ring < 3; ring++) {
-            double r = radius * (0.4 + (ring * 0.3));
-            int points = 22;
+        // Expanding shockwave rings: one more per pedigree level past composite.
+        int rings = 3 + Math.max(0, spectacle.tier().getLevel() - 2);
+        for (int ring = 0; ring < rings; ring++) {
+            double r = radius * (0.4 + (ring * 0.6 / Math.max(1, rings - 1)));
+            int points = spectacle.count(22);
             for (int i = 0; i < points; i++) {
                 double angle = (2 * Math.PI * i / points) + (ring * 0.2);
                 Location point = center.clone().add(Math.cos(angle) * r, 0.25, Math.sin(angle) * r);
@@ -276,7 +337,7 @@ public final class UltimateEffectEngine {
             }
         }
 
-        double damage = baseDamage * ultimate.getDamageMultiplier();
+        double damage = baseDamage * (ultimate.getDamageMultiplier() + damageBonus(spectacle.tier()));
 
         target.setNoDamageTicks(0);
         target.damage(damage, player);
@@ -303,7 +364,7 @@ public final class UltimateEffectEngine {
         }
 
         if (ultimate == EssenceUltimate.ASCENDANT || ultimate == PrimeUltimate.PRISMATIC_ASCENSION) {
-            player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + 4.0));
+            player.setHealth(Math.min(ServerCompat.maxHealth(player), player.getHealth() + 4.0));
             world.spawnParticle(Particle.HEART, player.getLocation().add(0, 1.6, 0), 6, 0.3, 0.3, 0.3, 0.0);
         }
     }
@@ -332,10 +393,11 @@ public final class UltimateEffectEngine {
     }
 
     private static void renderHold(@Nonnull World world, @Nonnull Location center,
-                                   @Nonnull CinematicUltimate ultimate, int holdStep) {
+                                   @Nonnull CinematicUltimate ultimate, int holdStep, @Nonnull Spectacle spectacle) {
         double angleBase = holdStep * 0.35;
-        for (int i = 0; i < 8; i++) {
-            double angle = angleBase + (2 * Math.PI * i / 8);
+        int points = spectacle.count(8);
+        for (int i = 0; i < points; i++) {
+            double angle = angleBase + (2 * Math.PI * i / points);
             Location point = center.clone().add(
                     Math.cos(angle) * 1.3, 0.55 + (Math.sin(holdStep * 0.4) * 0.2), Math.sin(angle) * 1.3);
             world.spawnParticle(ultimate.getTrailParticle(), point, 1, 0, 0, 0, 0.0);
@@ -348,6 +410,34 @@ public final class UltimateEffectEngine {
         if (holdStep % 3 == 0) {
             world.spawnParticle(ultimate.getAccentParticle(), center, 3, 0.3, 0.6, 0.3, 0.0);
             spawnColoredDust(world, center, 3, ultimate);
+        }
+    }
+
+    /** A mythic weapon's ultimate tears the sky open: thunder around the epicentre and a column of light. */
+    private static void renderMythicImpact(@Nonnull World world, @Nonnull Location center,
+                                           @Nonnull CinematicUltimate ultimate, @Nonnull Spectacle spectacle) {
+        for (int i = 0; i < 3; i++) {
+            double angle = i * (2 * Math.PI / 3);
+            Location bolt = center.clone().add(Math.cos(angle) * 3.0, -1.0, Math.sin(angle) * 3.0);
+            try {
+                world.strikeLightningEffect(bolt);
+            } catch (RuntimeException ignored) {
+                // Purely cosmetic; some server implementations cannot render it.
+            }
+        }
+        for (int i = 0; i < 30; i++) {
+            Location column = center.clone().add(0, i * 0.4, 0);
+            world.spawnParticle(Particle.END_ROD, column, 1, 0.12, 0.0, 0.12, 0.0);
+            if (i % 2 == 0) spawnColoredDust(world, column, 2, ultimate);
+        }
+        world.spawnParticle(Particle.TOTEM_OF_UNDYING, center, spectacle.count(30), 1.5, 1.0, 1.5, 0.4);
+        world.playSound(center, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.8f, 1.1f);
+    }
+
+    /** Pedigree of the weapon that cast an ultimate, and the particle multiplier it earned. */
+    private record Spectacle(@Nonnull ForgeTier tier, double scale) {
+        int count(int base) {
+            return Math.max(1, (int) Math.round(base * scale));
         }
     }
 

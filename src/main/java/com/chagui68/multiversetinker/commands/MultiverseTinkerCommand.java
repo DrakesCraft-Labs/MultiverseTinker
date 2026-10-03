@@ -17,6 +17,7 @@ import com.chagui68.multiversetinker.items.TinkerItemRegistry;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.tools.PerkEpithet;
+import com.chagui68.multiversetinker.tools.SignatureArt;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -112,6 +113,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
                 itemRegistry.reload();
                 // Forged alloys are named after their parents, so their words are re-derived on reload.
                 PerkEpithet.clearCache();
+                SignatureArt.clearCache();
                 sender.sendMessage(miniMessage.deserialize("<green>MultiverseTinker configuration, items and loot tables reloaded successfully!</green>"));
                 return true;
             }
@@ -552,7 +554,7 @@ public class MultiverseTinkerCommand implements CommandExecutor, TabCompleter {
      * all the reload, which is the one that can change the rules.</p>
      */
     private void sendHelp(CommandSender sender, String label) {
-        sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getDescription().getVersion() + " (Chagui68) ===</gold>"));
+        sender.sendMessage(miniMessage.deserialize("<gold>=== MultiverseTinker v" + plugin.getPluginMeta().getVersion() + " (Chagui68) ===</gold>"));
         if (AccessControl.allows(sender, AdminCommand.CRAFT)) {
             sender.sendMessage(miniMessage.deserialize("<yellow>/" + label + " craft <weapon|tool|armor> <type> <m1> <m2> [m3] [tier]</yellow> <gray>- Instant admin crafting without forge.</gray>"));
         }

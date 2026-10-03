@@ -12,7 +12,9 @@ import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import com.chagui68.multiversetinker.tools.ArmorPerkProfile;
 import com.chagui68.multiversetinker.tools.PrimeArmorState;
+import com.chagui68.multiversetinker.tools.ForgeTier;
 import com.chagui68.multiversetinker.tools.PrimeUltimate;
+import com.chagui68.multiversetinker.tools.SignatureArt;
 import com.chagui68.multiversetinker.tools.ToolPerkProfile;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.tools.WeaponPerkProfile;
@@ -322,6 +324,15 @@ public class TinkerItemBuilder {
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.text("  " + material.getTraitDescription(), NamedTextColor.DARK_AQUA)
                 .decoration(TextDecoration.ITALIC, false));
+
+        SignatureArt ingotArt = SignatureArt.of(material);
+        if (ingotArt != null) {
+            lore.add(Component.text("✦ Signature Art: ", NamedTextColor.GOLD)
+                    .append(MINI_MESSAGE.deserialize(ingotArt.miniName()))
+                    .append(Component.text("  ", NamedTextColor.DARK_GRAY))
+                    .append(MINI_MESSAGE.deserialize(ingotArt.tier().badge()))
+                    .decoration(TextDecoration.ITALIC, false));
+        }
 
         boolean prime = AlloyRegistry.isPrime(material);
         if (prime) {
@@ -761,6 +772,7 @@ public class TinkerItemBuilder {
         lore.add(Component.text("  • Essence Focus: ", NamedTextColor.DARK_GRAY)
                 .append(Component.text(perkProfile.getFocusLine(), perkProfile.getColor()))
                 .decoration(TextDecoration.ITALIC, false));
+        lore.addAll(signatureArtLore(part1, part2, part3));
 
         Set<String> uniqueMatIds = getUniqueMaterialIds(part1, part2, part3);
         if (uniqueMatIds.size() >= 2) {
@@ -966,6 +978,40 @@ public class TinkerItemBuilder {
             }
         }
         return affinities;
+    }
+
+    /**
+     * Lore block naming the weapon's forge pedigree and the signature art its most demanding alloy
+     * awakens. A weapon of plain minerals says what it would take to awaken one, so the ladder is
+     * readable from the very first forge.
+     */
+    @Nonnull
+    private static List<Component> signatureArtLore(@Nullable PartComposition... parts) {
+        List<PartComposition> list = new ArrayList<>();
+        for (PartComposition part : parts) {
+            if (part != null) list.add(part);
+        }
+        ForgeTier tier = ForgeTier.of(list);
+        SignatureArt art = SignatureArt.forWeapon(list);
+
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.empty());
+        lore.add(Component.text("✦ Forge Pedigree: ", NamedTextColor.GOLD)
+                .append(MINI_MESSAGE.deserialize(tier.badge()))
+                .decoration(TextDecoration.ITALIC, false));
+        if (art == null) {
+            lore.add(Component.text("  • Forge an alloy into it to awaken a Signature Art.", NamedTextColor.DARK_GRAY)
+                    .decoration(TextDecoration.ITALIC, false));
+            return lore;
+        }
+        lore.add(Component.text("✦ Signature Art: ", NamedTextColor.GOLD)
+                .append(MINI_MESSAGE.deserialize(art.miniName()))
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  " + art.description(), NamedTextColor.GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("  • " + art.procLine(), NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+        return lore;
     }
 
     /**

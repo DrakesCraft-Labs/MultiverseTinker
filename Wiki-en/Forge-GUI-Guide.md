@@ -17,26 +17,38 @@ The top row (slots 0–8) contains persistent navigation controls:
 - **Slot 7**: `[ 6. Armor Assembly ]` - Modular armor assembly with armor piece cycling.
 - **Slot 8**: Border Pane.
 
+Every section shares the same frame: side rails tinted in the section's own colour (gold codex, orange molds, red crucible, blue weapons, green tools, purple armor), the active button glinting in the top row, and a footer row with the **✦ Forge Pedigree** ladder (slot **45**) and a **✖ Close** button (slot **53**).
+
+### Workshop rules
+- **Live previews**: the part preview (slot **49**, Molds & Parts), the fusion preview (slot **22**, Alloy Crucible) and the perk preview (slot **48**, assembly sections) show the result before anything is spent.
+- **Shift-click** an item in your inventory and it goes to the slot it belongs in: casts to the cast slot, materials to the material or crucible inputs, forged parts to the assembly inputs.
+- **Results are never overwritten**: if an item is still waiting in an output slot, the Forge refuses to strike, smelt or assemble (identical results stack instead) and spends nothing.
+- **Nothing can be put into an output slot**, and double-click collection or dragging can never pull the Forge's own icons into your inventory.
+- Every input and output is returned to you when you change section or close the Forge — your own glass panes included.
+
 ---
 
 ## 📖 Section 1: Informational Codex & Guides
 Displays interactive codex books explaining:
-1. **Multiblock Structure**: 243 blocks, centered anvil, 4 lava corner columns, chiseled tuff bricks, deepslate tiles, and tuff brick slabs/stairs.
-2. **Multi-Material Forging**: Concentration rules (1, 2, or 3 materials per part with proportional trait potency).
+1. **Multiblock Structure**: an 11×7×11 multiblock of 243 blocks, centered anvil, 4 lava corner columns, chiseled tuff bricks, deepslate tiles, and tuff brick slabs/stairs.
+2. **Three-Material Parts**: every part is cast from exactly 3 materials (33/33/33); repeat a mineral for a pure part.
 3. **Alloy Crucible**: The 16 alloy recipes and metallurgical blending mechanics.
 4. **Tier Evolution**: Progression from Wood to Netherite via kills (weapons), blocks broken (tools), and damage absorbed (armor).
 5. **Specialized Perks**: Unique mechanics for all 7 weapons, 5 tools, and 4 armor pieces.
-6. **Alloy Codex**: every material you can forge with, printing the **perk epithet** it lends to a forged name — so a mineral's word can be read before it is spent (see [Perk Names](Perk-Names.md)).
+6. **Forge Pedigree & Signature Arts**: the five tiers and the 16 legendary arts (see [Signature Arts](Signature-Arts.md)).
+7. **Alloy Codex**: every material you can forge with, printing the **perk epithet** it lends to a forged name — so a mineral's word can be read before it is spent (see [Perk Names](Perk-Names.md)).
 
 ---
 
 ## 🔨 Section 2: Molds & Multi-Material Part Forging
 
 ### Single Mold Selector & Quick Carving
-Cycle through available casting molds using a single, uncluttered selector in Row 1:
+Cycle through available casting molds in Row 1:
 - **Slot 12**: Previous Mold (`◀`)
-- **Slot 13**: **Mold Selector** (Click to cycle next mold, Right-click for previous).
-- **Slot 14**: **Carve Mold Button** (Consumes **1 Clay Brick** from inventory).
+- **Slot 13**: **⚒ Carve Mold** — shows the selected mold; click to carve it into your inventory for **1 Clay Brick**.
+- **Slot 14**: Next Mold (`▶`)
+
+Cycling molds never clears the cast and materials already in place.
 
 #### Available Molds:
 - **Head Cast** (`mvtink_cast_head`): Tool & weapon heads.
@@ -51,22 +63,21 @@ Cycle through available casting molds using a single, uncluttered selector in Ro
 - **Armor Trim Cast** (`mvtink_cast_armor_trim`): Reinforced trims, joint rivets & buckles.
 - **Ingot / Nugget / Block Casts**: Metal storage and conversion casts.
 
-### Multi-Material Forging (1 to 3 Materials)
-- Place **1 Cast** in **Slot 29**.
-- Place up to 3 Materials (Ingots, Gems, Minerals, or Molten Liquid Buckets) in **Slots 30, 31, and 32**:
-  - **1 Material placed**: 100% concentration (full stats and 100% trait proc rate).
-  - **2 Materials placed**: 50% / 50% concentration split across both traits.
-  - **3 Materials placed**: 33.3% / 33.3% / 33.4% concentration split across all 3 traits.
-- Click **⚒ Strike Anvil to Forge Part** (Slot 40) to produce the finished modular component in **Slot 33**.
+### Three-Material Forging
+- Place **1 Cast** in **Slot 28** (iron bars at 29 and 33 separate the chambers).
+- Place **all 3 Materials** (Ingots, Gems, Minerals, or Molten Liquid Buckets) in **Slots 30, 31, and 32**. The concentration is split 33.3% / 33.3% / 33.4% across the three traits; place the same mineral three times for a pure part.
+- The **✦ Part Preview** (Slot **49**) lists what is missing, then the composition, stats, pedigree and signature art of the part.
+- Click **⚒ Strike the Anvil** (Slot 40) to produce the finished component in **Slot 34**.
 - Casts are **reusable** and never consumed!
 
 ---
 
 ## 🧪 Section 3: Alloy Crucible (Material Mixing)
 - Place Material 1 in **Slot 29** and Material 2 in **Slot 33**.
-- Click **♨ Ignite Crucible & Smelt Alloy** (Slot 31).
+- The **✦ Fusion Preview** (Slot **22**, right above the ignite button) names the alloy the pair would fuse into, its **pedigree**, its **signature art** and, for primes, the prime ultimate and armor state — or why the pair cannot be fused.
+- Click **♨ Ignite the Crucible** (Slot 31).
 - Yields **2x Finished Alloy Ingots** in **Slot 40**.
-- Click the **Alloy Recipes Codex** (Slot 49) to browse all 16 registered alloy formulas in chat.
+- Click the **Alloy Codex** (Slot 49) to open the browsable codex; sneak-click prints the recipe list in chat.
 - Every pair of the **110 blendable minerals** (97 geological + 13 non-netherite vanilla) yields its own alloy: 5,995 blendable pairs, of which 14 resolve to a legendary recipe. Vanilla netherite is the one vanilla material that cannot be freely blended (it is already an alloy), but it still works inside its own two curated recipes (**Cinder Steel** and **Cosmic Netherite**), so the crucible can produce **5,997 distinct mineral alloys** in total.
 - **Prime fusion**: a legendary alloy can be dropped in again alongside another alloy, any mineral, or one of the **12 vanilla catalyst items** (Nether Star, Dragon Breath, Blue Ice, Packed Ice, Echo Shard, Heart of the Sea, Totem of Undying, End Crystal, Respawn Anchor, Prismarine Crystals, Amethyst Cluster, Ancient Debris). The prime alloy that comes out is Legendary rarity, outscales every composite, and unlocks prime ultimates plus the 9 prime armor states. See [Prime Alloys](Prime-Alloys.md). A fresh server exposes **8,085** forgeable combinations, up to **103,781** once every composite is discovered.
 - See [Alloy Mixing Guide](Alloy-Mixing.md) for full details.
@@ -101,6 +112,7 @@ Click the **Weapon Selector** in **Slot 13** to cycle between all 7 weapon types
   - **Tower Shield**: Reflects 35% of blocked damage back to the attacker.
   - **Broadsword**: Sweeping melee attacks chain elemental traits across adjacent foes.
 - **Material-Driven Perks**: every perk above is **named by every mineral it was forged from** and **powered by the weapon's head mineral** (a Cobalt head starts the name with *Lightfooted*, a Voidstone head with *Warping*), while the handle and pommel set the **Essence Focus** percentage shown in the lore. The dominant essence is channelled into the perk's primary strike, so identical weapon types forged from different minerals fight differently.
+- **Signature Arts**: a weapon with an alloy part awakens the art of its most demanding alloy — a fusion art, a legendary art, an ascended prime art or a mythic cinematic. The weapon preview adds its **pedigree**, the art and its proc line, and assembling it makes the Forge announce the art. See [Signature Arts](Signature-Arts.md).
 - **Perk Preview**: while the assembly slots are being filled, slot **48** — directly under the assemble anvil — prints the perk those parts would name, so a build can be read before it is paid for. The tooltip breaks the compound epithet down per part (`Borax → Fluxforged`, `Amethyst → Resonant`, `Gold → Auric`), names the mechanic of the currently selected type from the very first click, and adds the full mechanic sentence and the **Essence Focus** the build would reach once every part is in place. It reads the same profiles the forged item is built from, so the previewed name is the one the item will print. The tool and armor assembly tabs show the same slot for their own mechanics.
 - **Trait Channels**: each trait row in the lore is labelled with the moment that weapon fires it — `on sweep`, `on arrow hit` (longbow), `on bolt impact`, `on surge`, `on thrust`, `on smash` and `on block` — so a broadsword, a longbow and a tower shield never show the same trait block.
 

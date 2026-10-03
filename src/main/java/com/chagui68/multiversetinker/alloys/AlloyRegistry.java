@@ -5,6 +5,7 @@ import com.chagui68.multiversetinker.api.MaterialType;
 import com.chagui68.multiversetinker.api.MineralOrigin;
 import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
+import com.chagui68.multiversetinker.tools.SignatureArt;
 import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.tools.VanillaCatalyst;
 import org.bukkit.Bukkit;
@@ -255,8 +256,11 @@ public class AlloyRegistry {
                 ? ((statA.getAttackDamage() + statB.getAttackDamage()) / 2.0) + 2.2
                 : ((statA.getAttackDamage() + statB.getAttackDamage()) / 2.0) + 1.2;
 
+        // A prime is named after the art it awakens, so two primes of the same legendary never share a
+        // trait: Bronze + Nether Star and Bronze + Tin are different abilities and read differently.
+        SignatureArt art = prime ? SignatureArt.forPair(first, second) : null;
         String traitName = prime
-                ? "Prime " + first.getTraitName()
+                ? (art != null ? art.name() : "Prime " + first.getTraitName())
                 : first.getTraitName() + "-" + second.getTraitName();
         String traitDesc = prime
                 ? primeDescription(first, second)
@@ -509,7 +513,12 @@ public class AlloyRegistry {
         ConfigurationSection root = yaml.getConfigurationSection("alloys");
         if (root == null) return;
 
-        int restored = 0;
+        // A restored prime inherits the essences of its legendary parent, so the curated recipes must
+        // already be materials when it is rebuilt — otherwise it would come back with a generic blend
+        // and a different art than the one it was forged with.
+        registerAlloysIntoMaterialRegistry(materialRegistry);
+
+        List<TinkerAlloy> restoredAlloys = new ArrayList<>();
         for (String id : root.getKeys(false)) {
             ConfigurationSection section = root.getConfigurationSection(id);
             if (section == null) continue;
@@ -529,13 +538,37 @@ public class AlloyRegistry {
                     (float) section.getDouble("miningSpeed"),
                     section.getDouble("attackDamage"));
             register(alloy);
-            registerMaterial(materialRegistry, alloy);
-            restored++;
+            restoredAlloys.add(alloy);
         }
 
-        if (restored > 0) {
-            plugin.getLogger().info("Restored " + restored + " player-forged composite alloys.");
+        // Composites first: a prime may have been fused from one of them.
+        restoredAlloys.sort(Comparator.comparing(alloy -> isPrimeParents(alloy.mat1Id(), alloy.mat2Id())));
+        for (TinkerAlloy alloy : restoredAlloys) {
+            TinkerAlloy named = withArtName(alloy, materialRegistry);
+            if (named != alloy) register(named);
+            registerMaterial(materialRegistry, named);
         }
+
+        if (!restoredAlloys.isEmpty()) {
+            plugin.getLogger().info("Restored " + restoredAlloys.size() + " player-forged composite alloys.");
+        }
+    }
+
+    /**
+     * A restored prime takes the trait name of the art it awakens today, so primes saved before arts
+     * existed (all named {@code Prime <trait>}) are renamed on load instead of keeping a shared name.
+     */
+    @Nonnull
+    private TinkerAlloy withArtName(@Nonnull TinkerAlloy alloy, @Nonnull MaterialRegistry materialRegistry) {
+        if (!isPrimeParents(alloy.mat1Id(), alloy.mat2Id())) return alloy;
+        TinkerMaterial first = materialRegistry.get(alloy.mat1Id());
+        TinkerMaterial second = materialRegistry.get(alloy.mat2Id());
+        if (first == null || second == null) return alloy;
+        SignatureArt art = SignatureArt.forPair(first, second);
+        if (art == null || art.name().equals(alloy.traitName())) return alloy;
+        return new TinkerAlloy(alloy.id(), alloy.name(), alloy.mat1Id(), alloy.mat2Id(), alloy.colorHex(),
+                art.name(), alloy.traitDescription(), alloy.durabilityBonus(), alloy.miningSpeed(),
+                alloy.attackDamageBonus());
     }
 
     /** Number of composite alloys players have forged, excluding the 16 curated recipes. */

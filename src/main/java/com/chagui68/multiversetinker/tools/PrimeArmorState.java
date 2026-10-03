@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker.tools;
 
+import com.chagui68.multiversetinker.compat.ServerCompat;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -204,7 +205,7 @@ public enum PrimeArmorState {
                     attacker.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40, 1, false, true));
                 }
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 120, 0, false, false));
-                player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + 1.0));
+                player.setHealth(Math.min(ServerCompat.maxHealth(player), player.getHealth() + 1.0));
             }
             case PRISM_BULWARK -> {
                 if (attacker != null) {

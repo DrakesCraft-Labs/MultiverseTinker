@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker.tools;
 
+import com.chagui68.multiversetinker.compat.ServerCompat;
 import com.chagui68.multiversetinker.MultiverseTinker;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.ModularArmorType;
@@ -134,7 +135,19 @@ public class ModularToolListener implements Listener {
     public ModularToolListener(@Nonnull MultiverseTinker plugin, @Nonnull MaterialRegistry materialRegistry) {
         this.plugin = plugin;
         this.materialRegistry = materialRegistry;
+        // Fusion arts echo their minerals' own forge traits on every foe they reach; the traits live here.
+        SignatureArtEngine.setTraitEcho((wielder, victim, materialId) -> {
+            if (!enterTraitChain()) return;
+            try {
+                applyTraitEffect(wielder, victim, null, materialId, ART_ECHO_RATIO, true);
+            } finally {
+                exitTraitChain();
+            }
+        });
     }
+
+    /** Potency of a mineral trait echoed by a signature art, relative to the trait on a direct hit. */
+    private static final double ART_ECHO_RATIO = 0.6;
 
     // ==========================================
     // COMBAT & ATTACK LISTENER
@@ -289,28 +302,50 @@ public class ModularToolListener implements Listener {
         // Material-driven signature: the perk channels the essence of the minerals the weapon was forged from.
         WeaponPerkProfile profile = applyWeaponPerkEcho(player, target, event, pdc);
         if (profile != null) {
-            // Rare cinematic payoff for weapons with a concentrated essence focus or a prime alloy.
-            triggerWeaponUltimate(player, target, profile, pdc, Math.max(1.0, event.getFinalDamage()));
+            // Rare cinematic payoff for weapons with a concentrated essence focus or a prime alloy,
+            // otherwise the signature art of the alloy the weapon was forged from.
+            triggerWeaponCinematics(player, target, profile, pdc, Math.max(1.0, event.getFinalDamage()));
+        }
+    }
+
+    /**
+     * Plays the loudest payoff the weapon earned on this hit: its ultimate when one is ready, otherwise
+     * the {@link SignatureArt} of its most demanding alloy. The two never stack on the same hit.
+     */
+    private void triggerWeaponCinematics(@Nullable Player player,
+                                         @Nonnull LivingEntity target,
+                                         @Nullable WeaponPerkProfile profile,
+                                         @Nonnull PersistentDataContainer pdc,
+                                         double baseDamage) {
+        if (player == null || profile == null) return;
+        List<PartComposition> parts = collectCompositions(pdc);
+        if (triggerWeaponUltimate(player, target, profile, parts, baseDamage)) return;
+
+        SignatureArt art = SignatureArt.forWeapon(parts);
+        if (art != null) {
+            SignatureArtEngine.tryTrigger(plugin, player, target, art, baseDamage);
         }
     }
 
     /**
      * Picks the right cinematic payoff for the weapon: a prime alloy upgrades the spectacle to a
      * {@link PrimeUltimate} (freezing ice fields, meteor storms…), otherwise the ordinary
-     * {@link EssenceUltimate} of the weapon's dominant essence plays.
+     * {@link EssenceUltimate} of the weapon's dominant essence plays. Both are scaled by the weapon's
+     * {@link ForgeTier}, so the deeper the metallurgy the bigger the spectacle.
+     *
+     * @return {@code true} when an ultimate started
      */
-    private void triggerWeaponUltimate(@Nullable Player player,
-                                       @Nonnull LivingEntity target,
-                                       @Nullable WeaponPerkProfile profile,
-                                       @Nonnull PersistentDataContainer pdc,
-                                       double baseDamage) {
-        if (player == null || profile == null) return;
-        PrimeUltimate prime = PrimeUltimate.forWeapon(collectCompositions(pdc), profile);
+    private boolean triggerWeaponUltimate(@Nonnull Player player,
+                                          @Nonnull LivingEntity target,
+                                          @Nonnull WeaponPerkProfile profile,
+                                          @Nonnull List<PartComposition> parts,
+                                          double baseDamage) {
+        ForgeTier tier = ForgeTier.of(parts);
+        PrimeUltimate prime = PrimeUltimate.forWeapon(parts, profile);
         if (prime != null) {
-            UltimateEffectEngine.tryPrimeTrigger(plugin, player, target, prime, baseDamage);
-        } else {
-            UltimateEffectEngine.tryTrigger(plugin, player, target, profile, baseDamage);
+            return UltimateEffectEngine.tryPrimeTrigger(plugin, player, target, prime, baseDamage, tier);
         }
+        return UltimateEffectEngine.tryTrigger(plugin, player, target, profile, baseDamage, tier);
     }
 
     /**
@@ -538,7 +573,7 @@ public class ModularToolListener implements Listener {
             triggerMultiMaterialTraits(shooter, target, null, pdc);
             // Material-driven weapon perk echo for projectile weapons (bow, crossbow, thrown trident).
             WeaponPerkProfile profile = applyWeaponPerkEcho(shooter, target, null, pdc);
-            triggerWeaponUltimate(shooter, target, profile, pdc, 6.0);
+            triggerWeaponCinematics(shooter, target, profile, pdc, 6.0);
         }
     }
 
@@ -1242,7 +1277,7 @@ public class ModularToolListener implements Listener {
         // Sanguinite - Vampiric Drain
         if (matId.equalsIgnoreCase("mvtink_sanguinite") && player != null) {
             double heal = 1.5 * ratio;
-            player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + heal));
+            player.setHealth(Math.min(ServerCompat.maxHealth(player), player.getHealth() + heal));
             player.getWorld().spawnParticle(Particle.HEART, player.getLocation().add(0, 1.5, 0), 2, 0.2, 0.2, 0.2, 0.0);
         }
 
@@ -1724,6 +1759,12 @@ public class ModularToolListener implements Listener {
                 PersistentDataContainer pdc = meta.getPersistentDataContainer();
                 if (!pdc.has(TinkerKeys.IS_MODULAR_WEAPON, PersistentDataType.BYTE)) continue;
 
+                // Pedigree aura: legendary metallurgy and above announces itself while it is held.
+                SignatureArt heldArt = SignatureArt.forWeapon(collectCompositions(pdc));
+                if (heldArt != null && heldArt.tier().atLeast(ForgeTier.LEGENDARY) && EquipmentAnimation.isEnabled()) {
+                    renderPedigreeAura(player, heldArt, tick);
+                }
+
                 List<TinkerMaterial> mats = getMaterialsFromPdc(pdc);
                 if (mats.size() < 2) continue; // Multi-material aura
 
@@ -1742,6 +1783,36 @@ public class ModularToolListener implements Listener {
                 }
             }
         }, 20L, 10L);
+    }
+
+    /**
+     * The quiet half of a signature art: a slow ring in the art's colours at the wielder's feet, with a
+     * star of light for prime metallurgy and a crown for mythic, so a legendary build can be recognised
+     * across a battlefield before it ever fires.
+     */
+    private void renderPedigreeAura(@Nonnull Player player, @Nonnull SignatureArt art, long tick) {
+        World world = player.getWorld();
+        Location feet = player.getLocation().add(0, 0.08, 0);
+        Particle.DustOptions main = new Particle.DustOptions(art.color(), 0.9f);
+        Particle.DustOptions accent = new Particle.DustOptions(art.accent(), 0.8f);
+        int points = 4 + art.tier().getLevel();
+        double phase = (tick % 80) * (Math.PI / 40.0);
+        for (int i = 0; i < points; i++) {
+            double angle = phase + i * (Math.PI * 2 / points);
+            world.spawnParticle(Particle.DUST, feet.clone().add(Math.cos(angle) * 0.9, 0, Math.sin(angle) * 0.9),
+                    1, 0, 0, 0, 0, i % 2 == 0 ? main : accent);
+        }
+        if (art.tier().atLeast(ForgeTier.PRIME) && tick % 20 == 0) {
+            world.spawnParticle(Particle.END_ROD, player.getLocation().add(0, 1.2, 0), 2, 0.4, 0.5, 0.4, 0.01);
+        }
+        if (art.tier() == ForgeTier.MYTHIC) {
+            Location crown = player.getLocation().add(0, 2.35, 0);
+            for (int i = 0; i < 5; i++) {
+                double angle = -phase + i * (Math.PI * 2 / 5);
+                world.spawnParticle(Particle.DUST, crown.clone().add(Math.cos(angle) * 0.35, 0, Math.sin(angle) * 0.35),
+                        1, 0, 0, 0, 0, accent);
+            }
+        }
     }
 
     /**

@@ -18,8 +18,13 @@ import com.chagui68.multiversetinker.materials.MaterialRegistry;
 import com.chagui68.multiversetinker.materials.TinkerMaterial;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import com.chagui68.multiversetinker.tools.ForgePerkPreview;
+import com.chagui68.multiversetinker.tools.ForgeTier;
+import com.chagui68.multiversetinker.tools.LegendaryArt;
 import com.chagui68.multiversetinker.tools.PrimeArmorState;
 import com.chagui68.multiversetinker.tools.PrimeUltimate;
+import com.chagui68.multiversetinker.tools.SignatureArt;
+import com.chagui68.multiversetinker.tools.SignatureArtEngine;
+import com.chagui68.multiversetinker.tools.TraitAffinity;
 import com.chagui68.multiversetinker.tools.VanillaCatalyst;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -30,11 +35,13 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -44,6 +51,19 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
+/**
+ * The Multiverse Forge: a six-section workshop opened from the anvil of a complete Forge multiblock.
+ *
+ * <p>Every section shares one frame — the navigation row on top, a footer with the pedigree ladder and a
+ * close button, and side rails tinted in the section's own colour — and every work area reads
+ * left-to-right: inputs, the action button, the result. The sections that consume items show a live
+ * preview of what they will produce before anything is spent: the part a cast would forge, the alloy the
+ * crucible would fuse (with its pedigree and signature art), and the perk an assembly would name.</p>
+ *
+ * <p>Items are never lost: an occupied output is never overwritten, shift-clicking routes an item to the
+ * slot it belongs in, double-click collection and drags can never pull or push the Forge's own icons,
+ * and every input and output is handed back when the section changes or the Forge closes.</p>
+ */
 public class ForgeGUI implements InventoryHolder {
 
     // Tab indices
@@ -65,6 +85,10 @@ public class ForgeGUI implements InventoryHolder {
     public static final int SLOT_NAV_ARMOR = 7;
     public static final int SLOT_NAV_BORDER_R = 8;
 
+    // Footer (Row 5)
+    public static final int SLOT_PEDIGREE_GUIDE = 45;
+    public static final int SLOT_CLOSE = 53;
+
     // Tab 1: Molds & Parts slots
     public static final int SLOT_MOLD_PREV = 12;
     public static final int SLOT_MOLD_SELECTOR = 13;
@@ -76,6 +100,8 @@ public class ForgeGUI implements InventoryHolder {
     public static final int SLOT_PART_MAT3 = 32;
     public static final int SLOT_PART_OUTPUT = 34;
     public static final int SLOT_PART_STRIKE = 40;
+    /** Live preview of the part the cast and materials would forge. */
+    public static final int SLOT_PART_PREVIEW = 49;
 
     // Tab 2: Alloy Crucible slots
     public static final int SLOT_ALLOY_MAT1 = 29;
@@ -83,6 +109,8 @@ public class ForgeGUI implements InventoryHolder {
     public static final int SLOT_ALLOY_MAT2 = 33;
     public static final int SLOT_ALLOY_OUTPUT = 40;
     public static final int SLOT_ALLOY_RECIPES = 49;
+    /** Live preview of the alloy the two inputs would fuse into, drawn above the ignite button. */
+    public static final int SLOT_ALLOY_PREVIEW = 22;
 
     // Tab 3: Weapons slots
     public static final int SLOT_WEAPON_PREV = 12;
@@ -139,6 +167,22 @@ public class ForgeGUI implements InventoryHolder {
             CastType.BLOCK
     );
 
+    /** Visual identity of each section: its accent rail, its title gradient and its name. */
+    private record Theme(Material accent, String from, String to, String name) {
+        String gradient(String text) {
+            return "<gradient:" + from + ":" + to + ">" + text + "</gradient>";
+        }
+    }
+
+    private static final Theme[] THEMES = {
+            new Theme(Material.YELLOW_STAINED_GLASS_PANE, "#f1c40f", "#e67e22", "Codex & Guide"),
+            new Theme(Material.ORANGE_STAINED_GLASS_PANE, "#e67e22", "#d35400", "Molds & Parts"),
+            new Theme(Material.RED_STAINED_GLASS_PANE, "#e74c3c", "#ff9f43", "Alloy Crucible"),
+            new Theme(Material.LIGHT_BLUE_STAINED_GLASS_PANE, "#3498db", "#74b9ff", "Weapon Assembly"),
+            new Theme(Material.LIME_STAINED_GLASS_PANE, "#2ecc71", "#a3e635", "Tool Assembly"),
+            new Theme(Material.PURPLE_STAINED_GLASS_PANE, "#9b59b6", "#e056fd", "Armor Assembly")
+    };
+
     private final MultiverseTinker plugin;
     private final TinkerItemRegistry itemRegistry;
     private final MaterialRegistry materialRegistry;
@@ -151,6 +195,7 @@ public class ForgeGUI implements InventoryHolder {
     private ModularWeaponType selectedWeaponType = ModularWeaponType.SWORD;
     private ModularToolType selectedToolType = ModularToolType.PICKAXE;
     private ModularArmorType selectedArmorType = ModularArmorType.HELMET;
+    private boolean refreshQueued;
 
     public ForgeGUI(@Nonnull MultiverseTinker plugin,
                     @Nonnull TinkerItemRegistry itemRegistry,
@@ -159,73 +204,33 @@ public class ForgeGUI implements InventoryHolder {
         this.itemRegistry = itemRegistry;
         this.materialRegistry = materialRegistry;
         this.alloyRegistry = (plugin.getAlloyRegistry() != null) ? plugin.getAlloyRegistry() : new AlloyRegistry();
-        this.inventory = Bukkit.createInventory(this, 54, miniMessage.deserialize("<gradient:#ff4500:#ffaa00><b>Multiverse Forge</b></gradient>"));
-        renderCurrentTab(null);
+        this.inventory = Bukkit.createInventory(this, 54, miniMessage.deserialize(
+                "<gradient:#ff4500:#ffaa00><b>⚒ Multiverse Forge</b></gradient>"));
+        renderCurrentTab();
     }
 
-    private void renderNavBar() {
-        ItemStack borderPane = createSystemDecor(Material.BLACK_STAINED_GLASS_PANE, " ");
-        inventory.setItem(SLOT_NAV_BORDER_L, borderPane);
-        inventory.setItem(SLOT_NAV_BORDER_R, borderPane);
+    // ==========================================
+    // FRAME
+    // ==========================================
 
-        ItemStack centerDivider = createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE,
-                "<gradient:#ff4500:#ffaa00><b>⚒ Multiverse Forge ⚒</b></gradient>");
-        inventory.setItem(SLOT_NAV_DIVIDER, centerDivider);
-
-        inventory.setItem(SLOT_NAV_INFO, createNavButton(TAB_INFO, Material.ENCHANTED_BOOK,
-                "<gradient:#f1c40f:#e67e22><b>[ 1. Codex & Guide ]</b></gradient>",
-                "Comprehensive metallurgical & mechanics guide."));
-
-        inventory.setItem(SLOT_NAV_PARTS, createNavButton(TAB_PARTS, Material.SMITHING_TABLE,
-                "<gradient:#e67e22:#d35400><b>[ 2. Molds & Parts ]</b></gradient>",
-                "Carve reusable casts & forge multi-material parts."));
-
-        inventory.setItem(SLOT_NAV_ALLOY, createNavButton(TAB_ALLOY, Material.LAVA_BUCKET,
-                "<gradient:#e74c3c:#c0392b><b>[ 3. Alloy Crucible ]</b></gradient>",
-                "Mix 2 distinct materials to forge legendary alloys."));
-
-        inventory.setItem(SLOT_NAV_WEAPONS, createNavButton(TAB_WEAPONS, Material.NETHERITE_SWORD,
-                "<gradient:#3498db:#2980b9><b>[ 4. Weapon Assembly ]</b></gradient>",
-                "Assemble Swords, Bows, Crossbows, Tridents, Spears, Maces, Shields."));
-
-        inventory.setItem(SLOT_NAV_TOOLS, createNavButton(TAB_TOOLS, Material.NETHERITE_PICKAXE,
-                "<gradient:#2ecc71:#27ae60><b>[ 5. Tool Assembly ]</b></gradient>",
-                "Assemble Pickaxes, Axes, Hoes, Shovels, and Fishing Rods."));
-
-        inventory.setItem(SLOT_NAV_ARMOR, createNavButton(TAB_ARMOR, Material.NETHERITE_CHESTPLATE,
-                "<gradient:#9b59b6:#8e44ad><b>[ 6. Armor Assembly ]</b></gradient>",
-                "Assemble Helmets, Chestplates, Leggings, and Boots."));
+    @Nonnull
+    private Theme theme() {
+        return THEMES[Math.max(0, Math.min(THEMES.length - 1, currentTab))];
     }
 
-    private ItemStack createNavButton(int tabIndex, Material icon, String title, String desc) {
-        boolean active = (currentTab == tabIndex);
-        ItemStack item = new ItemStack(icon);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            String prefix = active ? "<green>▶ </green>" : "<gray>  </gray>";
-            meta.displayName(miniMessage.deserialize(prefix + title).decoration(TextDecoration.ITALIC, false));
-            List<Component> lore = new ArrayList<>();
-            lore.addAll(LoreWrap.wrap(Component.text(desc, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
-            lore.add(Component.empty());
-            if (active) {
-                lore.add(miniMessage.deserialize("<green><b>✔ Currently Active Section</b></green>").decoration(TextDecoration.ITALIC, false));
-            } else {
-                lore.add(miniMessage.deserialize("<yellow>Click to switch to this section</yellow>").decoration(TextDecoration.ITALIC, false));
-            }
-            meta.lore(lore);
-            markAsSystemItem(meta);
-            item.setItemMeta(meta);
-        }
-        return item;
-    }
-
-    private void renderCurrentTab(@Nullable Player player) {
-        ItemStack grayGlass = createSystemDecor(Material.GRAY_STAINED_GLASS_PANE, " ");
+    private void renderCurrentTab() {
+        Theme theme = theme();
+        ItemStack background = createSystemDecor(Material.BLACK_STAINED_GLASS_PANE, " ");
+        ItemStack rail = createSystemDecor(theme.accent(), " ");
         for (int i = 0; i < 54; i++) {
-            inventory.setItem(i, grayGlass);
+            int column = i % 9;
+            int row = i / 9;
+            boolean edge = row == 5 || ((row >= 1 && row <= 4) && (column == 0 || column == 8));
+            inventory.setItem(i, edge ? rail : background);
         }
 
         renderNavBar();
+        renderFooter();
 
         switch (currentTab) {
             case TAB_INFO -> renderTabInfo();
@@ -237,151 +242,230 @@ public class ForgeGUI implements InventoryHolder {
         }
     }
 
-    private void returnActiveTabItems(@Nonnull Player player, int tabIndex) {
-        int[] slotsToClear = switch (tabIndex) {
-            case TAB_PARTS -> new int[]{SLOT_PART_CAST, SLOT_PART_MAT1, SLOT_PART_MAT2, SLOT_PART_MAT3, SLOT_PART_OUTPUT};
-            case TAB_ALLOY -> new int[]{SLOT_ALLOY_MAT1, SLOT_ALLOY_MAT2, SLOT_ALLOY_OUTPUT};
-            case TAB_WEAPONS -> new int[]{SLOT_WEAPON_PART1, SLOT_WEAPON_PART2, SLOT_WEAPON_PART3, SLOT_WEAPON_OUTPUT};
-            case TAB_TOOLS -> new int[]{SLOT_TOOL_HEAD, SLOT_TOOL_HANDLE, SLOT_TOOL_POMMEL, SLOT_TOOL_OUTPUT};
-            case TAB_ARMOR -> new int[]{SLOT_ARMOR_PLATE, SLOT_ARMOR_LINING, SLOT_ARMOR_TRIM, SLOT_ARMOR_OUTPUT};
-            default -> new int[0];
-        };
+    private void renderNavBar() {
+        Theme theme = theme();
+        ItemStack border = createSystemDecor(theme.accent(), " ");
+        inventory.setItem(SLOT_NAV_BORDER_L, border);
+        inventory.setItem(SLOT_NAV_BORDER_R, border);
 
-        for (int slot : slotsToClear) {
-            ItemStack item = inventory.getItem(slot);
-            if (item != null && item.getType() != Material.AIR) {
-                if (!isSystemItem(item)) {
-                    inventory.setItem(slot, null);
-                    Map<Integer, ItemStack> leftover = player.getInventory().addItem(item);
-                    for (ItemStack drop : leftover.values()) {
-                        player.getWorld().dropItemNaturally(player.getLocation(), drop);
-                    }
-                } else {
-                    inventory.setItem(slot, null);
-                }
-            }
+        inventory.setItem(SLOT_NAV_DIVIDER, createSystemButton(Material.ANVIL,
+                "<gradient:#ff4500:#ffaa00><b>⚒ Multiverse Forge ⚒</b></gradient>",
+                List.of("Section: " + theme.name(),
+                        "",
+                        "Inputs on the left, the action in the centre,",
+                        "the result on the right. Previews show what",
+                        "you will get before anything is spent.")));
+
+        inventory.setItem(SLOT_NAV_INFO, createNavButton(TAB_INFO, Material.ENCHANTED_BOOK, "1. Codex & Guide",
+                "Every Forge mechanic, the pedigree ladder and the 16 legendary arts."));
+        inventory.setItem(SLOT_NAV_PARTS, createNavButton(TAB_PARTS, Material.SMITHING_TABLE, "2. Molds & Parts",
+                "Carve reusable casts and forge three-material parts."));
+        inventory.setItem(SLOT_NAV_ALLOY, createNavButton(TAB_ALLOY, Material.LAVA_BUCKET, "3. Alloy Crucible",
+                "Fuse two materials into an alloy — and awaken its signature art."));
+        inventory.setItem(SLOT_NAV_WEAPONS, createNavButton(TAB_WEAPONS, Material.NETHERITE_SWORD, "4. Weapon Assembly",
+                "Swords, bows, crossbows, tridents, spears, maces and shields."));
+        inventory.setItem(SLOT_NAV_TOOLS, createNavButton(TAB_TOOLS, Material.NETHERITE_PICKAXE, "5. Tool Assembly",
+                "Pickaxes, battleaxes, excavators, scythes and fishing rods."));
+        inventory.setItem(SLOT_NAV_ARMOR, createNavButton(TAB_ARMOR, Material.NETHERITE_CHESTPLATE, "6. Armor Assembly",
+                "Helmets, chestplates, leggings and boots."));
+    }
+
+    private ItemStack createNavButton(int tabIndex, Material icon, String title, String desc) {
+        boolean active = (currentTab == tabIndex);
+        Theme theme = THEMES[tabIndex];
+        ItemStack item = new ItemStack(icon);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            String prefix = active ? "<green>▶ </green>" : "";
+            meta.displayName(miniMessage.deserialize(prefix + theme.gradient("<b>" + title + "</b>"))
+                    .decoration(TextDecoration.ITALIC, false));
+            List<Component> lore = new ArrayList<>(LoreWrap.wrap(
+                    Component.text(desc, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
+            lore.add(Component.empty());
+            lore.add(miniMessage.deserialize(active
+                            ? "<green><b>✔ You are here</b></green>"
+                            : "<yellow>Click to open this section</yellow>")
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(lore);
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            if (active) glint(meta);
+            markAsSystemItem(meta);
+            item.setItemMeta(meta);
         }
+        return item;
+    }
+
+    private void renderFooter() {
+        List<String> ladder = new ArrayList<>();
+        ladder.add("The deeper the metallurgy, the louder the weapon:");
+        ladder.add("");
+        for (ForgeTier tier : ForgeTier.values()) {
+            ladder.add(tier.badge() + " <gray>— " + pedigreeHint(tier) + "</gray>");
+        }
+        ladder.add("");
+        ladder.add("<dark_gray>An alloy weapon fires its Signature Art on hit;</dark_gray>");
+        ladder.add("<dark_gray>its pedigree sets the chance, reach and power.</dark_gray>");
+        inventory.setItem(SLOT_PEDIGREE_GUIDE, createRichItem(Material.AMETHYST_SHARD,
+                "<gradient:#ffd700:#e056fd><b>✦ Forge Pedigree</b></gradient>", ladder, false));
+
+        inventory.setItem(SLOT_CLOSE, createSystemButton(Material.BARRIER, "<red><b>✖ Close the Forge</b></red>",
+                List.of("Every item still in a slot is returned to you.")));
+    }
+
+    @Nonnull
+    private static String pedigreeHint(@Nonnull ForgeTier tier) {
+        return switch (tier) {
+            case MINERAL -> "brushed minerals and vanilla ores";
+            case COMPOSITE -> "two minerals fused: a fusion art";
+            case LEGENDARY -> "one of the 16 recipes: its own legendary art";
+            case PRIME -> "a legendary fused again: the art ascends";
+            case MYTHIC -> "legendary + catalyst or legendary: the full cinematic";
+        };
     }
 
     // ==========================================
-    // TAB 1: INFORMATIONAL CODEX & GUIDES
+    // TAB 1: CODEX & GUIDES
     // ==========================================
     private void renderTabInfo() {
-        // Row 1 Title
-        inventory.setItem(13, createSystemDecor(Material.NETHER_STAR,
-                "<gradient:#ffd700:#ff8c00><b>✦ Multiverse Metallurgy Codex ✦</b></gradient>"));
+        inventory.setItem(13, createRichItem(Material.NETHER_STAR,
+                "<gradient:#ffd700:#ff8c00><b>✦ Multiverse Metallurgy Codex ✦</b></gradient>",
+                List.of("Hover any book below to read how the Forge works.",
+                        "The Alloy Codex (crucible section) lists every material."), true));
 
-        // Row 2: 4 Core Guides
         inventory.setItem(20, createGuideItem(Material.BEACON,
                 "<gradient:#f39c12:#e67e22><b>The Forge Structure</b></gradient>",
                 List.of(
-                        "• Center: Anvil surrounded by thermal resonance.",
-                        "• Heat: 4 corner Lava columns providing thermal power.",
-                        "• Base: Chiseled Tuff Bricks, Deepslate Tiles,",
-                        "  and Tuff Brick Stairs / Slabs spanning 9x3x9 blocks.",
-                        "• Status: 100% Thermal Resonance required to activate."
+                        "• Centre: an anvil inside an 11×7×11 multiblock (243 blocks).",
+                        "• Heat: 4 corner Lava columns feed the thermal resonance.",
+                        "• Shell: Chiseled Tuff Bricks, Deepslate Tiles and Bricks,",
+                        "  Tuff Brick Slabs and Stairs, in any of the 4 rotations.",
+                        "• Sneak-right-click the anvil to see how much is missing."
                 )));
 
         inventory.setItem(21, createGuideItem(Material.BRICK,
-                "<gradient:#e67e22:#d35400><b>Molds & Multi-Material Casting</b></gradient>",
+                "<gradient:#e67e22:#d35400><b>Molds & Three-Material Parts</b></gradient>",
                 List.of(
-                        "• Mold Carver: 1 Clay Brick produces 1 reusable mold.",
-                        "• Multi-Material Forging: Combine up to 3 materials per part!",
-                        "• Concentration Ratios:",
-                        "  - 1 Material: 100% trait potency & full stats.",
-                        "  - 2 Materials: 50% / 50% split across both traits.",
-                        "  - 3 Materials: 33% / 33% / 33% split across 3 traits.",
-                        "• Multi-material parts proc all traits proportionally!"
+                        "• Carve a mold: 1 Clay Brick = 1 reusable cast.",
+                        "• Every part is cast from exactly 3 materials (33/33/33):",
+                        "  each one lends its trait and a third of its stats.",
+                        "• Repeat the same mineral 3 times for a pure part.",
+                        "• The part preview shows the result before you strike."
                 )));
 
-        inventory.setItem(23, createGuideItem(Material.BLAST_FURNACE,
-                "<gradient:#e74c3c:#c0392b><b>Alloy Crucible Smelting</b></gradient>",
+        inventory.setItem(22, createGuideItem(Material.BLAST_FURNACE,
+                "<gradient:#e74c3c:#c0392b><b>Alloy Crucible</b></gradient>",
                 List.of(
-                        "• Blend any 2 brush-extracted or vanilla minerals.",
-                        "• Each combination owns its own composite alloy trait.",
-                        "• 16 legendary recipes have curated traits & bonuses:",
-                        "  - Bronze (Copper + Tin): Durability & Knockback Res.",
-                        "  - Electrum (Gold + Silver): Swift attack speed & Luck.",
-                        "  - Invar (Iron + Nickel): Extreme armor toughness.",
-                        "• Alloy effects adapt to weapons, tools and armor!",
-                        "",
-                        "<gold>• PRIME FUSION:</gold> fuse a legendary alloy with another",
-                        "  alloy, a mineral or a vanilla catalyst to forge a prime",
-                        "  alloy: Legendary rarity, boosted stats, its own ultimate",
-                        "  (ice fields, meteor storms…) and a new armor state."
+                        "• Fuse any 2 brushed or vanilla minerals: every pair",
+                        "  is its own composite alloy with its own fusion art.",
+                        "• 16 pairs are legendary recipes (Bronze, Electrum,",
+                        "  Manyullyn, Void Damascus, Cosmic Netherite…).",
+                        "• The fusion preview names the alloy, its pedigree and",
+                        "  its signature art before the crucible is lit."
                 )));
 
-        inventory.setItem(24, createGuideItem(Material.EXPERIENCE_BOTTLE,
+        inventory.setItem(23, createGuideItem(Material.EXPERIENCE_BOTTLE,
                 "<gradient:#9b59b6:#8e44ad><b>Equipment Evolution Tiers</b></gradient>",
                 List.of(
-                        "• Your forged equipment levels up as you use it!",
-                        "• Progression Ladder:",
-                        "  Wood -> Stone -> Copper -> Iron -> Gold -> Diamond -> Netherite",
-                        "• Weapons evolve by defeating hostile mobs.",
-                        "• Tools evolve by breaking harvestable blocks.",
-                        "• Armor evolves by absorbing incoming damage.",
-                        "• Each tier grants bonus stats, damage, and durability!"
+                        "• Wood → Stone → Copper → Iron → Gold → Diamond → Netherite",
+                        "• Weapons evolve by kills, tools by blocks broken,",
+                        "  armor by damage absorbed.",
+                        "• Each tier adds damage, durability and protection."
                 )));
 
-        // Row 3: 3 Equipment Guides
+        inventory.setItem(24, createGuideItem(Material.END_CRYSTAL,
+                "<gradient:#e056fd:#6c5ce7><b>Prime & Mythic Fusion</b></gradient>",
+                List.of(
+                        "• Fuse a LEGENDARY alloy again with a mineral or a",
+                        "  composite: a PRIME alloy that ascends its art.",
+                        "• Fuse it with a vanilla catalyst (Nether Star, Echo",
+                        "  Shard, Blue Ice…) or a second legendary: MYTHIC.",
+                        "• Mythic arts take over the sky: thunder, obelisks,",
+                        "  a title on your screen and the catalyst's own finale."
+                )));
+
         inventory.setItem(29, createGuideItem(Material.NETHERITE_SWORD,
-                "<gradient:#3498db:#2980b9><b>Modular Weapons & Combat Perks</b></gradient>",
+                "<gradient:#3498db:#2980b9><b>Weapons & Combat Perks</b></gradient>",
                 List.of(
-                        "• Broadsword: Sweeps elemental traits across adjacent foes.",
-                        "• Longbow & Crossbow: Fires trait-infused projectiles.",
-                        "• Elder Trident: Unleashes storm surges & lightning.",
-                        "• Kinetic Spear: Extended reach & +30% sprint charge.",
-                        "• War Mace: Crushing downward smashes with shockwaves.",
-                        "• Tower Shield: Reflects 35% damage & retaliates on block.",
-                        "• Perks are material-driven: the head part's mineral names and powers them",
-                        "  (Cobalt => Infernal Piercing Velocity, Voidstone => Void Piercing Velocity).",
-                        "• Every mineral's perk word is listed in the Alloy Codex, under Mineral Catalog.",
-                        "• Focus a weapon to 80%+ essence to unleash cinematic essence ultimates."
+                        "• Broadsword: sweeps traits across adjacent foes.",
+                        "• Longbow & Crossbow: trait-infused projectiles.",
+                        "• Elder Trident: storm surges & lightning.",
+                        "• Kinetic Spear: +30% sprint charge.",
+                        "• War Mace: crushing shockwave smashes.",
+                        "• Tower Shield: reflects 35% of blocked damage.",
+                        "• Every mineral names the perk; 80%+ essence focus",
+                        "  unlocks a cinematic essence ultimate."
                 )));
 
-        inventory.setItem(31, createGuideItem(Material.NETHERITE_PICKAXE,
-                "<gradient:#2ecc71:#27ae60><b>Modular Tools & Mining Mechanics</b></gradient>",
+        inventory.setItem(30, createGuideItem(Material.NETHERITE_PICKAXE,
+                "<gradient:#2ecc71:#27ae60><b>Tools & Mining</b></gradient>",
                 List.of(
-                        "• Pickaxe: Deep Vein Resonance drops extra ores & Haste.",
-                        "• Battleaxe: Cleaves whole logs & shatters mob shields.",
-                        "• Excavator (Shovel): Sneak-digging breaks 3x3 soil areas.",
-                        "• Scythe (Hoe): Harvests 3x3 mature crops & auto-replants.",
-                        "• Fishing Rod: Abyssal Dredge catches rare minerals."
+                        "• Pickaxe: Vein Resonance drops extra ores.",
+                        "• Battleaxe: fells whole trees, breaks shields.",
+                        "• Excavator: sneak-dig a 3×3 area.",
+                        "• Scythe: 3×3 harvest with auto-replant.",
+                        "• Fishing Rod: dredges rare minerals."
                 )));
 
-        inventory.setItem(33, createGuideItem(Material.NETHERITE_CHESTPLATE,
-                "<gradient:#9b59b6:#8e44ad><b>Modular Armor & Defensive Traits</b></gradient>",
+        List<String> arts = new ArrayList<>();
+        arts.add("<gray>Each legendary alloy owns its own ability:</gray>");
+        for (LegendaryArt art : LegendaryArt.values()) {
+            TinkerMaterial alloy = materialRegistry.get(art.getAlloyId());
+            String alloyName = alloy != null ? alloy.getName() : art.getAlloyId();
+            arts.add("<gradient:" + art.getColorHex() + ":" + art.getAccentHex() + ">" + art.getDisplayName()
+                    + "</gradient> <dark_gray>← " + alloyName + "</dark_gray>");
+        }
+        inventory.setItem(31, createRichItem(Material.TOTEM_OF_UNDYING,
+                "<gradient:#ffd700:#ff8c00><b>✦ The 16 Legendary Arts</b></gradient>", arts, true));
+
+        inventory.setItem(32, createGuideItem(Material.NETHERITE_CHESTPLATE,
+                "<gradient:#9b59b6:#8e44ad><b>Armor & Defense</b></gradient>",
                 List.of(
-                        "• Helmet: Cranium Ward blunts headshots & filters hazards.",
+                        "• Helmet: Cranium Ward blunts headshots.",
                         "• Chestplate: Kinetic Dampener soaks heavy blows.",
-                        "• Leggings: Stride Momentum mitigates sprint fatigue.",
-                        "• Boots: Feathered Grounding negates fall damage.",
-                        "• Each share scales with the piece's rolled Defense & Toughness.",
-                        "• Assembled from Plate, Lining, and Trim parts."
+                        "• Leggings: Stride Momentum.",
+                        "• Boots: Feathered Grounding negates falls.",
+                        "• Prime plates answer hits with a prime armor state."
                 )));
 
-        // Row 4: Summary / Quick Start
-        inventory.setItem(40, createGuideItem(Material.BOOK,
-                "<gradient:#ffd700:#ff8c00><b>Quick Start Guide</b></gradient>",
+        inventory.setItem(33, createGuideItem(Material.FIREWORK_STAR,
+                "<gradient:#55efc4:#00b894><b>Signature Arts</b></gradient>",
                 List.of(
-                        "1. Carve molds in Tab 2 with Clay Bricks.",
-                        "2. Cast parts in Tab 2 using molds and raw/molten minerals.",
-                        "3. Blend metals in Tab 3 to synthesize advanced alloys.",
-                        "4. Assemble weapons, tools, and armor in Tabs 4, 5, and 6!",
-                        "5. Level up your equipment through combat, mining, and defense."
+                        "• Composite: named after both minerals, echoes both traits.",
+                        "• Legendary: a hand-made art with its own mechanic.",
+                        "• Prime: the art ascended + an overlay.",
+                        "• Mythic: two arts or a catalyst finale, back to back.",
+                        "• Fires on hit; the pedigree sets chance and cooldown."
+                )));
+
+        inventory.setItem(40, createGuideItem(Material.WRITABLE_BOOK,
+                "<gradient:#ffd700:#ff8c00><b>Quick Start</b></gradient>",
+                List.of(
+                        "1. Carve molds in Molds & Parts with Clay Bricks.",
+                        "2. Fuse minerals into alloys in the Alloy Crucible.",
+                        "3. Cast parts: 1 mold + 3 materials.",
+                        "4. Assemble weapons, tools and armor.",
+                        "5. Fight, mine and defend to evolve them."
                 )));
     }
 
     private ItemStack createGuideItem(Material mat, String title, List<String> lines) {
+        return createRichItem(mat, title, lines, false);
+    }
+
+    /** A system item whose lore lines are MiniMessage (plain text renders grey). */
+    private ItemStack createRichItem(Material mat, String title, List<String> lines, boolean shine) {
         ItemStack item = new ItemStack(mat);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(miniMessage.deserialize(title).decoration(TextDecoration.ITALIC, false));
             List<Component> lore = new ArrayList<>();
             for (String line : lines) {
-                lore.addAll(LoreWrap.wrap(Component.text(line, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
+                lore.addAll(LoreWrap.wrap(miniMessage.deserialize("<gray>" + line + "</gray>")
+                        .decoration(TextDecoration.ITALIC, false)));
             }
             meta.lore(lore);
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            if (shine) glint(meta);
             markAsSystemItem(meta);
             item.setItemMeta(meta);
         }
@@ -394,10 +478,8 @@ public class ForgeGUI implements InventoryHolder {
     private void renderTabParts() {
         CastType selectedCast = getSelectedCastType();
 
-        // Row 1: Symmetrical Mold Navigation (◀ and ▶ arrows) with Central Mold Carver
         inventory.setItem(SLOT_MOLD_PREV, createSystemButton(Material.ARROW,
-                "<gold>◀ Previous Mold</gold>",
-                List.of("Click to cycle to the previous mold type.")));
+                "<gold>◀ Previous Mold</gold>", List.of("Cycle to the previous mold type.")));
 
         Material moldIcon = (selectedCast == CastType.BLOCK) ? Material.IRON_BLOCK
                 : ((selectedCast == CastType.INGOT) ? Material.IRON_INGOT
@@ -408,41 +490,36 @@ public class ForgeGUI implements InventoryHolder {
                 List.of(
                         selectedCast.getDescription(),
                         "",
-                        "Cost: 1 Clay Brick in your inventory.",
-                        "Click to carve this mold into your inventory!"
+                        "Mold " + (selectedCastIndex + 1) + " of " + CARVABLE_CASTS.size() + " · costs 1 Clay Brick.",
+                        "Click to carve it into your inventory."
                 )));
 
         inventory.setItem(SLOT_MOLD_NEXT, createSystemButton(Material.ARROW,
-                "<gold>Next Mold ▶</gold>",
-                List.of("Click to cycle to the next mold type.")));
+                "<gold>Next Mold ▶</gold>", List.of("Cycle to the next mold type.")));
 
-        // Row 2: Symmetrical Labels (Mold clearly separated from the 3 materials)
-        inventory.setItem(19, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold><b>[ Mold / Cast Slot ]</b></gold>"));
-        inventory.setItem(20, createSystemDecor(Material.GRAY_STAINED_GLASS_PANE, "<dark_gray>┃ Divider ┃</dark_gray>"));
-        inventory.setItem(21, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Material 1 (Mandatory) ]</b></yellow>"));
-        inventory.setItem(22, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Material 2 (Mandatory) ]</b></yellow>"));
-        inventory.setItem(23, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Material 3 (Mandatory) ]</b></yellow>"));
-        inventory.setItem(24, createSystemDecor(Material.GRAY_STAINED_GLASS_PANE, "<dark_gray>┃ Divider ┃</dark_gray>"));
-        inventory.setItem(25, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>[ Forged Part Output ]</b></green>"));
+        inventory.setItem(19, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold><b>▼ Mold / Cast</b></gold>"));
+        inventory.setItem(21, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>▼ Material 1</b></yellow>"));
+        inventory.setItem(22, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>▼ Material 2</b></yellow>"));
+        inventory.setItem(23, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>▼ Material 3</b></yellow>"));
+        inventory.setItem(25, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>▼ Forged Part</b></green>"));
 
-        // Row 3: Interactive Slots & Physical Chamber Dividers
         inventory.setItem(SLOT_PART_CAST, null);
-        inventory.setItem(29, createSystemDecor(Material.IRON_BARS, "<dark_gray>┃ Mold Chamber Divider ┃</dark_gray>"));
+        inventory.setItem(29, createSystemDecor(Material.IRON_BARS, "<dark_gray>┃</dark_gray>"));
         inventory.setItem(SLOT_PART_MAT1, null);
         inventory.setItem(SLOT_PART_MAT2, null);
         inventory.setItem(SLOT_PART_MAT3, null);
-        inventory.setItem(33, createSystemDecor(Material.IRON_BARS, "<dark_gray>┃ Output Chamber Divider ┃</dark_gray>"));
+        inventory.setItem(33, createSystemDecor(Material.IRON_BARS, "<dark_gray>┃</dark_gray>"));
         inventory.setItem(SLOT_PART_OUTPUT, null);
 
-        // Row 4: Centered Strike Anvil Button
         inventory.setItem(SLOT_PART_STRIKE, createSystemButton(Material.ANVIL,
-                "<gradient:#ffaa00:#ff5500><b>⚒ Strike Anvil & Forge Part</b></gradient>",
+                "<gradient:#ffaa00:#ff5500><b>⚒ Strike the Anvil</b></gradient>",
                 List.of(
-                        "Place 1 Cast in Slot 28 and all 3 required Materials in Slots 30-32.",
-                        "",
-                        "All 3 material slots are strictly mandatory.",
-                        "Multi-material parts combine all 3 traits & stats (33% / 33% / 33%)!"
+                        "Forges 1 Cast + 3 Materials into a part.",
+                        "Each material lends 33% of its stats and trait.",
+                        "The cast is reusable and never consumed."
                 )));
+
+        renderPartPreview();
     }
 
     private CastType getSelectedCastType() {
@@ -452,111 +529,242 @@ public class ForgeGUI implements InventoryHolder {
         return CARVABLE_CASTS.get(selectedCastIndex);
     }
 
+    /** Live preview of the part the current cast and materials would forge. */
+    private void renderPartPreview() {
+        List<String> lines = new ArrayList<>();
+        CastType cast = castIn(SLOT_PART_CAST);
+        ToolPartType partType = cast != null ? ToolPartType.fromCast(cast) : null;
+        List<TinkerMaterial> materials = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
+
+        if (cast == null) missing.add("a cast");
+        else if (partType == null) lines.add("<red>The " + cast.getDisplayName() + " stores metal, it cannot forge a part.</red>");
+        int[] materialSlots = {SLOT_PART_MAT1, SLOT_PART_MAT2, SLOT_PART_MAT3};
+        for (int index = 0; index < materialSlots.length; index++) {
+            TinkerMaterial material = getMaterialFromItem(inventory.getItem(materialSlots[index]));
+            if (material == null) missing.add("material " + (index + 1));
+            else materials.add(material);
+        }
+
+        lines.add("Part: <white>" + (partType != null ? partType.getDisplayName() : "—") + "</white>");
+        if (!materials.isEmpty()) {
+            lines.add("");
+            lines.add("<gold>Composition:</gold>");
+            PartComposition composition = PartComposition.fromMaterials(materials);
+            for (PartComposition.Entry entry : composition.getEntries()) {
+                TinkerMaterial m = entry.material();
+                lines.add("  <gradient:" + m.getColorHex() + ":#ffffff>" + Math.round(entry.ratio() * 100) + "% "
+                        + m.getName() + "</gradient> <dark_gray>(" + m.getTraitName() + ")</dark_gray>");
+            }
+            lines.add(String.format(Locale.US, "Durability <green>+%d</green> · Attack <red>+%.1f</red> · Speed <aqua>%.1fx</aqua>",
+                    composition.getDurability(), composition.getAttackDamage(), composition.getMiningSpeed()));
+
+            ForgeTier tier = ForgeTier.of(List.of(composition));
+            SignatureArt art = SignatureArt.forWeapon(List.of(composition));
+            lines.add("");
+            lines.add("Pedigree: " + tier.badge());
+            if (art != null) lines.add("Signature Art: " + art.miniName());
+        }
+
+        lines.add("");
+        if (missing.isEmpty() && partType != null) {
+            lines.add("<green><b>✔ Ready — strike the anvil!</b></green>");
+        } else if (!missing.isEmpty()) {
+            lines.add("<yellow>★ Missing: <white>" + String.join(", ", missing) + "</white></yellow>");
+        }
+
+        boolean ready = missing.isEmpty() && partType != null;
+        inventory.setItem(SLOT_PART_PREVIEW, createRichItem(ready ? Material.NAME_TAG : Material.PAPER,
+                "<gradient:#ffd700:#ff8c00><b>✦ Part Preview</b></gradient>", lines, ready));
+    }
+
+    @Nullable
+    private CastType castIn(int slot) {
+        ItemStack item = inventory.getItem(slot);
+        if (item == null || item.getType() == Material.AIR || isSystemItem(item)) return null;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return null;
+        String name = meta.getPersistentDataContainer().get(TinkerKeys.CAST_TYPE, PersistentDataType.STRING);
+        if (name == null) return null;
+        try {
+            return CastType.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     // ==========================================
     // TAB 3: ALLOY CRUCIBLE
     // ==========================================
     private void renderTabAlloy() {
-        // Row 1 Title
-        inventory.setItem(13, createSystemDecor(Material.BLAST_FURNACE,
-                "<gradient:#e74c3c:#c0392b><b>♨ Alloy Smelting Crucible ♨</b></gradient>"));
+        inventory.setItem(13, createRichItem(Material.BLAST_FURNACE,
+                "<gradient:#e74c3c:#ff9f43><b>♨ Alloy Smelting Crucible ♨</b></gradient>",
+                List.of("Two materials in, two alloy ingots out.",
+                        "The core below shows what the fusion will become."), false));
 
-        // Row 2 Labels
-        inventory.setItem(20, createSystemDecor(Material.RED_STAINED_GLASS_PANE, "<red><b>[ Primary Material ]</b></red>"));
-        inventory.setItem(22, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold><b>[ Thermal Core ]</b></gold>"));
-        inventory.setItem(24, createSystemDecor(Material.BLUE_STAINED_GLASS_PANE, "<blue><b>[ Secondary Material ]</b></blue>"));
+        inventory.setItem(20, createSystemDecor(Material.RED_STAINED_GLASS_PANE, "<red><b>▼ Primary Material</b></red>"));
+        inventory.setItem(24, createSystemDecor(Material.BLUE_STAINED_GLASS_PANE, "<blue><b>▼ Secondary Material</b></blue>"));
 
-        // Row 3 Inputs & Smelt Core
         inventory.setItem(SLOT_ALLOY_MAT1, null);
+        inventory.setItem(30, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold>▶</gold>"));
         inventory.setItem(SLOT_ALLOY_SMELT, createSystemButton(Material.CAMPFIRE,
-                "<gradient:#ff4500:#ffa500><b>♨ Ignite Crucible & Smelt Alloy</b></gradient>",
+                "<gradient:#ff4500:#ffa500><b>♨ Ignite the Crucible</b></gradient>",
                 List.of(
-                        "Place 2 distinct brush or vanilla minerals in 29 and 33.",
-                        "All 16 legendary recipes work, netherite included in its two.",
+                        "Consumes 1 of each material, yields 2 alloy ingots.",
                         "",
-                        "Every mineral combination yields its own unique alloy.",
-                        "Consumes 1 of each item to produce 2 alloy ingots.",
-                        "",
-                        "<gold>PRIME FUSION:</gold> pair one LEGENDARY alloy with a",
-                        "second alloy, a mineral or a vanilla catalyst item",
-                        "(Nether Star, Blue Ice, Echo Shard…) for a prime alloy",
-                        "that unlocks freezing/meteor ultimates and armor states."
+                        "Any 2 brushed/vanilla minerals → composite alloy.",
+                        "16 curated pairs → a legendary alloy.",
+                        "Legendary + mineral/composite → prime alloy.",
+                        "Legendary + catalyst or legendary → mythic prime.",
+                        "Prime alloys cannot be reforged."
                 )));
+        inventory.setItem(32, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold>◀</gold>"));
         inventory.setItem(SLOT_ALLOY_MAT2, null);
 
-        // Row 4 Output Flow
         inventory.setItem(39, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>Smelted Alloy ▶</b></green>"));
         inventory.setItem(SLOT_ALLOY_OUTPUT, null);
         inventory.setItem(41, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>◀ Smelted Alloy</b></green>"));
 
-        // Row 5 Recipe Codex
         inventory.setItem(SLOT_ALLOY_RECIPES, createSystemButton(Material.BOOK,
                 "<gradient:#ffd700:#ff8c00><b>Alloy Codex</b></gradient>",
                 List.of(
-                        "Click to open the browsable codex GUI.",
+                        "Click to open the browsable codex.",
                         "Legendary recipes, catalysts, composites, primes",
                         "and a combination explorer in one menu.",
                         "",
-                        "Sneak-click to print the old chat listing instead.",
-                        "Fuse a legendary alloy with an alloy, a mineral or one of",
-                        "the 12 vanilla catalysts to forge a PRIME alloy."
+                        "Sneak-click to print the recipe list in chat."
                 )));
+
+        renderFusionPreview();
+    }
+
+    /** Live preview of the alloy the crucible would fuse, with its pedigree and signature art. */
+    private void renderFusionPreview() {
+        TinkerMaterial first = getMaterialFromItem(inventory.getItem(SLOT_ALLOY_MAT1));
+        TinkerMaterial second = getMaterialFromItem(inventory.getItem(SLOT_ALLOY_MAT2));
+        String title = "<gradient:#ff4500:#ffaa00><b>✦ Fusion Preview</b></gradient>";
+
+        if (first == null || second == null) {
+            List<String> lines = new ArrayList<>();
+            lines.add("Primary: <white>" + (first != null ? first.getName() : "—") + "</white>");
+            lines.add("Secondary: <white>" + (second != null ? second.getName() : "—") + "</white>");
+            lines.add("");
+            lines.add("<yellow>Place two materials to preview the alloy.</yellow>");
+            inventory.setItem(SLOT_ALLOY_PREVIEW, createRichItem(Material.CAULDRON, title, lines, false));
+            return;
+        }
+        if (first.getId().equalsIgnoreCase(second.getId())) {
+            inventory.setItem(SLOT_ALLOY_PREVIEW, createRichItem(Material.BARRIER, title,
+                    List.of("<red>The crucible needs two distinct materials.</red>"), false));
+            return;
+        }
+        if (!alloyRegistry.isCraftablePair(first, second)) {
+            inventory.setItem(SLOT_ALLOY_PREVIEW, createRichItem(Material.BARRIER, title,
+                    List.of("<red>These two cannot be fused.</red>", "", AlloyRegistry.mixRequirementMessage()), false));
+            return;
+        }
+
+        TinkerAlloy existing = alloyRegistry.findAlloy(first.getId(), second.getId());
+        String name = existing != null ? existing.name() : AlloyRegistry.dynamicName(first, second);
+        SignatureArt art = SignatureArt.forPair(first, second);
+        ForgeTier tier = art != null ? art.tier() : ForgeTier.COMPOSITE;
+
+        List<String> lines = new ArrayList<>();
+        lines.add("<white>" + first.getName() + "</white> <gray>+</gray> <white>" + second.getName() + "</white>");
+        lines.add("Result: <gradient:" + (art != null ? art.colorHex() : "#ffd700") + ":#ffffff><b>" + name
+                + " Ingot</b></gradient> <gray>×2</gray>" + (existing == null ? " <aqua>(new!)</aqua>" : ""));
+        lines.add("Pedigree: " + tier.badge());
+        if (art != null) {
+            lines.add("");
+            lines.add("Signature Art: " + art.miniName());
+            lines.add("<dark_gray>" + art.description() + "</dark_gray>");
+        }
+        if (tier.atLeast(ForgeTier.PRIME)) {
+            VanillaCatalyst catalyst = VanillaCatalyst.byMaterialId(first.getId());
+            if (catalyst == null) catalyst = VanillaCatalyst.byMaterialId(second.getId());
+            TraitAffinity lead = leadEssence(first, second);
+            PrimeUltimate ultimate = catalyst != null ? catalyst.getUltimate() : PrimeUltimate.fromAffinity(lead);
+            PrimeArmorState state = catalyst != null ? catalyst.getArmorState() : PrimeArmorState.fromAffinity(lead);
+            lines.add("");
+            lines.add("Prime ultimate: " + ultimate.getMiniMessageTag());
+            lines.add("Armor state: <light_purple>" + state.getDisplayName() + "</light_purple>");
+        }
+        lines.add("");
+        lines.add("<green>Ignite the crucible to fuse it.</green>");
+
+        inventory.setItem(SLOT_ALLOY_PREVIEW, createRichItem(tierIcon(tier), title, lines, tier.atLeast(ForgeTier.LEGENDARY)));
+    }
+
+    @Nonnull
+    private static TraitAffinity leadEssence(@Nonnull TinkerMaterial first, @Nonnull TinkerMaterial second) {
+        String inherited = TraitAffinity.inherit(first, second);
+        String token = inherited.contains(",") ? inherited.substring(0, inherited.indexOf(',')) : inherited;
+        try {
+            return TraitAffinity.valueOf(token.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            return TraitAffinity.PRIMAL;
+        }
+    }
+
+    @Nonnull
+    private static Material tierIcon(@Nonnull ForgeTier tier) {
+        return switch (tier) {
+            case MINERAL -> Material.RAW_IRON;
+            case COMPOSITE -> Material.IRON_INGOT;
+            case LEGENDARY -> Material.GOLD_INGOT;
+            case PRIME -> Material.NETHERITE_INGOT;
+            case MYTHIC -> Material.NETHER_STAR;
+        };
     }
 
     // ==========================================
     // TAB 4: WEAPON ASSEMBLY
     // ==========================================
     private void renderTabWeapons() {
-        // Row 1 Weapon Selector
         inventory.setItem(SLOT_WEAPON_PREV, createSystemButton(Material.ARROW,
-                "<gold>◀ Previous Weapon</gold>",
-                List.of("Click to select previous weapon type.")));
+                "<gold>◀ Previous Weapon</gold>", List.of("Select the previous weapon type.")));
 
+        int index = selectedWeaponType.ordinal() + 1;
         inventory.setItem(SLOT_WEAPON_SELECTOR, createSystemButton(selectedWeaponType.getBaseMaterial(),
-                "<gradient:#3498db:#2980b9><b>Selected Weapon: " + selectedWeaponType.getDisplayName() + "</b></gradient>",
+                THEMES[TAB_WEAPONS].gradient("<b>" + selectedWeaponType.getDisplayName() + "</b>"),
                 List.of(
                         selectedWeaponType.getDescription(),
                         "",
-                        "Requires " + selectedWeaponType.getPartCount() + " modular components.",
-                        "Click to cycle next weapon type"
+                        "Type " + index + " of " + ModularWeaponType.values().length
+                                + " · takes " + selectedWeaponType.getPartCount() + " parts.",
+                        "Click to cycle to the next weapon."
                 )));
 
         inventory.setItem(SLOT_WEAPON_NEXT, createSystemButton(Material.ARROW,
-                "<gold>Next Weapon ▶</gold>",
-                List.of("Click to select next weapon type.")));
+                "<gold>Next Weapon ▶</gold>", List.of("Select the next weapon type.")));
 
-        // Row 2 Part Labels
         inventory.setItem(20, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE,
-                "<gold><b>[ Part 1: " + selectedWeaponType.getPart1Name() + " ]</b></gold>"));
+                "<gold><b>▼ " + selectedWeaponType.getPart1Name() + "</b></gold>"));
         inventory.setItem(22, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE,
-                "<yellow><b>[ Part 2: " + selectedWeaponType.getPart2Name() + " ]</b></yellow>"));
-
+                "<yellow><b>▼ " + selectedWeaponType.getPart2Name() + "</b></yellow>"));
         if (!selectedWeaponType.isTwoPart()) {
             inventory.setItem(24, createSystemDecor(Material.LIGHT_BLUE_STAINED_GLASS_PANE,
-                    "<aqua><b>[ Part 3: " + selectedWeaponType.getPart3Name() + " ]</b></aqua>"));
-        } else {
-            inventory.setItem(24, createSystemDecor(Material.GRAY_STAINED_GLASS_PANE, " "));
+                    "<aqua><b>▼ " + selectedWeaponType.getPart3Name() + "</b></aqua>"));
         }
 
-        // Row 3 Input Slots
         inventory.setItem(SLOT_WEAPON_PART1, null);
         inventory.setItem(SLOT_WEAPON_PART2, null);
         if (!selectedWeaponType.isTwoPart()) {
             inventory.setItem(SLOT_WEAPON_PART3, null);
         } else {
-            inventory.setItem(SLOT_WEAPON_PART3, createSystemDecor(Material.GRAY_STAINED_GLASS_PANE, " "));
+            inventory.setItem(SLOT_WEAPON_PART3, createSystemDecor(Material.GRAY_STAINED_GLASS_PANE,
+                    "<dark_gray>Two-part weapon</dark_gray>"));
         }
 
-        // Row 4 Action & Output
         inventory.setItem(SLOT_WEAPON_ASSEMBLE, createSystemButton(Material.ANVIL,
-                "<gradient:#3498db:#2980b9><b>⚒ Assemble " + selectedWeaponType.getDisplayName() + "</b></gradient>",
+                THEMES[TAB_WEAPONS].gradient("<b>⚒ Assemble " + selectedWeaponType.getDisplayName() + "</b>"),
                 List.of(
-                        "Combines the placed modular parts into a finished weapon.",
-                        "Inherits all elemental traits and evolution stats."
+                        "Combines the placed parts into a finished weapon.",
+                        "An alloy part awakens its Signature Art."
                 )));
         inventory.setItem(40, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>Forged Weapon ▶</b></green>"));
         inventory.setItem(SLOT_WEAPON_OUTPUT, null);
 
-        // Row 6: the perk these parts would name, so it can be read before the parts are spent.
         renderPerkPreview();
     }
 
@@ -564,40 +772,34 @@ public class ForgeGUI implements InventoryHolder {
     // TAB 5: TOOL ASSEMBLY
     // ==========================================
     private void renderTabTools() {
-        // Row 1 Tool Selector
         inventory.setItem(SLOT_TOOL_PREV, createSystemButton(Material.ARROW,
-                "<gold>◀ Previous Tool</gold>",
-                List.of("Click to select previous tool type.")));
+                "<gold>◀ Previous Tool</gold>", List.of("Select the previous tool type.")));
 
         inventory.setItem(SLOT_TOOL_SELECTOR, createSystemButton(selectedToolType.getBaseMaterial(),
-                "<gradient:#2ecc71:#27ae60><b>Selected Tool: " + selectedToolType.getDisplayName() + "</b></gradient>",
+                THEMES[TAB_TOOLS].gradient("<b>" + selectedToolType.getDisplayName() + "</b>"),
                 List.of(
                         selectedToolType.getDescription(),
                         "",
-                        "Requires 3 modular components: Head, Handle, Pommel.",
-                        "Click to cycle next tool type"
+                        "Takes 3 parts: Head, Handle, Pommel.",
+                        "Click to cycle to the next tool."
                 )));
 
         inventory.setItem(SLOT_TOOL_NEXT, createSystemButton(Material.ARROW,
-                "<gold>Next Tool ▶</gold>",
-                List.of("Click to select next tool type.")));
+                "<gold>Next Tool ▶</gold>", List.of("Select the next tool type.")));
 
-        // Row 2 Part Labels
-        inventory.setItem(20, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold><b>[ Part 1: Tool Head ]</b></gold>"));
-        inventory.setItem(22, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>[ Part 2: Tool Handle ]</b></yellow>"));
-        inventory.setItem(24, createSystemDecor(Material.LIGHT_BLUE_STAINED_GLASS_PANE, "<aqua><b>[ Part 3: Tool Pommel ]</b></aqua>"));
+        inventory.setItem(20, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE, "<gold><b>▼ Tool Head</b></gold>"));
+        inventory.setItem(22, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE, "<yellow><b>▼ Tool Handle</b></yellow>"));
+        inventory.setItem(24, createSystemDecor(Material.LIGHT_BLUE_STAINED_GLASS_PANE, "<aqua><b>▼ Tool Pommel</b></aqua>"));
 
-        // Row 3 Input Slots
         inventory.setItem(SLOT_TOOL_HEAD, null);
         inventory.setItem(SLOT_TOOL_HANDLE, null);
         inventory.setItem(SLOT_TOOL_POMMEL, null);
 
-        // Row 4 Action & Output
         inventory.setItem(SLOT_TOOL_ASSEMBLE, createSystemButton(Material.ANVIL,
-                "<gradient:#2ecc71:#27ae60><b>⚒ Assemble " + selectedToolType.getDisplayName() + "</b></gradient>",
+                THEMES[TAB_TOOLS].gradient("<b>⚒ Assemble " + selectedToolType.getDisplayName() + "</b>"),
                 List.of(
-                        "Combines Head, Handle, and Pommel into a finished tool.",
-                        "Inherits mining speed, perks, and traits."
+                        "Combines Head, Handle and Pommel into a finished tool.",
+                        "Inherits mining speed, perks and traits."
                 )));
         inventory.setItem(40, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>Forged Tool ▶</b></green>"));
         inventory.setItem(SLOT_TOOL_OUTPUT, null);
@@ -609,43 +811,37 @@ public class ForgeGUI implements InventoryHolder {
     // TAB 6: ARMOR ASSEMBLY
     // ==========================================
     private void renderTabArmor() {
-        // Row 1 Armor Selector
         inventory.setItem(SLOT_ARMOR_PREV, createSystemButton(Material.ARROW,
-                "<gold>◀ Previous Armor</gold>",
-                List.of("Click to select previous armor piece.")));
+                "<gold>◀ Previous Armor</gold>", List.of("Select the previous armor piece.")));
 
         inventory.setItem(SLOT_ARMOR_SELECTOR, createSystemButton(selectedArmorType.getBaseMaterial(),
-                "<gradient:#9b59b6:#8e44ad><b>Selected Armor: " + selectedArmorType.getDisplayName() + "</b></gradient>",
+                THEMES[TAB_ARMOR].gradient("<b>" + selectedArmorType.getDisplayName() + "</b>"),
                 List.of(
                         selectedArmorType.getDescription(),
                         "",
-                        "Requires 3 modular components: Plate, Lining, Trim.",
-                        "Click to cycle next armor piece"
+                        "Takes 3 parts: Plate, Lining, Trim.",
+                        "Click to cycle to the next piece."
                 )));
 
         inventory.setItem(SLOT_ARMOR_NEXT, createSystemButton(Material.ARROW,
-                "<gold>Next Armor ▶</gold>",
-                List.of("Click to select next armor piece.")));
+                "<gold>Next Armor ▶</gold>", List.of("Select the next armor piece.")));
 
-        // Row 2 Part Labels
         inventory.setItem(20, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE,
-                "<gold><b>[ Part 1: " + selectedArmorType.getPart1Name() + " ]</b></gold>"));
+                "<gold><b>▼ " + selectedArmorType.getPart1Name() + "</b></gold>"));
         inventory.setItem(22, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE,
-                "<yellow><b>[ Part 2: " + selectedArmorType.getPart2Name() + " ]</b></yellow>"));
+                "<yellow><b>▼ " + selectedArmorType.getPart2Name() + "</b></yellow>"));
         inventory.setItem(24, createSystemDecor(Material.LIGHT_BLUE_STAINED_GLASS_PANE,
-                "<aqua><b>[ Part 3: " + selectedArmorType.getPart3Name() + " ]</b></aqua>"));
+                "<aqua><b>▼ " + selectedArmorType.getPart3Name() + "</b></aqua>"));
 
-        // Row 3 Input Slots
         inventory.setItem(SLOT_ARMOR_PLATE, null);
         inventory.setItem(SLOT_ARMOR_LINING, null);
         inventory.setItem(SLOT_ARMOR_TRIM, null);
 
-        // Row 4 Action & Output
         inventory.setItem(SLOT_ARMOR_ASSEMBLE, createSystemButton(Material.ANVIL,
-                "<gradient:#9b59b6:#8e44ad><b>⚒ Assemble " + selectedArmorType.getDisplayName() + "</b></gradient>",
+                THEMES[TAB_ARMOR].gradient("<b>⚒ Assemble " + selectedArmorType.getDisplayName() + "</b>"),
                 List.of(
-                        "Combines Plate, Lining, and Trim into finished armor.",
-                        "Inherits defense points, toughness, and defensive traits."
+                        "Combines Plate, Lining and Trim into finished armor.",
+                        "Inherits defense, toughness and defensive traits."
                 )));
         inventory.setItem(40, createSystemDecor(Material.LIME_STAINED_GLASS_PANE, "<green><b>Forged Armor ▶</b></green>"));
         inventory.setItem(SLOT_ARMOR_OUTPUT, null);
@@ -654,16 +850,33 @@ public class ForgeGUI implements InventoryHolder {
     }
 
     // ==========================================
-    // PERK PREVIEW
+    // LIVE PREVIEWS
     // ==========================================
 
     /**
+     * Redraws the live preview of the section on screen. Called when a section is drawn and again one
+     * tick after every click or drag: a placed item only lands in its slot once the event delivering it
+     * has finished, and re-rendering the section instead would clear the very slots being read.
+     */
+    private void refreshLivePreviews() {
+        refreshQueued = false;
+        switch (currentTab) {
+            case TAB_PARTS -> renderPartPreview();
+            case TAB_ALLOY -> renderFusionPreview();
+            case TAB_WEAPONS, TAB_TOOLS, TAB_ARMOR -> renderPerkPreview();
+            default -> {
+            }
+        }
+    }
+
+    private void scheduleRefresh() {
+        if (currentTab == TAB_INFO || refreshQueued) return;
+        refreshQueued = true;
+        Bukkit.getScheduler().runTask(plugin, this::refreshLivePreviews);
+    }
+
+    /**
      * Draws the perk the current assembly would produce into {@link #SLOT_PERK_PREVIEW}.
-     *
-     * <p>Called when an assembly tab is drawn, and again one tick after every click in the inventory.
-     * The second call is what makes the name grow as the player fills the slots: re-rendering the tab
-     * instead would clear the very slots being read, and a part clicked into place does not reach its
-     * slot until the event that delivered the click has finished.</p>
      *
      * <p>Does nothing outside the three assembly tabs, so the slot keeps the tab's own backing.</p>
      */
@@ -685,7 +898,21 @@ public class ForgeGUI implements InventoryHolder {
 
     @Nullable
     private PartComposition compositionIn(int slot) {
-        return getCompositionFromPart(inventory.getItem(slot));
+        ItemStack item = inventory.getItem(slot);
+        if (isSystemItem(item)) return null;
+        return getCompositionFromPart(item);
+    }
+
+    /** The compositions placed in the weapon tab, in forge order, skipping empty slots. */
+    @Nonnull
+    private List<PartComposition> weaponCompositions() {
+        List<PartComposition> parts = new ArrayList<>();
+        for (int slot : new int[]{SLOT_WEAPON_PART1, SLOT_WEAPON_PART2, SLOT_WEAPON_PART3}) {
+            if (slot == SLOT_WEAPON_PART3 && selectedWeaponType.isTwoPart()) continue;
+            PartComposition part = compositionIn(slot);
+            if (part != null) parts.add(part);
+        }
+        return parts;
     }
 
     /** The preview as an item: the name it would print, the word each part lends, and the mechanic. */
@@ -737,6 +964,30 @@ public class ForgeGUI implements InventoryHolder {
                     .decoration(TextDecoration.ITALIC, false));
         }
 
+        // Weapons also preview the art their alloys would awaken.
+        if (currentTab == TAB_WEAPONS) {
+            List<PartComposition> parts = weaponCompositions();
+            ForgeTier tier = ForgeTier.of(parts);
+            SignatureArt art = SignatureArt.forWeapon(parts);
+            lore.add(Component.empty());
+            lore.add(Component.text("✦ Forge Pedigree: ", NamedTextColor.GOLD)
+                    .append(miniMessage.deserialize(tier.badge()))
+                    .decoration(TextDecoration.ITALIC, false));
+            if (art != null) {
+                lore.add(Component.text("✦ Signature Art: ", NamedTextColor.GOLD)
+                        .append(miniMessage.deserialize(art.miniName()))
+                        .decoration(TextDecoration.ITALIC, false));
+                lore.add(Component.text("  " + art.description(), NamedTextColor.GRAY)
+                        .decoration(TextDecoration.ITALIC, false));
+                lore.add(Component.text("  • " + art.procLine(), NamedTextColor.DARK_GRAY)
+                        .decoration(TextDecoration.ITALIC, false));
+                if (tier.atLeast(ForgeTier.LEGENDARY)) glint(meta);
+            } else {
+                lore.add(Component.text("  Place an alloy part to awaken a Signature Art.", NamedTextColor.DARK_GRAY)
+                        .decoration(TextDecoration.ITALIC, false));
+            }
+        }
+
         meta.lore(LoreWrap.wrapAll(lore));
         markAsSystemItem(meta);
         item.setItemMeta(meta);
@@ -767,22 +1018,90 @@ public class ForgeGUI implements InventoryHolder {
                 lore.addAll(LoreWrap.wrap(Component.text(line, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
             }
             meta.lore(lore);
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             markAsSystemItem(meta);
             item.setItemMeta(meta);
         }
         return item;
     }
 
+    private static void glint(@Nonnull ItemMeta meta) {
+        try {
+            meta.setEnchantmentGlintOverride(true);
+        } catch (RuntimeException | LinkageError ignored) {
+            // Older or mock implementations: the glint is purely cosmetic.
+        }
+    }
+
     private void markAsSystemItem(ItemMeta meta) {
         meta.getPersistentDataContainer().set(TinkerKeys.SYSTEM_GUI_ITEM, PersistentDataType.BYTE, (byte) 1);
     }
 
+    /**
+     * Whether a slot holds nothing a player owns: it is empty, or it carries the Forge's own marker. A
+     * player's real glass pane is the player's item like any other and is handed back on close.
+     */
     private boolean isSystemItem(@Nullable ItemStack item) {
         if (item == null || item.getType() == Material.AIR) return true;
-        if (item.getType().name().endsWith("_GLASS_PANE")) return true;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return false;
         return meta.getPersistentDataContainer().has(TinkerKeys.SYSTEM_GUI_ITEM, PersistentDataType.BYTE);
+    }
+
+    // ==========================================
+    // SLOT ROLES
+    // ==========================================
+
+    /** Slots of the current section a player may put items into. */
+    @Nonnull
+    private Set<Integer> inputSlots() {
+        return switch (currentTab) {
+            case TAB_PARTS -> Set.of(SLOT_PART_CAST, SLOT_PART_MAT1, SLOT_PART_MAT2, SLOT_PART_MAT3);
+            case TAB_ALLOY -> Set.of(SLOT_ALLOY_MAT1, SLOT_ALLOY_MAT2);
+            case TAB_WEAPONS -> selectedWeaponType.isTwoPart()
+                    ? Set.of(SLOT_WEAPON_PART1, SLOT_WEAPON_PART2)
+                    : Set.of(SLOT_WEAPON_PART1, SLOT_WEAPON_PART2, SLOT_WEAPON_PART3);
+            case TAB_TOOLS -> Set.of(SLOT_TOOL_HEAD, SLOT_TOOL_HANDLE, SLOT_TOOL_POMMEL);
+            case TAB_ARMOR -> Set.of(SLOT_ARMOR_PLATE, SLOT_ARMOR_LINING, SLOT_ARMOR_TRIM);
+            default -> Set.of();
+        };
+    }
+
+    /** The result slot of a section, or {@code -1} when it produces nothing. */
+    private int outputSlot(int tab) {
+        return switch (tab) {
+            case TAB_PARTS -> SLOT_PART_OUTPUT;
+            case TAB_ALLOY -> SLOT_ALLOY_OUTPUT;
+            case TAB_WEAPONS -> SLOT_WEAPON_OUTPUT;
+            case TAB_TOOLS -> SLOT_TOOL_OUTPUT;
+            case TAB_ARMOR -> SLOT_ARMOR_OUTPUT;
+            default -> -1;
+        };
+    }
+
+    private void returnActiveTabItems(@Nonnull Player player, int tabIndex) {
+        int[] slotsToClear = switch (tabIndex) {
+            case TAB_PARTS -> new int[]{SLOT_PART_CAST, SLOT_PART_MAT1, SLOT_PART_MAT2, SLOT_PART_MAT3, SLOT_PART_OUTPUT};
+            case TAB_ALLOY -> new int[]{SLOT_ALLOY_MAT1, SLOT_ALLOY_MAT2, SLOT_ALLOY_OUTPUT};
+            case TAB_WEAPONS -> new int[]{SLOT_WEAPON_PART1, SLOT_WEAPON_PART2, SLOT_WEAPON_PART3, SLOT_WEAPON_OUTPUT};
+            case TAB_TOOLS -> new int[]{SLOT_TOOL_HEAD, SLOT_TOOL_HANDLE, SLOT_TOOL_POMMEL, SLOT_TOOL_OUTPUT};
+            case TAB_ARMOR -> new int[]{SLOT_ARMOR_PLATE, SLOT_ARMOR_LINING, SLOT_ARMOR_TRIM, SLOT_ARMOR_OUTPUT};
+            default -> new int[0];
+        };
+
+        for (int slot : slotsToClear) {
+            ItemStack item = inventory.getItem(slot);
+            if (item == null || item.getType() == Material.AIR) continue;
+            inventory.setItem(slot, null);
+            if (!isSystemItem(item)) giveOrDrop(player, item);
+        }
+    }
+
+    private static void giveOrDrop(@Nonnull Player player, @Nonnull ItemStack item) {
+        Map<Integer, ItemStack> leftover = player.getInventory().addItem(item);
+        for (ItemStack drop : leftover.values()) {
+            player.getWorld().dropItemNaturally(player.getLocation(), drop);
+        }
     }
 
     // ==========================================
@@ -791,49 +1110,76 @@ public class ForgeGUI implements InventoryHolder {
     public void handleClick(@Nonnull InventoryClickEvent event, @Nonnull Player player) {
         int rawSlot = event.getRawSlot();
 
+        // A double-click gathers every matching stack, the Forge's own icons included: never allow it.
+        if (event.getAction() == InventoryAction.COLLECT_TO_CURSOR) {
+            event.setCancelled(true);
+            return;
+        }
+
         if (rawSlot >= 54) {
+            // The player's own inventory. Shift-clicks are routed to the slot the item belongs in.
+            if (event.isShiftClick()) {
+                event.setCancelled(true);
+                routeShiftClick(event, player);
+                scheduleRefresh();
+            }
+            return;
+        }
+        if (rawSlot < 0) return;
+
+        switch (rawSlot) {
+            case SLOT_NAV_INFO -> {
+                event.setCancelled(true);
+                switchTab(TAB_INFO, player);
+                return;
+            }
+            case SLOT_NAV_PARTS -> {
+                event.setCancelled(true);
+                switchTab(TAB_PARTS, player);
+                return;
+            }
+            case SLOT_NAV_ALLOY -> {
+                event.setCancelled(true);
+                switchTab(TAB_ALLOY, player);
+                return;
+            }
+            case SLOT_NAV_WEAPONS -> {
+                event.setCancelled(true);
+                switchTab(TAB_WEAPONS, player);
+                return;
+            }
+            case SLOT_NAV_TOOLS -> {
+                event.setCancelled(true);
+                switchTab(TAB_TOOLS, player);
+                return;
+            }
+            case SLOT_NAV_ARMOR -> {
+                event.setCancelled(true);
+                switchTab(TAB_ARMOR, player);
+                return;
+            }
+            case SLOT_NAV_BORDER_L, SLOT_NAV_BORDER_R, SLOT_NAV_DIVIDER, SLOT_PEDIGREE_GUIDE -> {
+                event.setCancelled(true);
+                return;
+            }
+            case SLOT_CLOSE -> {
+                event.setCancelled(true);
+                player.playSound(player.getLocation(), Sound.BLOCK_CHEST_CLOSE, 0.7f, 1.3f);
+                Bukkit.getScheduler().runTask(plugin, () -> player.closeInventory());
+                return;
+            }
+            default -> {
+            }
+        }
+
+        // The result slot only gives: nothing can be put into it.
+        if (rawSlot == outputSlot(currentTab) && placesItem(event, player)) {
+            event.setCancelled(true);
             return;
         }
 
-        // Navigation clicks
-        if (rawSlot == SLOT_NAV_INFO) {
-            event.setCancelled(true);
-            switchTab(TAB_INFO, player);
-            return;
-        }
-        if (rawSlot == SLOT_NAV_PARTS) {
-            event.setCancelled(true);
-            switchTab(TAB_PARTS, player);
-            return;
-        }
-        if (rawSlot == SLOT_NAV_ALLOY) {
-            event.setCancelled(true);
-            switchTab(TAB_ALLOY, player);
-            return;
-        }
-        if (rawSlot == SLOT_NAV_WEAPONS) {
-            event.setCancelled(true);
-            switchTab(TAB_WEAPONS, player);
-            return;
-        }
-        if (rawSlot == SLOT_NAV_TOOLS) {
-            event.setCancelled(true);
-            switchTab(TAB_TOOLS, player);
-            return;
-        }
-        if (rawSlot == SLOT_NAV_ARMOR) {
-            event.setCancelled(true);
-            switchTab(TAB_ARMOR, player);
-            return;
-        }
-        if (rawSlot == SLOT_NAV_BORDER_L || rawSlot == SLOT_NAV_BORDER_R || rawSlot == SLOT_NAV_DIVIDER) {
-            event.setCancelled(true);
-            return;
-        }
-
-        // Dispatch based on active tab
         switch (currentTab) {
-            case TAB_INFO -> handleInfoClicks(event, player, rawSlot);
+            case TAB_INFO -> event.setCancelled(true);
             case TAB_PARTS -> handlePartsClicks(event, player, rawSlot);
             case TAB_ALLOY -> handleAlloyClicks(event, player, rawSlot);
             case TAB_WEAPONS -> handleWeaponsClicks(event, player, rawSlot);
@@ -841,11 +1187,91 @@ public class ForgeGUI implements InventoryHolder {
             case TAB_ARMOR -> handleArmorClicks(event, player, rawSlot);
         }
 
-        // A part clicked into a slot only lands there once this event has finished, so the perk preview
-        // is refreshed on the next tick: reading it here would price the assembly the player is mid-way
-        // through changing, and re-rendering the tab would clear the part they just placed.
-        if (currentTab == TAB_WEAPONS || currentTab == TAB_TOOLS || currentTab == TAB_ARMOR) {
-            Bukkit.getScheduler().runTask(plugin, this::renderPerkPreview);
+        scheduleRefresh();
+    }
+
+    /** Drags may only paint into the section's inputs. */
+    public void handleDrag(@Nonnull InventoryDragEvent event) {
+        Set<Integer> inputs = inputSlots();
+        for (int raw : event.getRawSlots()) {
+            if (raw < 54 && !inputs.contains(raw)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+        scheduleRefresh();
+    }
+
+    /** Whether a click would put an item into the clicked slot. */
+    private static boolean placesItem(@Nonnull InventoryClickEvent event, @Nonnull Player player) {
+        return switch (event.getAction()) {
+            case PLACE_ALL, PLACE_ONE, PLACE_SOME, SWAP_WITH_CURSOR -> true;
+            case HOTBAR_SWAP -> {
+                int button = event.getHotbarButton();
+                ItemStack hotbar = button >= 0 ? player.getInventory().getItem(button) : player.getInventory().getItemInOffHand();
+                yield hotbar != null && hotbar.getType() != Material.AIR;
+            }
+            default -> false;
+        };
+    }
+
+    /** Moves a shift-clicked stack from the player's inventory into the first slot it belongs in. */
+    private void routeShiftClick(@Nonnull InventoryClickEvent event, @Nonnull Player player) {
+        ItemStack moving = event.getCurrentItem();
+        if (moving == null || moving.getType() == Material.AIR) return;
+
+        int[] targets = shiftTargets(moving);
+        if (targets.length == 0) return;
+
+        ItemStack remaining = moving.clone();
+        for (int slot : targets) {
+            ItemStack there = inventory.getItem(slot);
+            if (there == null || there.getType() == Material.AIR) {
+                inventory.setItem(slot, remaining);
+                remaining = null;
+                break;
+            }
+            if (!isSystemItem(there) && there.isSimilar(remaining)) {
+                int room = there.getMaxStackSize() - there.getAmount();
+                if (room <= 0) continue;
+                int moved = Math.min(room, remaining.getAmount());
+                there.setAmount(there.getAmount() + moved);
+                remaining.setAmount(remaining.getAmount() - moved);
+                if (remaining.getAmount() <= 0) {
+                    remaining = null;
+                    break;
+                }
+            }
+        }
+        event.setCurrentItem(remaining);
+        player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.6f, 1.4f);
+    }
+
+    /** Where a shift-clicked item goes in the current section, in preference order. */
+    @Nonnull
+    private int[] shiftTargets(@Nonnull ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer pdc = meta != null ? meta.getPersistentDataContainer() : null;
+        boolean isCast = pdc != null && pdc.has(TinkerKeys.CAST_TYPE, PersistentDataType.STRING);
+        boolean isPart = pdc != null && pdc.has(TinkerKeys.PART_COMPOSITION_DATA, PersistentDataType.STRING);
+
+        return switch (currentTab) {
+            case TAB_PARTS -> isCast ? new int[]{SLOT_PART_CAST}
+                    : (getMaterialFromItem(item) != null ? new int[]{SLOT_PART_MAT1, SLOT_PART_MAT2, SLOT_PART_MAT3} : new int[0]);
+            case TAB_ALLOY -> getMaterialFromItem(item) != null ? new int[]{SLOT_ALLOY_MAT1, SLOT_ALLOY_MAT2} : new int[0];
+            case TAB_WEAPONS -> !isPart ? new int[0] : (selectedWeaponType.isTwoPart()
+                    ? new int[]{SLOT_WEAPON_PART1, SLOT_WEAPON_PART2}
+                    : new int[]{SLOT_WEAPON_PART1, SLOT_WEAPON_PART2, SLOT_WEAPON_PART3});
+            case TAB_TOOLS -> isPart ? new int[]{SLOT_TOOL_HEAD, SLOT_TOOL_HANDLE, SLOT_TOOL_POMMEL} : new int[0];
+            case TAB_ARMOR -> isPart ? new int[]{SLOT_ARMOR_PLATE, SLOT_ARMOR_LINING, SLOT_ARMOR_TRIM} : new int[0];
+            default -> new int[0];
+        };
+    }
+
+    /** Clicks on anything that is neither an input nor the output of the section are cancelled. */
+    private void guardSlot(@Nonnull InventoryClickEvent event, int rawSlot) {
+        if (!inputSlots().contains(rawSlot) && rawSlot != outputSlot(currentTab)) {
+            event.setCancelled(true);
         }
     }
 
@@ -854,11 +1280,32 @@ public class ForgeGUI implements InventoryHolder {
         returnActiveTabItems(player, this.currentTab);
         this.currentTab = newTab;
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.2f);
-        renderCurrentTab(null);
+        renderCurrentTab();
     }
 
-    private void handleInfoClicks(InventoryClickEvent event, Player player, int rawSlot) {
-        event.setCancelled(true);
+    /**
+     * Puts a freshly made result into the section's output, stacking it on an identical result. Returns
+     * {@code false}, and changes nothing, when a different item is still waiting there.
+     */
+    private boolean canDeliver(int slot, @Nonnull ItemStack result) {
+        ItemStack there = inventory.getItem(slot);
+        if (there == null || there.getType() == Material.AIR) return true;
+        return there.isSimilar(result) && there.getAmount() + result.getAmount() <= there.getMaxStackSize();
+    }
+
+    private void deliver(int slot, @Nonnull ItemStack result) {
+        ItemStack there = inventory.getItem(slot);
+        if (there == null || there.getType() == Material.AIR) {
+            inventory.setItem(slot, result);
+        } else {
+            there.setAmount(there.getAmount() + result.getAmount());
+        }
+    }
+
+    private void refuseOccupiedOutput(@Nonnull Player player) {
+        player.sendMessage(miniMessage.deserialize(
+                "<red>⚠ Take the item waiting in the output slot first — the Forge never overwrites a result.</red>"));
+        player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
     }
 
     private void handlePartsClicks(InventoryClickEvent event, Player player, int rawSlot) {
@@ -866,14 +1313,14 @@ public class ForgeGUI implements InventoryHolder {
             event.setCancelled(true);
             cycleMold(false);
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
-            renderTabParts();
+            renderMoldSelectorOnly();
             return;
         }
         if (rawSlot == SLOT_MOLD_NEXT) {
             event.setCancelled(true);
             cycleMold(true);
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
-            renderTabParts();
+            renderMoldSelectorOnly();
             return;
         }
         if (rawSlot == SLOT_MOLD_SELECTOR) {
@@ -886,11 +1333,23 @@ public class ForgeGUI implements InventoryHolder {
             strikeForgePart(player);
             return;
         }
+        guardSlot(event, rawSlot);
+    }
 
-        Set<Integer> interactive = Set.of(SLOT_PART_CAST, SLOT_PART_MAT1, SLOT_PART_MAT2, SLOT_PART_MAT3, SLOT_PART_OUTPUT);
-        if (!interactive.contains(rawSlot)) {
-            event.setCancelled(true);
-        }
+    /** Redraws only the mold selector, so cycling molds never clears the cast and materials in place. */
+    private void renderMoldSelectorOnly() {
+        CastType selectedCast = getSelectedCastType();
+        Material moldIcon = (selectedCast == CastType.BLOCK) ? Material.IRON_BLOCK
+                : ((selectedCast == CastType.INGOT) ? Material.IRON_INGOT
+                : ((selectedCast == CastType.NUGGET) ? Material.IRON_NUGGET : Material.BRICK));
+        inventory.setItem(SLOT_MOLD_SELECTOR, createSystemButton(moldIcon,
+                "<gradient:#e67e22:#d35400><b>⚒ Carve Mold: " + selectedCast.getDisplayName() + "</b></gradient>",
+                List.of(
+                        selectedCast.getDescription(),
+                        "",
+                        "Mold " + (selectedCastIndex + 1) + " of " + CARVABLE_CASTS.size() + " · costs 1 Clay Brick.",
+                        "Click to carve it into your inventory."
+                )));
     }
 
     private void cycleMold(boolean forward) {
@@ -908,13 +1367,12 @@ public class ForgeGUI implements InventoryHolder {
             return;
         }
 
-        player.getInventory().removeItem(new ItemStack(Material.BRICK, 1));
         ItemStack cast = itemRegistry.getCastItem(castType);
-        if (cast != null) {
-            player.getInventory().addItem(cast);
-            player.playSound(player.getLocation(), Sound.BLOCK_GRAVEL_PLACE, 1.0f, 1.4f);
-            sendSuccessMessage(player, "Successfully carved", cast);
-        }
+        if (cast == null) return;
+        player.getInventory().removeItem(new ItemStack(Material.BRICK, 1));
+        giveOrDrop(player, cast);
+        player.playSound(player.getLocation(), Sound.BLOCK_GRAVEL_PLACE, 1.0f, 1.4f);
+        sendSuccessMessage(player, "Successfully carved", cast);
     }
 
     private void sendSuccessMessage(Player player, String actionVerb, @Nullable ItemStack item) {
@@ -937,24 +1395,14 @@ public class ForgeGUI implements InventoryHolder {
         ItemStack mat3 = inventory.getItem(SLOT_PART_MAT3);
 
         if (castItem == null || mat1 == null || mat2 == null || mat3 == null) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ Missing components! Place a Cast in slot 28 and all 3 required Materials in slots 30, 31, and 32.</red>"));
+            player.sendMessage(miniMessage.deserialize("<red>⚠ Missing components! Place a Cast and all 3 Materials — the part preview lists what is missing.</red>"));
             player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;
         }
 
-        ItemMeta castMeta = castItem.getItemMeta();
-        if (castMeta == null) return;
-        String castTypeName = castMeta.getPersistentDataContainer().get(TinkerKeys.CAST_TYPE, PersistentDataType.STRING);
-        if (castTypeName == null) {
+        CastType castType = castIn(SLOT_PART_CAST);
+        if (castType == null) {
             player.sendMessage(miniMessage.deserialize("<red>⚠ Invalid Cast! Must be a recognized Tinker Casting Mold.</red>"));
-            return;
-        }
-
-        CastType castType;
-        try {
-            castType = CastType.valueOf(castTypeName);
-        } catch (IllegalArgumentException e) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ Unrecognized Cast type.</red>"));
             return;
         }
 
@@ -968,20 +1416,22 @@ public class ForgeGUI implements InventoryHolder {
         TinkerMaterial m2 = getMaterialFromItem(mat2);
         TinkerMaterial m3 = getMaterialFromItem(mat3);
         if (m1 == null || m2 == null || m3 == null) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ Slots 30, 31, and 32 must all contain recognized Tinker Materials or Molten Buckets!</red>"));
+            player.sendMessage(miniMessage.deserialize("<red>⚠ All 3 material slots must contain recognized Tinker Materials or Molten Buckets!</red>"));
             player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;
         }
 
-        List<TinkerMaterial> materials = List.of(m1, m2, m3);
-        PartComposition composition = PartComposition.fromMaterials(materials);
+        PartComposition composition = PartComposition.fromMaterials(List.of(m1, m2, m3));
         ItemStack forgedPart = TinkerItemBuilder.createModularPart(partType, composition);
+        if (!canDeliver(SLOT_PART_OUTPUT, forgedPart)) {
+            refuseOccupiedOutput(player);
+            return;
+        }
 
         decrementSlot(SLOT_PART_MAT1);
         decrementSlot(SLOT_PART_MAT2);
         decrementSlot(SLOT_PART_MAT3);
-
-        inventory.setItem(SLOT_PART_OUTPUT, forgedPart);
+        deliver(SLOT_PART_OUTPUT, forgedPart);
 
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
         player.spawnParticle(Particle.LAVA, player.getLocation().add(0, 1, 0), 10, 0.3, 0.3, 0.3, 0.0);
@@ -1011,11 +1461,7 @@ public class ForgeGUI implements InventoryHolder {
             }
             return;
         }
-
-        Set<Integer> interactive = Set.of(SLOT_ALLOY_MAT1, SLOT_ALLOY_MAT2, SLOT_ALLOY_OUTPUT);
-        if (!interactive.contains(rawSlot)) {
-            event.setCancelled(true);
-        }
+        guardSlot(event, rawSlot);
     }
 
     private void smeltAlloy(Player player) {
@@ -1023,7 +1469,7 @@ public class ForgeGUI implements InventoryHolder {
         ItemStack mat2 = inventory.getItem(SLOT_ALLOY_MAT2);
 
         if (mat1 == null || mat2 == null) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ Missing components! Place 2 materials in slots 29 and 33.</red>"));
+            player.sendMessage(miniMessage.deserialize("<red>⚠ Missing components! Place 2 materials in the crucible inputs.</red>"));
             player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;
         }
@@ -1036,16 +1482,16 @@ public class ForgeGUI implements InventoryHolder {
             return;
         }
 
-        // Curated legendary recipes stay craftable even when one parent (vanilla netherite) is not
-        // freely blendable; every other pair must be made of two brush/vanilla minerals.
-        if (!alloyRegistry.isCraftablePair(m1, m2)) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ " + AlloyRegistry.mixRequirementMessage() + "</red>"));
+        if (m1.getId().equalsIgnoreCase(m2.getId())) {
+            player.sendMessage(miniMessage.deserialize("<red>⚠ The crucible requires 2 distinct minerals to synthesize an alloy!</red>"));
             player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;
         }
 
-        if (m1.getId().equalsIgnoreCase(m2.getId())) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ The crucible requires 2 distinct minerals to synthesize an alloy!</red>"));
+        // Curated legendary recipes stay craftable even when one parent (vanilla netherite) is not
+        // freely blendable; every other pair must be made of two brush/vanilla minerals.
+        if (!alloyRegistry.isCraftablePair(m1, m2)) {
+            player.sendMessage(miniMessage.deserialize("<red>⚠ " + AlloyRegistry.mixRequirementMessage() + "</red>"));
             player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;
         }
@@ -1062,22 +1508,30 @@ public class ForgeGUI implements InventoryHolder {
             alloyIngot = TinkerItemBuilder.createIngot(resultMaterial);
         }
         alloyIngot.setAmount(2);
+        if (!canDeliver(SLOT_ALLOY_OUTPUT, alloyIngot)) {
+            refuseOccupiedOutput(player);
+            return;
+        }
 
         decrementSlot(SLOT_ALLOY_MAT1);
         decrementSlot(SLOT_ALLOY_MAT2);
-
-        inventory.setItem(SLOT_ALLOY_OUTPUT, alloyIngot);
+        deliver(SLOT_ALLOY_OUTPUT, alloyIngot);
 
         player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 1.4f);
         player.playSound(player.getLocation(), Sound.BLOCK_BREWING_STAND_BREW, 1.0f, 1.0f);
         player.spawnParticle(Particle.FLAME, player.getLocation().add(0, 1.2, 0), 20, 0.3, 0.3, 0.3, 0.05);
 
         boolean prime = AlloyRegistry.isPrimeParents(alloy.mat1Id(), alloy.mat2Id());
+        SignatureArt art = SignatureArt.of(resultMaterial);
+        ForgeTier tier = ForgeTier.of(resultMaterial);
         String headline = prime ? "<gold>♨ PRIME FUSION: </gold>" : "<gold>♨ Crucible Synthesized: </gold>";
         player.sendMessage(miniMessage.deserialize(headline
                 + "<gradient:" + resultMaterial.getColorHex() + ":#ffffff><b>" + resultMaterial.getName() + " Ingot</b></gradient>"
-                + " <gray>(x2)</gray>!"));
+                + " <gray>(x2)</gray>! " + tier.badge()));
         player.sendMessage(miniMessage.deserialize("<gray>  ➤ " + alloy.traitName() + ": </gray><dark_aqua>" + alloy.traitDescription() + "</dark_aqua>"));
+        if (art != null) {
+            player.sendMessage(miniMessage.deserialize("<gray>  ✦ Signature art: </gray>" + art.miniName()));
+        }
         if (prime) {
             PrimeArmorState armorState = PrimeArmorState.of(resultMaterial);
             PrimeUltimate ultimate = PrimeUltimate.forWeapon(
@@ -1085,8 +1539,9 @@ public class ForgeGUI implements InventoryHolder {
             player.sendMessage(miniMessage.deserialize("<gray>  ⚡ Prime ultimate: </gray><white>"
                     + (ultimate != null ? ultimate.getDisplayName() : "Supernova") + "</white><gray> · armor state: </gray><white>"
                     + armorState.getDisplayName() + "</white>"));
-            player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.6f, 1.6f);
-            player.spawnParticle(Particle.END_ROD, player.getLocation().add(0, 1.5, 0), 40, 0.6, 0.6, 0.6, 0.05);
+        }
+        if (art != null && tier.atLeast(ForgeTier.LEGENDARY)) {
+            SignatureArtEngine.playForgeAwakening(plugin, player, art);
         }
     }
 
@@ -1102,7 +1557,7 @@ public class ForgeGUI implements InventoryHolder {
 
     /** Pairs accepted by the crucible that are not two freely blendable minerals. */
     private long curatedOnlyPairs() {
-        java.util.List<TinkerMaterial> all = new java.util.ArrayList<>(materialRegistry.getAll());
+        List<TinkerMaterial> all = new ArrayList<>(materialRegistry.getAll());
         long count = 0;
         for (int i = 0; i < all.size(); i++) {
             for (int j = i + 1; j < all.size(); j++) {
@@ -1132,10 +1587,12 @@ public class ForgeGUI implements InventoryHolder {
             TinkerMaterial m2 = materialRegistry.get(alloy.mat2Id());
             String n1 = (m1 != null) ? m1.getName() : alloy.mat1Id();
             String n2 = (m2 != null) ? m2.getName() : alloy.mat2Id();
+            SignatureArt art = res != null ? SignatureArt.of(res) : null;
 
             player.sendMessage(miniMessage.deserialize(
                     " <gradient:" + resColor + ":#ffffff><b>" + resName + "</b></gradient> <gray>←</gray> "
                             + "<yellow>" + n1 + "</yellow> <gray>+</gray> <yellow>" + n2 + "</yellow> "
+                            + (art != null ? "<gray>✦</gray> " + art.miniName() + " " : "")
                             + "<dark_gray>(" + alloy.traitDescription() + ")</dark_gray>"
             ));
         }
@@ -1144,17 +1601,12 @@ public class ForgeGUI implements InventoryHolder {
     }
 
     private void handleWeaponsClicks(InventoryClickEvent event, Player player, int rawSlot) {
-        if (rawSlot == SLOT_WEAPON_PREV) {
+        if (rawSlot == SLOT_WEAPON_PREV || rawSlot == SLOT_WEAPON_NEXT || rawSlot == SLOT_WEAPON_SELECTOR) {
             event.setCancelled(true);
-            cycleWeapon(false);
-            renderTabWeapons();
-            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
-            return;
-        }
-        if (rawSlot == SLOT_WEAPON_NEXT || rawSlot == SLOT_WEAPON_SELECTOR) {
-            event.setCancelled(true);
-            cycleWeapon(true);
-            renderTabWeapons();
+            // Changing the type may drop the third slot, so its part goes back to the player first.
+            returnActiveTabItems(player, TAB_WEAPONS);
+            cycleWeapon(rawSlot != SLOT_WEAPON_PREV);
+            renderCurrentTab();
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
             return;
         }
@@ -1163,14 +1615,7 @@ public class ForgeGUI implements InventoryHolder {
             assembleWeapon(player);
             return;
         }
-
-        Set<Integer> interactive = new HashSet<>(Set.of(SLOT_WEAPON_PART1, SLOT_WEAPON_PART2, SLOT_WEAPON_OUTPUT));
-        if (!selectedWeaponType.isTwoPart()) {
-            interactive.add(SLOT_WEAPON_PART3);
-        }
-        if (!interactive.contains(rawSlot)) {
-            event.setCancelled(true);
-        }
+        guardSlot(event, rawSlot);
     }
 
     private void cycleWeapon(boolean forward) {
@@ -1186,7 +1631,7 @@ public class ForgeGUI implements InventoryHolder {
         ItemStack p3Item = selectedWeaponType.isTwoPart() ? null : inventory.getItem(SLOT_WEAPON_PART3);
 
         if (p1Item == null || p2Item == null || (!selectedWeaponType.isTwoPart() && p3Item == null)) {
-            player.sendMessage(miniMessage.deserialize("<red>⚠ Missing required weapon parts!</red>"));
+            player.sendMessage(miniMessage.deserialize("<red>⚠ Missing required weapon parts! The perk preview lists what is missing.</red>"));
             player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0f, 0.6f);
             return;
         }
@@ -1201,33 +1646,38 @@ public class ForgeGUI implements InventoryHolder {
         }
 
         ItemStack weapon = TinkerItemBuilder.createModularWeapon(selectedWeaponType, c1, c2, c3, EvolutionTier.WOOD, 0);
+        if (!canDeliver(SLOT_WEAPON_OUTPUT, weapon)) {
+            refuseOccupiedOutput(player);
+            return;
+        }
 
         decrementSlot(SLOT_WEAPON_PART1);
         decrementSlot(SLOT_WEAPON_PART2);
         if (!selectedWeaponType.isTwoPart()) {
             decrementSlot(SLOT_WEAPON_PART3);
         }
-
-        inventory.setItem(SLOT_WEAPON_OUTPUT, weapon);
+        deliver(SLOT_WEAPON_OUTPUT, weapon);
 
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
         player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1.0f, 1.0f);
         player.spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1.2, 0), 30, 0.4, 0.4, 0.4, 0.1);
         sendSuccessMessage(player, "Masterfully assembled", weapon);
+
+        List<PartComposition> parts = new ArrayList<>(List.of(c1, c2));
+        if (c3 != null) parts.add(c3);
+        SignatureArt art = SignatureArt.forWeapon(parts);
+        if (art != null) {
+            player.sendMessage(miniMessage.deserialize("<gray>  ✦ Signature art awakened: </gray>" + art.miniName()
+                    + " " + art.tier().badge()));
+            SignatureArtEngine.playForgeAwakening(plugin, player, art);
+        }
     }
 
     private void handleToolsClicks(InventoryClickEvent event, Player player, int rawSlot) {
-        if (rawSlot == SLOT_TOOL_PREV) {
+        if (rawSlot == SLOT_TOOL_PREV || rawSlot == SLOT_TOOL_NEXT || rawSlot == SLOT_TOOL_SELECTOR) {
             event.setCancelled(true);
-            cycleTool(false);
-            renderTabTools();
-            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
-            return;
-        }
-        if (rawSlot == SLOT_TOOL_NEXT || rawSlot == SLOT_TOOL_SELECTOR) {
-            event.setCancelled(true);
-            cycleTool(true);
-            renderTabTools();
+            cycleTool(rawSlot != SLOT_TOOL_PREV);
+            renderToolSelectorOnly();
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
             return;
         }
@@ -1236,11 +1686,26 @@ public class ForgeGUI implements InventoryHolder {
             assembleTool(player);
             return;
         }
+        guardSlot(event, rawSlot);
+    }
 
-        Set<Integer> interactive = Set.of(SLOT_TOOL_HEAD, SLOT_TOOL_HANDLE, SLOT_TOOL_POMMEL, SLOT_TOOL_OUTPUT);
-        if (!interactive.contains(rawSlot)) {
-            event.setCancelled(true);
-        }
+    /** Every tool takes the same three parts, so cycling the type keeps the parts in place. */
+    private void renderToolSelectorOnly() {
+        inventory.setItem(SLOT_TOOL_SELECTOR, createSystemButton(selectedToolType.getBaseMaterial(),
+                THEMES[TAB_TOOLS].gradient("<b>" + selectedToolType.getDisplayName() + "</b>"),
+                List.of(
+                        selectedToolType.getDescription(),
+                        "",
+                        "Takes 3 parts: Head, Handle, Pommel.",
+                        "Click to cycle to the next tool."
+                )));
+        inventory.setItem(SLOT_TOOL_ASSEMBLE, createSystemButton(Material.ANVIL,
+                THEMES[TAB_TOOLS].gradient("<b>⚒ Assemble " + selectedToolType.getDisplayName() + "</b>"),
+                List.of(
+                        "Combines Head, Handle and Pommel into a finished tool.",
+                        "Inherits mining speed, perks and traits."
+                )));
+        renderPerkPreview();
     }
 
     private void cycleTool(boolean forward) {
@@ -1276,12 +1741,15 @@ public class ForgeGUI implements InventoryHolder {
         }
 
         ItemStack tool = TinkerItemBuilder.createModularTool(selectedToolType, cHead, cHandle, cPommel, EvolutionTier.WOOD, 0);
+        if (!canDeliver(SLOT_TOOL_OUTPUT, tool)) {
+            refuseOccupiedOutput(player);
+            return;
+        }
 
         decrementSlot(SLOT_TOOL_HEAD);
         decrementSlot(SLOT_TOOL_HANDLE);
         decrementSlot(SLOT_TOOL_POMMEL);
-
-        inventory.setItem(SLOT_TOOL_OUTPUT, tool);
+        deliver(SLOT_TOOL_OUTPUT, tool);
 
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
         player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1.0f, 1.0f);
@@ -1290,17 +1758,10 @@ public class ForgeGUI implements InventoryHolder {
     }
 
     private void handleArmorClicks(InventoryClickEvent event, Player player, int rawSlot) {
-        if (rawSlot == SLOT_ARMOR_PREV) {
+        if (rawSlot == SLOT_ARMOR_PREV || rawSlot == SLOT_ARMOR_NEXT || rawSlot == SLOT_ARMOR_SELECTOR) {
             event.setCancelled(true);
-            cycleArmor(false);
-            renderTabArmor();
-            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
-            return;
-        }
-        if (rawSlot == SLOT_ARMOR_NEXT || rawSlot == SLOT_ARMOR_SELECTOR) {
-            event.setCancelled(true);
-            cycleArmor(true);
-            renderTabArmor();
+            cycleArmor(rawSlot != SLOT_ARMOR_PREV);
+            renderArmorSelectorOnly();
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
             return;
         }
@@ -1309,11 +1770,32 @@ public class ForgeGUI implements InventoryHolder {
             assembleArmor(player);
             return;
         }
+        guardSlot(event, rawSlot);
+    }
 
-        Set<Integer> interactive = Set.of(SLOT_ARMOR_PLATE, SLOT_ARMOR_LINING, SLOT_ARMOR_TRIM, SLOT_ARMOR_OUTPUT);
-        if (!interactive.contains(rawSlot)) {
-            event.setCancelled(true);
-        }
+    /** Every armor piece takes plate, lining and trim, so cycling the piece keeps the parts in place. */
+    private void renderArmorSelectorOnly() {
+        inventory.setItem(SLOT_ARMOR_SELECTOR, createSystemButton(selectedArmorType.getBaseMaterial(),
+                THEMES[TAB_ARMOR].gradient("<b>" + selectedArmorType.getDisplayName() + "</b>"),
+                List.of(
+                        selectedArmorType.getDescription(),
+                        "",
+                        "Takes 3 parts: Plate, Lining, Trim.",
+                        "Click to cycle to the next piece."
+                )));
+        inventory.setItem(20, createSystemDecor(Material.ORANGE_STAINED_GLASS_PANE,
+                "<gold><b>▼ " + selectedArmorType.getPart1Name() + "</b></gold>"));
+        inventory.setItem(22, createSystemDecor(Material.YELLOW_STAINED_GLASS_PANE,
+                "<yellow><b>▼ " + selectedArmorType.getPart2Name() + "</b></yellow>"));
+        inventory.setItem(24, createSystemDecor(Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+                "<aqua><b>▼ " + selectedArmorType.getPart3Name() + "</b></aqua>"));
+        inventory.setItem(SLOT_ARMOR_ASSEMBLE, createSystemButton(Material.ANVIL,
+                THEMES[TAB_ARMOR].gradient("<b>⚒ Assemble " + selectedArmorType.getDisplayName() + "</b>"),
+                List.of(
+                        "Combines Plate, Lining and Trim into finished armor.",
+                        "Inherits defense, toughness and defensive traits."
+                )));
+        renderPerkPreview();
     }
 
     private void cycleArmor(boolean forward) {
@@ -1344,12 +1826,15 @@ public class ForgeGUI implements InventoryHolder {
         }
 
         ItemStack armor = TinkerItemBuilder.createModularArmor(selectedArmorType, cPlate, cLining, cTrim, EvolutionTier.WOOD, 0);
+        if (!canDeliver(SLOT_ARMOR_OUTPUT, armor)) {
+            refuseOccupiedOutput(player);
+            return;
+        }
 
         decrementSlot(SLOT_ARMOR_PLATE);
         decrementSlot(SLOT_ARMOR_LINING);
         decrementSlot(SLOT_ARMOR_TRIM);
-
-        inventory.setItem(SLOT_ARMOR_OUTPUT, armor);
+        deliver(SLOT_ARMOR_OUTPUT, armor);
 
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
         player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1.0f, 1.0f);
@@ -1359,10 +1844,15 @@ public class ForgeGUI implements InventoryHolder {
 
     @Nullable
     private TinkerMaterial getMaterialFromItem(@Nullable ItemStack item) {
-        if (item == null || item.getType() == Material.AIR) return null;
+        if (item == null || item.getType() == Material.AIR || isSystemItem(item)) return null;
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             PersistentDataContainer pdc = meta.getPersistentDataContainer();
+            // A cast or a forged part is never a crucible or casting material.
+            if (pdc.has(TinkerKeys.CAST_TYPE, PersistentDataType.STRING)
+                    || pdc.has(TinkerKeys.PART_COMPOSITION_DATA, PersistentDataType.STRING)) {
+                return null;
+            }
             String matId = pdc.get(TinkerKeys.MATERIAL_ID, PersistentDataType.STRING);
             if (matId != null) {
                 TinkerMaterial tm = materialRegistry.get(matId);

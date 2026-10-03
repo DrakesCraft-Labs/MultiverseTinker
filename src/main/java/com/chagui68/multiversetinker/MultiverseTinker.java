@@ -1,5 +1,6 @@
 package com.chagui68.multiversetinker;
 
+import com.chagui68.multiversetinker.compat.ServerCompat;
 import com.chagui68.multiversetinker.access.AccessControl;
 import com.chagui68.multiversetinker.alloys.AlloyRegistry;
 import com.chagui68.multiversetinker.api.CastType;
@@ -21,6 +22,8 @@ import com.chagui68.multiversetinker.smeltery.SmelteryManager;
 import com.chagui68.multiversetinker.storage.TinkerKeys;
 import com.chagui68.multiversetinker.tools.EquipmentAnimation;
 import com.chagui68.multiversetinker.tools.ModularToolListener;
+import com.chagui68.multiversetinker.tools.SignatureArt;
+import com.chagui68.multiversetinker.tools.SignatureArtEngine;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -28,7 +31,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -75,7 +77,7 @@ public class MultiverseTinker extends JavaPlugin {
         applyAccessSettings();
 
         getLogger().info("========================================");
-        getLogger().info("   MultiverseTinker - Paper 1.21+       ");
+        getLogger().info("MultiverseTinker - Paper 1.21.11 to 26.2");
         getLogger().info("           Author: Chagui68             ");
         getLogger().info("========================================");
 
@@ -84,6 +86,8 @@ public class MultiverseTinker extends JavaPlugin {
 
         // Register Materials & Items
         this.materialRegistry = new MaterialRegistry();
+        // Composite arts are read through their two parent minerals.
+        SignatureArt.setMaterialLookup(materialRegistry::get);
         this.alloyRegistry = new AlloyRegistry();
         // Vanilla catalysts (Nether Star, Blue Ice…) must exist before restored prime alloys resolve their parents.
         this.alloyRegistry.registerCatalystMaterials(materialRegistry);
@@ -181,6 +185,22 @@ public class MultiverseTinker extends JavaPlugin {
                 ? "enabled at " + EquipmentAnimation.configuredParticleScale() + "x particles (sounds "
                         + (EquipmentAnimation.isSoundsEnabled() ? "on" : "off") + ", cooldown "
                         + EquipmentAnimation.configuredCooldownMillis() + "ms)."
+                : "disabled."));
+
+        // Signature arts share the reload path: they are the alloys' half of the same spectacle.
+        SignatureArtEngine.configure(
+                getConfig().getBoolean(SignatureArtEngine.CONFIG_ENABLED, true),
+                getConfig().getDouble(SignatureArtEngine.CONFIG_CHANCE_MULTIPLIER, 1.0),
+                getConfig().getDouble(SignatureArtEngine.CONFIG_COOLDOWN_MULTIPLIER, 1.0),
+                getConfig().getBoolean(SignatureArtEngine.CONFIG_MYTHIC_TITLES, true),
+                getConfig().getBoolean(SignatureArtEngine.CONFIG_DISPLAY_ENTITIES, true));
+        SignatureArt.clearCache();
+
+        getLogger().info("Signature arts " + (SignatureArtEngine.isEnabled()
+                ? "enabled at " + SignatureArtEngine.configuredChanceMultiplier() + "x chance and "
+                        + SignatureArtEngine.configuredCooldownMultiplier() + "x cooldown (titles "
+                        + (SignatureArtEngine.isMythicTitles() ? "on" : "off") + ", display entities "
+                        + (SignatureArtEngine.isDisplayEntities() ? "on" : "off") + ")."
                 : "disabled."));
     }
 
@@ -442,7 +462,7 @@ public class MultiverseTinker extends JavaPlugin {
                 NamespacedKey nToIKey = new NamespacedKey(this, matId + "_nuggets_to_ingot");
                 ShapedRecipe nToIRecipe = new ShapedRecipe(nToIKey, ingot);
                 nToIRecipe.shape("NNN", "NNN", "NNN");
-                nToIRecipe.setIngredient('N', new RecipeChoice.ExactChoice(nugget));
+                nToIRecipe.setIngredient('N', ServerCompat.exactChoice(nugget));
                 getServer().addRecipe(nToIRecipe);
 
                 // 1 Ingot -> 9 Nuggets
@@ -450,7 +470,7 @@ public class MultiverseTinker extends JavaPlugin {
                 nineNuggets.setAmount(9);
                 NamespacedKey iToNKey = new NamespacedKey(this, matId + "_ingot_to_nuggets");
                 ShapelessRecipe iToNRecipe = new ShapelessRecipe(iToNKey, nineNuggets);
-                iToNRecipe.addIngredient(new RecipeChoice.ExactChoice(ingot));
+                iToNRecipe.addIngredient(ServerCompat.exactChoice(ingot));
                 getServer().addRecipe(iToNRecipe);
             }
 
@@ -459,7 +479,7 @@ public class MultiverseTinker extends JavaPlugin {
                 NamespacedKey iToBKey = new NamespacedKey(this, matId + "_ingots_to_block");
                 ShapedRecipe iToBRecipe = new ShapedRecipe(iToBKey, block);
                 iToBRecipe.shape("III", "III", "III");
-                iToBRecipe.setIngredient('I', new RecipeChoice.ExactChoice(ingot));
+                iToBRecipe.setIngredient('I', ServerCompat.exactChoice(ingot));
                 getServer().addRecipe(iToBRecipe);
 
                 // 1 Block -> 9 Ingots
@@ -467,7 +487,7 @@ public class MultiverseTinker extends JavaPlugin {
                 nineIngots.setAmount(9);
                 NamespacedKey bToIKey = new NamespacedKey(this, matId + "_block_to_ingots");
                 ShapelessRecipe bToIRecipe = new ShapelessRecipe(bToIKey, nineIngots);
-                bToIRecipe.addIngredient(new RecipeChoice.ExactChoice(block));
+                bToIRecipe.addIngredient(ServerCompat.exactChoice(block));
                 getServer().addRecipe(bToIRecipe);
             }
         }
@@ -481,6 +501,8 @@ public class MultiverseTinker extends JavaPlugin {
         if (forgeManager != null) {
             forgeManager.stopAuraTask();
         }
+        // Display entities are never persisted, but an art cut short by a shutdown must not leave any behind.
+        SignatureArtEngine.cleanup();
         getLogger().info("MultiverseTinker disabled.");
         instance = null;
     }

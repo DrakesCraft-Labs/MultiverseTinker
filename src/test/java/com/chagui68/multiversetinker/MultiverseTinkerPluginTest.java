@@ -49,7 +49,8 @@ class MultiverseTinkerPluginTest {
         assertEquals("MultiverseTinker", descriptor.getString("name"));
         assertEquals("com.chagui68.multiversetinker.MultiverseTinker", descriptor.getString("main"));
         assertNotNull(descriptor.getString("version"), "The maven filter must fill the version");
-        assertEquals("1.21", descriptor.getString("api-version"));
+        // 1.21.11 is the oldest server the jar is compiled for; Paper 26.1 and 26.2 load it as well.
+        assertEquals("1.21.11", descriptor.getString("api-version"));
 
         // /mvtink is the only command name: no /mvt and no /multiversetinker alias may come back.
         assertNull(descriptor.getConfigurationSection("commands.multiversetinker"),

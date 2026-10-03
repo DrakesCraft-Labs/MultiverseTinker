@@ -125,6 +125,31 @@ Cuándo salta cada animación:
 
 ---
 
+## ✦ Artes de firma (`signature-arts`)
+
+Cada aleación forjada en un arma despierta un **arte de firma** cuyo tamaño sigue el pedigrí de forja del arma (ver **[Artes de Firma](Artes-de-Firma.md)**). Las partículas y sonidos siguen la sección `animations`; la mecánica se aplica aunque las animaciones estén desactivadas.
+
+| Clave | Tipo | Por defecto | Significado |
+| --- | --- | --- | --- |
+| `signature-arts.enabled` | booleano | `true` | Permite que las armas de aleación disparen su arte al golpear. |
+| `signature-arts.chance-multiplier` | número | `1.0` | Multiplica la probabilidad de cada pedigrí (II 15% · III 20% · IV 24% · V 28%), limitado a `0.0` – `5.0`. `0` apaga las artes sin tocar los ultimates. |
+| `signature-arts.cooldown-multiplier` | número | `1.0` | Multiplica el enfriamiento por jugador (II 8 s · III 10 s · IV 12 s · V 14 s), limitado a `0.1` – `10.0`. |
+| `signature-arts.mythic-titles` | booleano | `true` | Muestra el nombre del arte como título en pantalla para artes y ultimates primordiales y míticos. |
+| `signature-arts.display-entities` | booleano | `true` | Permite que las artes levanten entidades de bloque temporales (la campana de bronce, géiseres de magma, picos de hielo, obeliscos míticos). Nunca se guardan en el mundo y se eliminan al terminar el arte o al apagar el plugin. |
+
+```yaml
+signature-arts:
+  enabled: true
+  chance-multiplier: 1.0
+  cooldown-multiplier: 1.0
+  mythic-titles: true
+  display-entities: true
+```
+
+`/mvtink reload` aplica un valor cambiado sin reiniciar.
+
+---
+
 ## ⚔️ Reglas del equipo modular (`equipment`)
 
 Un arma, herramienta o pieza de armadura forjada lleva su **propio contador de durabilidad**. Por eso el desgaste
@@ -332,6 +357,7 @@ Los cambios se aplican con `/mvtink reload` y se anuncian al arrancar:
 | `access` | Quién puede usar el codex, la forja (GUI, crisol y moldeo), la arqueología y los comandos de admin, como `public`, `op` o `permission`. |
 | `archaeology` | Sistema de cepillado: interruptor, duración del cepillado, coste de durabilidad de la brocha, probabilidad de éxito por dimensión, comportamiento de degradación del bloque (`DEGRADE` / `COOLDOWN` / `NONE`), enfriamiento anti-macro y rendimientos de la brocha. |
 | `animations` | Animaciones exclusivas de los perks: interruptor, multiplicador de partículas, sonido y enfriamiento por tipo. |
+| `signature-arts` | Artes de firma de las aleaciones: interruptor, multiplicadores de probabilidad y enfriamiento, títulos primordiales/míticos y entidades de bloque temporales. |
 | `equipment` | Reglas del equipo modular: si un arma forjada pelea con su daño calculado y si la armadura defiende con la protección calculada a partir de sus minerales, o con los valores vanilla (el desgaste vanilla siempre está desactivado). |
 | `smeltery` | Ajustes del crisol: probabilidad de consumir la lava fuente y multiplicador de lentitud de la fuente de calor con Bloque de Magma. |
 | `rarity-weights` | Pesos por rareza de la tabla de botín de arqueología (`common` 50, `uncommon` 30, `rare` 14, `epic` 5, `legendary` 1). Los pesos son relativos, `0` saca una rareza de la geología por completo, los negativos se leen como 0, y una sección con todo a 0 vuelve a los valores de fábrica para que la tabla nunca quede seca. Una clave ausente o no numérica conserva su valor de fábrica. |

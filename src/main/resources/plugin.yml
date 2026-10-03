@@ -1,9 +1,9 @@
 name: MultiverseTinker
 version: ${project.version}
 main: com.chagui68.multiversetinker.MultiverseTinker
-api-version: "1.21"
+api-version: "1.21.11"
 author: Chagui68
-description: Modular tools, weapons and armor with exclusive perks and animations per equipment type, geological archaeology, smeltery crucible, alloy codex and prime-alloy metallurgy for Paper 1.21+.
+description: Modular tools, weapons and armor with exclusive perks and animations per equipment type, geological archaeology, smeltery crucible, alloy codex and prime-alloy metallurgy for Paper 1.21.11, 26.1 and 26.2.
 website: https://github.com/DrakesCraft-Labs/MultiverseTinker
 
 # Single command, no aliases: /mvtink is the only name this plugin answers to.
